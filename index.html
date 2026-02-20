@@ -55,9 +55,48 @@
             h1 { font-size: 5rem !important; }
         }
 
-        h1 { color: var(--gold); letter-spacing: 5px; margin: 40px 0 30px 0; text-transform: uppercase; font-size: 2.2rem; }
+        /* LOGO CONTAINERS MED PULSERANDE EFFEKT */
+        .logo-container {
+            width: 280px;
+            height: 280px;
+            margin: 10px auto 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulseGlow 4s infinite ease-in-out;
+        }
+
+        .logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 20px;
+        }
+
+        .small-logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulseGlow 4s infinite ease-in-out;
+        }
+        .small-logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.1)); }
+            50% { transform: scale(1.02); filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.4)); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.1)); }
+        }
+
+        h1 { color: var(--gold); letter-spacing: 5px; margin: 10px 0 30px 0; text-transform: uppercase; font-size: 2.2rem; }
         
-        .intro-text-container { margin: 40px 0; line-height: 1.8; letter-spacing: 1px; }
+        .intro-text-container { margin: 30px 0; line-height: 1.8; letter-spacing: 1px; }
         .intro-title { color: var(--gold); font-size: 1.6rem; text-transform: uppercase; margin-bottom: 20px; display: block; }
         .intro-body { color: #888; font-style: italic; font-size: 1.1rem; }
         .intro-highlight { color: #bbb; display: block; margin-top: 20px; font-weight: bold; }
@@ -115,7 +154,6 @@
         #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
         .modal-box { background: var(--panel); border: 1px solid var(--gold); padding: 30px; border-radius: 25px; width: 100%; max-width: 400px; }
 
-        /* VISUELL KORRIGERING AV KNAPPAR */
         .btn { 
             width: 100%; 
             padding: 20px; 
@@ -154,6 +192,11 @@
 
     <!-- INTRO SIDA -->
     <div id="intro-page" class="page active">
+        <!-- DIN VALDA BILD (STOR) MED NYTT NAMN -->
+        <div class="logo-container">
+            <img src="dareme.png" alt="Dare Me Logo">
+        </div>
+        
         <h1>Dare Me</h1>
         <div class="intro-text-container">
             <span class="intro-title">Welcome to Dare Me</span>
@@ -205,6 +248,11 @@
     <!-- LOBBY -->
     <div id="lobby-page" class="page">
         <h1>Dare Me</h1>
+        <!-- DIN VALDA BILD (LITEN) I LOBBYN MED NYTT NAMN -->
+        <div class="small-logo">
+            <img src="dareme.png" alt="Dare Me Logo">
+        </div>
+
         <div id="room-info" class="room-tag">LOKALT SPEL</div>
         <div class="setup-container">
             <div id="setup-controls">
@@ -214,19 +262,14 @@
                 
                 <div class="veto-container host-only">
                     <span class="veto-title">Globala Inställningar (Endast Värd)</span>
-                    <!-- Kompakt layout för reglage och dropdowns -->
                     <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
                         <label class="veto-option" style="margin: 0;"><input type="checkbox" id="setting-manual-stars" onchange="toggleManualStars()"> Manuella stjärnor</label>
-                        
-                        <!-- Timer dropdown -->
                         <div class="veto-option" style="gap: 8px; margin: 0;">
                             <span style="font-size: 0.65rem; color: var(--gold); text-transform: uppercase;">Timer:</span>
                             <select id="star-timer-setting" onchange="updateStarTimerSetting()" style="width: auto; padding: 6px 10px; margin: 0; font-size: 0.8rem; border-radius: 8px; background: #000; color: #fff; border: 1px solid #444; outline: none;">
                                 <option value="1">1 min</option><option value="2">2 min</option><option value="3" selected>3 min</option><option value="4">4 min</option><option value="5">5 min</option>
                             </select>
                         </div>
-
-                        <!-- Chans dropdown -->
                         <div class="veto-option" style="gap: 8px; margin: 0;">
                             <span style="font-size: 0.65rem; color: var(--gold); text-transform: uppercase;">Chans:</span>
                             <select id="star-chance-setting" onchange="updateStarChanceSetting()" style="width: auto; padding: 6px 10px; margin: 0; font-size: 0.8rem; border-radius: 8px; background: #000; color: #fff; border: 1px solid #444; outline: none;">
@@ -234,7 +277,6 @@
                             </select>
                         </div>
                     </div>
-                    
                     <div style="border-top: 1px solid #222; padding-top: 15px;">
                         <small style="color: var(--gold); display: block; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Tillgängliga Nivåer:</small>
                         <div id="level-selection-grid" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
@@ -243,7 +285,6 @@
                     </div>
                 </div>
 
-                <!-- Info för gäster -->
                 <div class="guest-only" style="text-align: left; font-size: 0.65rem; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">
                     Timer: <span id="guest-timer-info" style="color: var(--gold); font-weight: bold; margin-right: 15px;">3 min</span>
                     Chans: <span id="guest-chance-info" style="color: var(--gold); font-weight: bold;">3%</span>
@@ -263,16 +304,16 @@
                 </div>
                 <button class="btn btn-add" onclick="addPlayer()">LÄGG TILL MIG</button>
             </div>
-
             <div id="displayList" style="margin-top: 20px;"></div>
-
             <div class="host-only">
                 <button class="btn btn-start" id="start-game-btn" onclick="startGame()">STARTA SPELET</button>
             </div>
             <div class="guest-only" style="margin-top: 30px; color: #666; font-style: italic;">Väntar på att värden ska starta...</div>
-            
             <a href="rules.html" class="btn btn-rules" style="text-decoration:none; display:block; margin-top:20px;">VISA REGLER</a>
             <button class="btn btn-back" style="margin-top: 10px;" onclick="location.reload()">TILLBAKA</button>
+            
+            <!-- RESET LÄNK LAGD TILL I LOBBYN -->
+            <div class="reset-link" onclick="resetGame()">Nollställ allt / Byt roll</div>
         </div>
     </div>
 
@@ -319,7 +360,7 @@
         currentPlayerIdx: 0,
         allowManualStars: false,
         starPowerDuration: 3,
-        starChance: 3, // Standard: 3%
+        starChance: 3,
         currentTask: "TRYCK FÖR KORT",
         timer: null,
         isPlaying: false,
@@ -542,11 +583,8 @@
             const dare = pool[Math.floor(Math.random() * pool.length)];
             const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
             state.currentTask = `<span class="gold-name">${active.name}</span>, ${dare.text}`.replace(/\[TARGETS\]/g, `<span class="gold-name">${ts}</span>`).replace(/\[TARGET\]/g, `<span class="gold-name">${target.name}</span>`);
-            
-            // Dynamisk sannolikhet för stjärna baserat på inställning
             const chanceValue = (state.starChance || 3) / 100;
             if (Math.random() < chanceValue && active.stars < 4) active.stars++;
-            
             state.currentPlayerIdx = (state.currentPlayerIdx + 1) % state.players.length;
         }
         updateCloud(); applyStateToUI();
@@ -601,7 +639,7 @@
             </div>`).join(''); 
     }
     
-        function renderGameBar() { 
+    function renderGameBar() { 
         document.getElementById('player-status').innerHTML = state.players.map((p, i) => `
             <div class="p-chip ${state.currentPlayerIdx===i?'active-turn':''}" onclick="openStarModal(${i})">
                 <strong>${p.name}</strong>
