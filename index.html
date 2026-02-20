@@ -214,30 +214,39 @@
                 
                 <div class="veto-container host-only">
                     <span class="veto-title">Globala Inställningar (Endast Värd)</span>
-                    <div class="veto-grid">
-                        <label class="veto-option"><input type="checkbox" id="setting-manual-stars" onchange="toggleManualStars()"> Manuella stjärnor</label>
-                        <div class="veto-option" style="justify-content: flex-end;">
-                            <span style="font-size: 0.7rem; color: var(--gold); text-transform: uppercase;">Timer:</span>
-                            <select id="star-timer-setting" onchange="updateStarTimerSetting()" style="width: auto; padding: 5px; margin: 0 0 0 8px; font-size: 0.8rem; border-radius: 8px; background: #000; color: #fff; border: 1px solid #444;">
-                                <option value="1">1 min</option>
-                                <option value="2">2 min</option>
-                                <option value="3" selected>3 min</option>
-                                <option value="4">4 min</option>
-                                <option value="5">5 min</option>
+                    <!-- Kompakt layout för reglage och dropdowns -->
+                    <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
+                        <label class="veto-option" style="margin: 0;"><input type="checkbox" id="setting-manual-stars" onchange="toggleManualStars()"> Manuella stjärnor</label>
+                        
+                        <!-- Timer dropdown -->
+                        <div class="veto-option" style="gap: 8px; margin: 0;">
+                            <span style="font-size: 0.65rem; color: var(--gold); text-transform: uppercase;">Timer:</span>
+                            <select id="star-timer-setting" onchange="updateStarTimerSetting()" style="width: auto; padding: 6px 10px; margin: 0; font-size: 0.8rem; border-radius: 8px; background: #000; color: #fff; border: 1px solid #444; outline: none;">
+                                <option value="1">1 min</option><option value="2">2 min</option><option value="3" selected>3 min</option><option value="4">4 min</option><option value="5">5 min</option>
                             </select>
                         </div>
-                        <div style="grid-column: span 2; margin-top: 15px; border-top: 1px solid #222; padding-top: 10px;">
-                            <small style="color: var(--gold); display: block; margin-bottom: 10px; text-transform: uppercase;">Tillgängliga Nivåer:</small>
-                            <div id="level-selection-grid" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
-                                <div id="lvl-scanner-status" style="color:#444; font-size:0.7rem;">Söker efter filer...</div>
-                            </div>
+
+                        <!-- Chans dropdown -->
+                        <div class="veto-option" style="gap: 8px; margin: 0;">
+                            <span style="font-size: 0.65rem; color: var(--gold); text-transform: uppercase;">Chans:</span>
+                            <select id="star-chance-setting" onchange="updateStarChanceSetting()" style="width: auto; padding: 6px 10px; margin: 0; font-size: 0.8rem; border-radius: 8px; background: #000; color: #fff; border: 1px solid #444; outline: none;">
+                                <option value="1">1%</option><option value="2">2%</option><option value="3" selected>3%</option><option value="4">4%</option><option value="5">5%</option><option value="6">6%</option><option value="7">7%</option><option value="8">8%</option><option value="9">9%</option><option value="10">10%</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="border-top: 1px solid #222; padding-top: 15px;">
+                        <small style="color: var(--gold); display: block; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Tillgängliga Nivåer:</small>
+                        <div id="level-selection-grid" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+                            <div id="lvl-scanner-status" style="color:#444; font-size:0.7rem;">Söker efter filer...</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Info för gäster om inställd timer -->
-                <div class="guest-only" style="text-align: left; font-size: 0.7rem; color: #555; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
-                    Inställd tid för stjärna: <span id="guest-timer-info" style="color: var(--gold); font-weight: bold;">3 min</span>
+                <!-- Info för gäster -->
+                <div class="guest-only" style="text-align: left; font-size: 0.65rem; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">
+                    Timer: <span id="guest-timer-info" style="color: var(--gold); font-weight: bold; margin-right: 15px;">3 min</span>
+                    Chans: <span id="guest-chance-info" style="color: var(--gold); font-weight: bold;">3%</span>
                 </div>
 
                 <div class="veto-container">
@@ -274,7 +283,7 @@
             <div id="next-up-info" style="color:#555; font-size:0.7rem; text-transform:uppercase; margin-bottom:5px;">PÅ TUR: ...</div>
             <div id="active-lvl-display" style="color: #444; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 10px;">NIVÅ: <span id="current-lvl-text" style="color:var(--red); font-weight:bold;">---</span></div>
             <div id="star-power-label" style="color:var(--gold); font-weight:bold; letter-spacing:5px; margin-bottom:20px; display:none;">⭐ GULDSTJÄRNA ⭐</div>
-            <div id="task-box" class="task-text">VÄNTAR PÅ KORT...</div>
+            <div id="task-box" class="task-text">VÄNTAR på kort...</div>
             <div id="timer-display">3:00</div>
             <button id="btn-finish-timer" class="btn btn-lvl-up" style="display:none;" onclick="finishTimerEarly()">KLART, NÄSTA KORT</button>
         </div>
@@ -288,7 +297,7 @@
 
 <script type="module">
     import { initializeApp } from "firebase/app";
-    import { getAuth, signInAnonymously } from "firebase/auth";
+    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "firebase/auth";
     import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
 
     const firebaseConfig = {
@@ -309,15 +318,16 @@
         activeLevelIdx: 0,
         currentPlayerIdx: 0,
         allowManualStars: false,
-        starPowerDuration: 3, // Standardvärde: 3 minuter
+        starPowerDuration: 3,
+        starChance: 3, // Standard: 3%
         currentTask: "TRYCK FÖR KORT",
         timer: null,
         isPlaying: false,
         roomCode: null
     };
 
-    let isHost = false, lastStarCounts = {}, db, auth, unsubscribe;
-    const appId = "dare-me-dynamic";
+    let isHost = false, lastStarCounts = {}, db, auth, unsubscribe, user;
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'dare-me-dynamic';
 
     function hideLoading() { document.getElementById('loading-screen').style.display = 'none'; }
 
@@ -336,19 +346,27 @@
                 }
             } catch (e) {}
         }
-        if (found === 0) grid.innerHTML = `<div style="color:var(--red); font-size:0.7rem;">Inga filer hittades på servern!</div>`;
     }
 
     async function initFirebase() {
         try {
             const app = initializeApp(firebaseConfig);
             auth = getAuth(app); db = getFirestore(app);
-            await signInAnonymously(auth); return true;
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+            onAuthStateChanged(auth, (u) => {
+                user = u;
+                if (u && state.roomCode) listenToRoom(state.roomCode);
+            });
+            return true;
         } catch (e) { return false; }
     }
 
     async function updateCloud() {
-        if (!state.roomCode || !db) return;
+        if (!state.roomCode || !db || !user) return;
         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode), state);
     }
 
@@ -359,7 +377,7 @@
     }
 
     function listenToRoom(code) {
-        if (!db) return;
+        if (!db || !user) return;
         if (unsubscribe) unsubscribe();
         unsubscribe = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code), async (snapshot) => {
             if (snapshot.exists()) {
@@ -390,12 +408,18 @@
         pages.forEach(p => document.getElementById(p).classList.remove('active'));
         document.body.className = isHost ? "is-host" : "is-guest";
         
-        // Synka UI-inställningar för värden
         if (isHost) {
-            document.getElementById('setting-manual-stars').checked = state.allowManualStars;
-            document.getElementById('star-timer-setting').value = state.starPowerDuration || 3;
+            const manStarsCb = document.getElementById('setting-manual-stars');
+            if (manStarsCb) manStarsCb.checked = state.allowManualStars;
+            const timerSel = document.getElementById('star-timer-setting');
+            if (timerSel) timerSel.value = state.starPowerDuration || 3;
+            const chanceSel = document.getElementById('star-chance-setting');
+            if (chanceSel) chanceSel.value = state.starChance || 3;
         } else {
-            document.getElementById('guest-timer-info').innerText = (state.starPowerDuration || 3) + " min";
+            const guestTimer = document.getElementById('guest-timer-info');
+            if (guestTimer) guestTimer.innerText = (state.starPowerDuration || 3) + " min";
+            const guestChance = document.getElementById('guest-chance-info');
+            if (guestChance) guestChance.innerText = (state.starChance || 3) + "%";
         }
 
         if (!state.introSeen) {
@@ -430,12 +454,18 @@
             document.getElementById('lobby-page').classList.add('active');
             renderLobby();
         }
-        document.getElementById('room-info').innerHTML = state.roomCode ? `RUMSKOD: <span class="room-code-display">${state.roomCode}</span>` : `LOKALT SPEL`;
+        const roomInfo = document.getElementById('room-info');
+        if (roomInfo) roomInfo.innerHTML = state.roomCode ? `RUMSKOD: <span class="room-code-display">${state.roomCode}</span>` : `LOKALT SPEL`;
         hideLoading();
     }
 
     window.updateStarTimerSetting = () => {
         state.starPowerDuration = parseInt(document.getElementById('star-timer-setting').value);
+        updateCloud();
+    };
+
+    window.updateStarChanceSetting = () => {
+        state.starChance = parseInt(document.getElementById('star-chance-setting').value);
         updateCloud();
     };
 
@@ -458,7 +488,7 @@
         if(!code) return;
         const ok = await initFirebase(); if (!ok) return;
         const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code));
-        if (!snap.exists()) return alert("Rummet saknas.");
+        if (!snap.exists()) return;
         isHost = false; state.modeSelected = true; state.roomCode = code; listenToRoom(code); applyStateToUI();
     };
 
@@ -472,7 +502,8 @@
             biNoPen: document.getElementById('bi-no-pen').checked, stars: 0
         });
         nameInput.value = ""; document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = false);
-        document.getElementById('bi-no-pen').checked = false;
+        const biPenCb = document.getElementById('bi-no-pen');
+        if (biPenCb) biPenCb.checked = false;
         renderLobby(); updateCloud(); toggleBiOption();
     };
 
@@ -481,13 +512,15 @@
         const p = state.players.find(x => x.id === id); if (!p) return;
         document.getElementById('pName').value = p.name; document.getElementById('pGender').value = p.gender;
         document.getElementById('pPref').value = p.pref; document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = p.vetos.includes(cb.value));
-        document.getElementById('bi-no-pen').checked = p.biNoPen; toggleBiOption(); removePlayer(id);
+        const biPenCb = document.getElementById('bi-no-pen');
+        if (biPenCb) biPenCb.checked = p.biNoPen; 
+        toggleBiOption(); removePlayer(id);
     };
 
     window.startGame = () => {
         if (!isHost) return;
         state.selectedLevels = Array.from(document.querySelectorAll('.lvl-cb:checked')).map(cb => parseInt(cb.value)).sort((a,b)=>a-b);
-        if (state.selectedLevels.length === 0) return alert("Välj en nivå!");
+        if (state.selectedLevels.length === 0) return;
         state.isPlaying = true; state.activeLevelIdx = 0; state.currentPlayerIdx = 0;
         updateCloud(); applyStateToUI();
     };
@@ -496,6 +529,7 @@
         if (state.timer) stopTimer();
         const active = state.players[state.currentPlayerIdx];
         const validTargets = state.players.filter(p => p.id !== active.id);
+        if (validTargets.length === 0) return;
         const target = validTargets[Math.floor(Math.random() * validTargets.length)];
         const curLvlId = state.selectedLevels[state.activeLevelIdx];
         const pool = (allDares[curLvlId]?.dares || []).filter(d => {
@@ -508,7 +542,11 @@
             const dare = pool[Math.floor(Math.random() * pool.length)];
             const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
             state.currentTask = `<span class="gold-name">${active.name}</span>, ${dare.text}`.replace(/\[TARGETS\]/g, `<span class="gold-name">${ts}</span>`).replace(/\[TARGET\]/g, `<span class="gold-name">${target.name}</span>`);
-            if (Math.random() < 0.05 && active.stars < 4) active.stars++;
+            
+            // Dynamisk sannolikhet för stjärna baserat på inställning
+            const chanceValue = (state.starChance || 3) / 100;
+            if (Math.random() < chanceValue && active.stars < 4) active.stars++;
+            
             state.currentPlayerIdx = (state.currentPlayerIdx + 1) % state.players.length;
         }
         updateCloud(); applyStateToUI();
@@ -519,7 +557,7 @@
         const active = state.players[selectedPlayerIndex];
         active.stars--; closeModal();
         state.currentTask = `<span class="gold-name">${active.name}</span>, DU HAR KONTROLLEN! Bestäm vad de andra ska göra.`;
-        startTimer((state.starPowerDuration || 3) * 60); // Använder inställd tid
+        startTimer((state.starPowerDuration || 3) * 60);
         updateCloud();
     };
 
@@ -563,7 +601,7 @@
             </div>`).join(''); 
     }
     
-    function renderGameBar() { 
+        function renderGameBar() { 
         document.getElementById('player-status').innerHTML = state.players.map((p, i) => `
             <div class="p-chip ${state.currentPlayerIdx===i?'active-turn':''}" onclick="openStarModal(${i})">
                 <strong>${p.name}</strong>
@@ -574,12 +612,13 @@
     window.toggleBiOption = () => { 
         const gender = document.getElementById('pGender').value;
         const pref = document.getElementById('pPref').value;
-        document.getElementById('bi-special-ui').style.display = (gender === 'man' && pref === 'bi') ? 'block' : 'none'; 
+        const biUi = document.getElementById('bi-special-ui');
+        if (biUi) biUi.style.display = (gender === 'man' && pref === 'bi') ? 'block' : 'none'; 
     };
 
     function saveLocal() { localStorage.setItem('dareme_state', JSON.stringify(state)); }
     window.goToLobby = () => { state.isPlaying = false; applyStateToUI(); updateCloud(); };
-    window.resetGame = () => { if(confirm("Nollställ spelet?")) { localStorage.clear(); location.reload(); } };
+    window.resetGame = () => { localStorage.clear(); location.reload(); };
 
     window.addEventListener('load', () => { 
         const saved = localStorage.getItem('dareme_state');
@@ -587,7 +626,9 @@
             const localData = JSON.parse(saved);
             state = { ...state, ...localData };
         }
-        hideLoading(); toggleBiOption(); applyStateToUI();
+        initFirebase().then(() => {
+            scanForLevels(); hideLoading(); toggleBiOption(); applyStateToUI();
+        });
     });
 </script>
 </body>
