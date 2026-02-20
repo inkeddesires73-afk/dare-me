@@ -68,6 +68,7 @@
         .setup-container { 
             background: var(--panel); padding: 25px; border-radius: 20px; border: 1px solid var(--border); 
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding-bottom: 40px;
         }
 
         input[type="text"], select { 
@@ -75,7 +76,7 @@
             border: 1px solid #444; background: #000; color: #fff; box-sizing: border-box; font-size: 1rem; outline: none;
         }
 
-        .veto-container { text-align: left; margin: 15px 0; padding: 15px; background: #080808; border-radius: 12px; border: 1px solid #222; }
+        .veto-container { text-align: left; margin: 15px 0 25px 0; padding: 15px; background: #080808; border-radius: 12px; border: 1px solid #222; }
         .veto-title { font-size: 0.7rem; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; display: block; letter-spacing: 1px; }
         .veto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .veto-option { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #999; cursor: pointer; }
@@ -114,13 +115,28 @@
         #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
         .modal-box { background: var(--panel); border: 1px solid var(--gold); padding: 30px; border-radius: 25px; width: 100%; max-width: 400px; }
 
-        .btn { width: 100%; padding: 18px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; transition: transform 0.1s; }
-        .btn:active { transform: scale(0.98); }
-        .btn-add { background: #222; color: var(--gold); border: 1px solid var(--border); margin-top: 10px; }
-        .btn-start { background: var(--gold); color: #000; font-size: 1.3rem; margin-top: 20px; }
-        .btn-rules { background: transparent; color: var(--gold); border: 1px solid var(--gold); font-size: 0.9rem; padding: 12px; }
+        /* VISUELL KORRIGERING AV KNAPPAR */
+        .btn { 
+            width: 100%; 
+            padding: 20px; 
+            border-radius: 15px; 
+            border: none; 
+            font-weight: 800; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+            margin-bottom: 12px; 
+            transition: transform 0.1s, opacity 0.2s; 
+            font-size: 1.05rem; 
+            box-sizing: border-box;
+        }
+        .btn:active { transform: scale(0.97); }
+
+        .btn-add { background: #1a1a1a; color: var(--gold); border: 1px solid var(--border); margin-top: 35px; }
+        .btn-start { background: var(--gold); color: #000; font-size: 1.25rem; margin-top: 25px; }
+        .btn-rules { background: transparent; color: var(--gold); border: 1px solid var(--gold); font-size: 0.95rem; padding: 16px; margin-top: 5px; }
         .btn-next { background: var(--gold); color: #000; font-size: 1.4rem; box-shadow: 0 5px 25px rgba(212, 175, 55, 0.4); }
-        .btn-back { background: #222; color: #888; border: 1px solid var(--border); font-size: 1rem; }
+        .btn-back { background: #222; color: #eee; border: 1px solid #444; font-size: 1rem; margin-top: 15px; }
         .btn-lvl-up { background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); font-size: 0.8rem; padding: 10px; margin-top: 10px; }
 
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; color: var(--gold); font-weight: bold; text-transform: uppercase; }
@@ -199,7 +215,17 @@
                 <div class="veto-container host-only">
                     <span class="veto-title">Globala Inställningar (Endast Värd)</span>
                     <div class="veto-grid">
-                        <label class="veto-option"><input type="checkbox" id="setting-manual-stars"> Manuella stjärnor</label>
+                        <label class="veto-option"><input type="checkbox" id="setting-manual-stars" onchange="toggleManualStars()"> Manuella stjärnor</label>
+                        <div class="veto-option" style="justify-content: flex-end;">
+                            <span style="font-size: 0.7rem; color: var(--gold); text-transform: uppercase;">Timer:</span>
+                            <select id="star-timer-setting" onchange="updateStarTimerSetting()" style="width: auto; padding: 5px; margin: 0 0 0 8px; font-size: 0.8rem; border-radius: 8px; background: #000; color: #fff; border: 1px solid #444;">
+                                <option value="1">1 min</option>
+                                <option value="2">2 min</option>
+                                <option value="3" selected>3 min</option>
+                                <option value="4">4 min</option>
+                                <option value="5">5 min</option>
+                            </select>
+                        </div>
                         <div style="grid-column: span 2; margin-top: 15px; border-top: 1px solid #222; padding-top: 10px;">
                             <small style="color: var(--gold); display: block; margin-bottom: 10px; text-transform: uppercase;">Tillgängliga Nivåer:</small>
                             <div id="level-selection-grid" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
@@ -207,6 +233,11 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Info för gäster om inställd timer -->
+                <div class="guest-only" style="text-align: left; font-size: 0.7rem; color: #555; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
+                    Inställd tid för stjärna: <span id="guest-timer-info" style="color: var(--gold); font-weight: bold;">3 min</span>
                 </div>
 
                 <div class="veto-container">
@@ -278,6 +309,7 @@
         activeLevelIdx: 0,
         currentPlayerIdx: 0,
         allowManualStars: false,
+        starPowerDuration: 3, // Standardvärde: 3 minuter
         currentTask: "TRYCK FÖR KORT",
         timer: null,
         isPlaying: false,
@@ -358,6 +390,14 @@
         pages.forEach(p => document.getElementById(p).classList.remove('active'));
         document.body.className = isHost ? "is-host" : "is-guest";
         
+        // Synka UI-inställningar för värden
+        if (isHost) {
+            document.getElementById('setting-manual-stars').checked = state.allowManualStars;
+            document.getElementById('star-timer-setting').value = state.starPowerDuration || 3;
+        } else {
+            document.getElementById('guest-timer-info').innerText = (state.starPowerDuration || 3) + " min";
+        }
+
         if (!state.introSeen) {
             document.getElementById('intro-page').classList.add('active');
         } else if (!state.modeSelected) {
@@ -393,6 +433,16 @@
         document.getElementById('room-info').innerHTML = state.roomCode ? `RUMSKOD: <span class="room-code-display">${state.roomCode}</span>` : `LOKALT SPEL`;
         hideLoading();
     }
+
+    window.updateStarTimerSetting = () => {
+        state.starPowerDuration = parseInt(document.getElementById('star-timer-setting').value);
+        updateCloud();
+    };
+
+    window.toggleManualStars = () => {
+        state.allowManualStars = document.getElementById('setting-manual-stars').checked;
+        updateCloud();
+    };
 
     window.enterGame = () => { state.introSeen = true; applyStateToUI(); saveLocal(); };
 
@@ -469,7 +519,8 @@
         const active = state.players[selectedPlayerIndex];
         active.stars--; closeModal();
         state.currentTask = `<span class="gold-name">${active.name}</span>, DU HAR KONTROLLEN! Bestäm vad de andra ska göra.`;
-        startTimer(180); updateCloud();
+        startTimer((state.starPowerDuration || 3) * 60); // Använder inställd tid
+        updateCloud();
     };
 
     let selectedPlayerIndex = -1;
