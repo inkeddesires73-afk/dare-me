@@ -34,6 +34,7 @@
             border: 1px solid var(--border);
             box-sizing: border-box;
             box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            padding-bottom: 60px; /* Ger guldknappen i botten tillräckligt med luft */
         }
 
         h1 { color: var(--gold); text-transform: uppercase; letter-spacing: 4px; text-align: center; margin-bottom: 40px; }
@@ -43,20 +44,24 @@
         ul, ol { padding-left: 20px; }
         strong { color: #fff; }
 
+        /* VISUELL JUSTERING AV TILLBAKA-KNAPP */
         .btn-back {
             display: block;
             width: 100%;
-            padding: 18px;
+            padding: 20px; /* Standardiserad höjd för att matcha huvudmenyn */
             background: var(--gold);
             color: #000;
             text-decoration: none;
             text-align: center;
-            font-weight: bold;
+            font-weight: 800;
             border-radius: 15px;
             text-transform: uppercase;
-            margin-top: 40px;
-            letter-spacing: 1px;
+            margin-top: 50px;
+            letter-spacing: 1.5px;
+            box-sizing: border-box;
+            transition: transform 0.1s;
         }
+        .btn-back:active { transform: scale(0.97); }
 
         .highlight-box {
             border-left: 4px solid var(--gold);
@@ -98,7 +103,7 @@
 
         <h2>⭐ GULDSTJÄRNAN</h2>
         <p>Ibland vinner en spelare en Guldstjärna! Du får då total kontroll över rummet under en begränsad tid. Du bestämmer vad de andra ska göra – med varandra eller med dig.</p>
-        <p><strong>Spara din makt:</strong> Du behöver inte använda stjärnan direkt. Den sparas vid ditt namn. Klicka på ditt namn för att aktivera den när ögonblicket är rätt.</p>
+        <p><strong>Spara din makt:</strong> Du behöver aldrig använda stjärnan direkt. Den sparas vid ditt namn. Klicka på ditt namn för att aktivera den när ögonblicket är rätt.</p>
 
         <a href="index.html" class="btn-back">TILLBAKA TILL SPELET</a>
     </div>
