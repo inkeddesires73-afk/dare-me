@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dare Me</title>
     
+    <!-- FAVICON FRÅN DIN BILD -->
+    <link rel="icon" type="image/png" href="dareme.png">
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Dare Me">
@@ -55,9 +58,9 @@
             h1 { font-size: 5rem !important; }
         }
 
-        /* LOGO CONTAINERS MED PULSERANDE EFFEKT */
+        /* LOGO CONTAINERS ÅTERSTÄLLDA TILL ORIGINALSTORLEK */
         .logo-container {
-            width: 280px;
+            width: 280px; 
             height: 280px;
             margin: 10px auto 20px auto;
             display: flex;
@@ -192,7 +195,6 @@
 
     <!-- INTRO SIDA -->
     <div id="intro-page" class="page active">
-        <!-- DIN VALDA BILD (STOR) MED NYTT NAMN -->
         <div class="logo-container">
             <img src="dareme.png" alt="Dare Me Logo">
         </div>
@@ -248,7 +250,6 @@
     <!-- LOBBY -->
     <div id="lobby-page" class="page">
         <h1>Dare Me</h1>
-        <!-- DIN VALDA BILD (LITEN) I LOBBYN MED NYTT NAMN -->
         <div class="small-logo">
             <img src="dareme.png" alt="Dare Me Logo">
         </div>
@@ -312,7 +313,6 @@
             <a href="rules.html" class="btn btn-rules" style="text-decoration:none; display:block; margin-top:20px;">VISA REGLER</a>
             <button class="btn btn-back" style="margin-top: 10px;" onclick="location.reload()">TILLBAKA</button>
             
-            <!-- RESET LÄNK LAGD TILL I LOBBYN -->
             <div class="reset-link" onclick="resetGame()">Nollställ allt / Byt roll</div>
         </div>
     </div>
