@@ -419,7 +419,6 @@
     function showStarNotif(name) {
         document.getElementById('notif-player-name').innerText = name;
         document.getElementById('notif-overlay').style.display = 'flex';
-        // Automatisk stängning efter 4 sekunder
         setTimeout(() => { 
             const overlay = document.getElementById('notif-overlay');
             if(overlay) overlay.style.display='none'; 
@@ -432,19 +431,14 @@
         unsubscribe = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code), (snapshot) => {
             if (snapshot.exists()) {
                 const cloudData = snapshot.data();
-                
-                // NOTIFIERINGS-LOGIK FÖR ALLA ENHETER
                 if (cloudData.players) {
                     cloudData.players.forEach(p => {
-                        // Om vi redan har lagrat ett värde och det nya värdet är högre -> Visa skylt!
                         if (lastStarCounts[p.id] !== undefined && p.stars > lastStarCounts[p.id]) {
                             showStarNotif(p.name);
                         }
-                        // Uppdatera vårt lokala minne för nästa förändring
                         lastStarCounts[p.id] = p.stars;
                     });
                 }
-                
                 if (!isHost && (cloudData.isPlaying || JSON.stringify(cloudData.selectedLevels) !== JSON.stringify(state.selectedLevels))) {
                     state.selectedLevels = cloudData.selectedLevels;
                     for (let id of state.selectedLevels) {
@@ -601,7 +595,11 @@
             const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
             state.currentTask = `<span class="gold-name">${active.name}</span>, ${dare.text}`.replace(/\[TARGETS\]/g, `<span class="gold-name">${ts}</span>`).replace(/\[TARGET\]/g, `<span class="gold-name">${target.name}</span>`);
             const chanceValue = (state.starChance || 3) / 100;
-            if (Math.random() < chanceValue && active.stars < 4) active.stars++;
+            if (Math.random() < chanceValue && active.stars < 4) {
+                active.stars++;
+                // FIX: Trigga notifiering även i lokalt läge (utan roomCode)
+                if (!state.roomCode) showStarNotif(active.name);
+            }
             state.currentPlayerIdx = (state.currentPlayerIdx + 1) % state.players.length;
         }
         updateCloud(); applyStateToUI();
@@ -626,7 +624,15 @@
         document.getElementById('modal-overlay').style.display = 'flex';
     };
     window.closeModal = () => document.getElementById('modal-overlay').style.display = 'none';
-    window.manualAddStar = () => { if(isHost && state.players[selectedPlayerIndex].stars < 4) { state.players[selectedPlayerIndex].stars++; updateCloud(); closeModal(); } };
+    
+    window.manualAddStar = () => { 
+        if(isHost && state.players[selectedPlayerIndex].stars < 4) { 
+            state.players[selectedPlayerIndex].stars++; 
+            // FIX: Trigga notifiering även vid manuell stjärna i lokalt läge
+            if (!state.roomCode) showStarNotif(state.players[selectedPlayerIndex].name);
+            updateCloud(); closeModal(); 
+        } 
+    };
     
     function startTimer(sec) {
         let timeLeft = sec;
