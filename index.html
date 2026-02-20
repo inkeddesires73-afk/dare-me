@@ -58,7 +58,6 @@
             h1 { font-size: 5rem !important; }
         }
 
-        /* LOGO CONTAINERS ÅTERSTÄLLDA TILL ORIGINALSTORLEK */
         .logo-container {
             width: 280px; 
             height: 280px;
@@ -158,18 +157,10 @@
         .modal-box { background: var(--panel); border: 1px solid var(--gold); padding: 30px; border-radius: 25px; width: 100%; max-width: 400px; }
 
         .btn { 
-            width: 100%; 
-            padding: 20px; 
-            border-radius: 15px; 
-            border: none; 
-            font-weight: 800; 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            letter-spacing: 1.5px; 
-            margin-bottom: 12px; 
-            transition: transform 0.1s, opacity 0.2s; 
-            font-size: 1.05rem; 
-            box-sizing: border-box;
+            width: 100%; padding: 20px; border-radius: 15px; border: none; 
+            font-weight: 800; cursor: pointer; text-transform: uppercase; 
+            letter-spacing: 1.5px; margin-bottom: 12px; transition: transform 0.1s, opacity 0.2s; 
+            font-size: 1.05rem; box-sizing: border-box;
         }
         .btn:active { transform: scale(0.97); }
 
@@ -297,7 +288,7 @@
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="smisk"> Smisk</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="oral"> Oralt</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="penetration"> Penetration</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="bindning"> Bindning</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="bindning"> Bindning/BDSM</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="leksaker"> Sexleksaker</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="publik"> Publik/Utomhus</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="impact"> Impact play</label>
@@ -305,11 +296,11 @@
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="dominans"> Dominans</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="underkastelse"> Underkastelse</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="fornedring"> Förnedring</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="ogonbindel"> Ögonbindel</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="ogonbindel"> Ögonbindel/Blindfold</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="fotter"> Fötter</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="semen"> Sperma</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="blood"> Blod</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="wet"> Wet (Kiss)</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="wet"> Wet (Kissa)</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="wax"> Stearin</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="rollspel"> Rollspel</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="kon"> Kön</label>
@@ -327,7 +318,6 @@
             <div class="guest-only" style="margin-top: 30px; color: #666; font-style: italic;">Väntar på att värden ska starta...</div>
             <a href="rules.html" class="btn btn-rules" style="text-decoration:none; display:block; margin-top:20px;">VISA REGLER</a>
             <button class="btn btn-back" style="margin-top: 10px;" onclick="location.reload()">TILLBAKA</button>
-            
             <div class="reset-link" onclick="resetGame()">Nollställ allt / Byt roll</div>
         </div>
     </div>
@@ -429,34 +419,46 @@
     function showStarNotif(name) {
         document.getElementById('notif-player-name').innerText = name;
         document.getElementById('notif-overlay').style.display = 'flex';
-        setTimeout(() => { if(document.getElementById('notif-overlay')) document.getElementById('notif-overlay').style.display='none'; }, 4000);
+        // Automatisk stängning efter 4 sekunder
+        setTimeout(() => { 
+            const overlay = document.getElementById('notif-overlay');
+            if(overlay) overlay.style.display='none'; 
+        }, 4000);
     }
 
     function listenToRoom(code) {
         if (!db || !user) return;
         if (unsubscribe) unsubscribe();
-        unsubscribe = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code), async (snapshot) => {
+        unsubscribe = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code), (snapshot) => {
             if (snapshot.exists()) {
                 const cloudData = snapshot.data();
+                
+                // NOTIFIERINGS-LOGIK FÖR ALLA ENHETER
                 if (cloudData.players) {
                     cloudData.players.forEach(p => {
-                        if (lastStarCounts[p.id] !== undefined && p.stars > lastStarCounts[p.id]) showStarNotif(p.name);
+                        // Om vi redan har lagrat ett värde och det nya värdet är högre -> Visa skylt!
+                        if (lastStarCounts[p.id] !== undefined && p.stars > lastStarCounts[p.id]) {
+                            showStarNotif(p.name);
+                        }
+                        // Uppdatera vårt lokala minne för nästa förändring
                         lastStarCounts[p.id] = p.stars;
                     });
                 }
+                
                 if (!isHost && (cloudData.isPlaying || JSON.stringify(cloudData.selectedLevels) !== JSON.stringify(state.selectedLevels))) {
                     state.selectedLevels = cloudData.selectedLevels;
                     for (let id of state.selectedLevels) {
                         if (!allDares[id]) {
-                            const res = await fetch(`level${id}.json?t=${Date.now()}`);
-                            if (res.ok) allDares[id] = await res.json();
+                            fetch(`level${id}.json?t=${Date.now()}`).then(res => {
+                                if (res.ok) res.json().then(data => allDares[id] = data);
+                            });
                         }
                     }
                 }
                 state = { ...state, ...cloudData };
                 applyStateToUI();
             }
-        });
+        }, (err) => { console.error("Snapshot error:", err); });
     }
 
     function applyStateToUI() {
