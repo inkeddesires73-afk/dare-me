@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dare Me</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Dare Me">
+    <meta name="theme-color" content="#0a0a0a">
+    
+    <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"
+      }
+    }
+    </script>
+
+    <style>
+        :root { 
+            --bg: #0a0a0a; 
+            --gold: #d4af37; 
+            --red: #b30000; 
+            --text: #eee; 
+            --panel: #111;
+            --border: #333;
+        }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
+            padding: 0; 
+            margin: 0; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .page { display: none; width: 100%; max-width: 500px; padding: 20px; box-sizing: border-box; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .active { display: block; }
+
+        @media (min-width: 1000px) {
+            .page { max-width: 900px; }
+            .task-text { font-size: 3.5rem !important; }
+            h1 { font-size: 5rem !important; }
+        }
+
+        h1 { color: var(--gold); letter-spacing: 5px; margin: 40px 0 30px 0; text-transform: uppercase; font-size: 2.2rem; }
+        
+        .intro-text-container { margin: 40px 0; line-height: 1.8; letter-spacing: 1px; }
+        .intro-title { color: var(--gold); font-size: 1.6rem; text-transform: uppercase; margin-bottom: 20px; display: block; }
+        .intro-body { color: #888; font-style: italic; font-size: 1.1rem; }
+        .intro-highlight { color: #bbb; display: block; margin-top: 20px; font-weight: bold; }
+
+        .room-tag { color: #555; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 2px; }
+        .room-code-display { color: var(--gold); font-weight: bold; font-size: 1.2rem; }
+
+        .setup-container { 
+            background: var(--panel); padding: 25px; border-radius: 20px; border: 1px solid var(--border); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        input[type="text"], select { 
+            width: 100%; padding: 14px; margin: 8px 0 12px 0; border-radius: 12px; 
+            border: 1px solid #444; background: #000; color: #fff; box-sizing: border-box; font-size: 1rem; outline: none;
+        }
+
+        .veto-container { text-align: left; margin: 15px 0; padding: 15px; background: #080808; border-radius: 12px; border: 1px solid #222; }
+        .veto-title { font-size: 0.7rem; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; display: block; letter-spacing: 1px; }
+        .veto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .veto-option { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #999; cursor: pointer; }
+        .veto-option input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--gold); cursor: pointer; margin: 0; }
+
+        #bi-special-ui { display: none; grid-column: span 2; padding-top: 12px; border-top: 1px solid #222; margin-top: 5px; color: var(--red); font-weight: bold; }
+
+        .player-item { 
+            background: #1a1a1a; padding: 15px; margin: 12px 0; border-radius: 14px; 
+            display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--gold); text-align: left;
+        }
+        .player-info strong { display: block; font-size: 1.1rem; color: #fff; }
+        .player-info small { color: #666; text-transform: uppercase; font-size: 0.65rem; display: block; margin-top: 2px; }
+
+        .action-btns { display: flex; gap: 15px; }
+        .edit-btn { color: var(--gold); font-size: 1.3rem; cursor: pointer; }
+        .delete-btn { color: #555; font-size: 1.6rem; cursor: pointer; }
+
+        .status-bar { display: flex; justify-content: center; gap: 8px; padding: 15px 5px; flex-wrap: wrap; width: 100%; }
+        .p-chip { background: var(--panel); padding: 12px 8px; border-radius: 12px; border: 1px solid var(--border); min-width: 85px; cursor: pointer; transition: 0.3s; }
+        .p-chip.active-turn { border-color: var(--gold); box-shadow: 0 0 15px rgba(212,175,55,0.4); transform: scale(1.05); }
+        .star-count { color: var(--gold); font-weight: bold; display: block; margin-top: 5px; font-size: 1rem; }
+
+        .card-area { 
+            background: var(--panel); border: 2px solid #222; border-radius: 30px; 
+            padding: 50px 25px; margin: 10px 0 30px 0; min-height: 380px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.7); position: relative;
+        }
+        .star-power-active { border-color: var(--gold) !important; box-shadow: 0 0 50px rgba(212,175,55,0.4) !important; }
+        .task-text { font-size: 1.8rem; font-weight: bold; text-transform: uppercase; line-height: 1.4; color: #fff; }
+        .gold-name { color: var(--gold); text-shadow: 0 0 15px rgba(212,175,55,0.5); }
+        
+        #timer-display { font-size: 4.5rem; color: var(--gold); font-weight: 900; margin-top: 25px; display: none; }
+        #notif-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; }
+        #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .modal-box { background: var(--panel); border: 1px solid var(--gold); padding: 30px; border-radius: 25px; width: 100%; max-width: 400px; }
+
+        .btn { width: 100%; padding: 18px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; transition: transform 0.1s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-add { background: #222; color: var(--gold); border: 1px solid var(--border); margin-top: 10px; }
+        .btn-start { background: var(--gold); color: #000; font-size: 1.3rem; margin-top: 20px; }
+        .btn-rules { background: transparent; color: var(--gold); border: 1px solid var(--gold); font-size: 0.9rem; padding: 12px; }
+        .btn-next { background: var(--gold); color: #000; font-size: 1.4rem; box-shadow: 0 5px 25px rgba(212, 175, 55, 0.4); }
+        .btn-back { background: #222; color: #888; border: 1px solid var(--border); font-size: 1rem; }
+        .btn-lvl-up { background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); font-size: 0.8rem; padding: 10px; margin-top: 10px; }
+
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; color: var(--gold); font-weight: bold; text-transform: uppercase; }
+        .reset-link { margin-top: 60px; color: #333; font-size: 0.7rem; text-decoration: none; text-transform: uppercase; cursor: pointer; display: block; padding: 10px; }
+        
+        .host-only { display: none; }
+        .is-host .host-only { display: block; }
+        .guest-only { display: none; }
+        .is-guest .guest-only { display: block; }
+    </style>
+</head>
+<body class="is-host">
+
+    <div id="loading-screen" class="loading-overlay">Laddar Dare Me...</div>
+
+    <!-- INTRO SIDA -->
+    <div id="intro-page" class="page active">
+        <h1>Dare Me</h1>
+        <div class="intro-text-container">
+            <span class="intro-title">Welcome to Dare Me</span>
+            <div class="intro-body">
+                A seductive game of lust and limits.<br>
+                Hidden beneath each card, lies more<br> 
+                than just a command.<br><br>
+                You’ll tease. You’ll surrender. You’ll obey.<br>
+                <span class="intro-highlight">The Dare Me isn’t a game. It’s desire, waiting to be unwrapped.</span>
+            </div>
+        </div>
+        <button class="btn btn-start" onclick="enterGame()">BÖRJA SPELET</button>
+        <a href="rules.html" class="btn btn-rules" style="text-decoration:none; display:block;">REGLER & SAMTYCKE</a>
+    </div>
+
+    <!-- STARTVÄLJARE -->
+    <div id="start-page" class="page">
+        <h1>Dare Me</h1>
+        <div class="setup-container">
+            <button class="btn btn-start" onclick="initLocalGame()">SPELA PÅ DENNA ENHET</button>
+            <div style="margin: 20px 0; color: #444;">— ELLER SYNKAT LÄGE —</div>
+            <button class="btn btn-add" onclick="initCreateRoom()">SKAPA RUM (HOST)</button>
+            <input type="text" id="join-code-input" placeholder="ANGE RUMSKOD" maxlength="5" style="text-align: center; margin-top: 10px;">
+            <button class="btn btn-add" onclick="initJoinRoom()">GÅ MED I RUM</button>
+        </div>
+    </div>
+
+    <!-- NOTIFIERING -->
+    <div id="notif-overlay" onclick="this.style.display='none'">
+        <div class="notif-content">
+            <div style="font-size: 6rem;">⭐</div>
+            <h2 id="notif-player-name">NAMN</h2>
+            <p style="color: #fff; font-size: 1.4rem; font-weight: bold;">VANN EN GULDSTJÄRNA!</p>
+            <small style="color:#666; margin-top:20px; display:block;">Tryck för att fortsätta</small>
+        </div>
+    </div>
+
+    <!-- STJÄRN-MENY -->
+    <div id="modal-overlay">
+        <div class="modal-box">
+            <h3 id="modal-player-name" style="color:var(--gold); margin-top:0; text-transform:uppercase;">SPELARE</h3>
+            <div id="modal-star-info" style="margin-bottom: 25px; color:#888;">Antal Guldstjärnor: <span id="modal-star-count" style="color:var(--gold)">0</span></div>
+            <button class="btn btn-next" id="btn-use-star" onclick="activateStarPower()">ANVÄND GULDSTJÄRNA ⭐</button>
+            <button class="btn btn-add host-only" id="manual-star-btn" onclick="manualAddStar()">GE EN BONUS-STJÄRNA 🎁</button>
+            <button class="btn btn-back" onclick="closeModal()" style="margin-top:10px;">AVBRYT</button>
+        </div>
+    </div>
+
+    <!-- LOBBY -->
+    <div id="lobby-page" class="page">
+        <h1>Dare Me</h1>
+        <div id="room-info" class="room-tag">LOKALT SPEL</div>
+        <div class="setup-container">
+            <div id="setup-controls">
+                <input type="text" id="pName" placeholder="DITT NAMN" autocomplete="off">
+                <select id="pGender" onchange="toggleBiOption()"><option value="kvinna">KVINNA</option><option value="man">MAN</option><option value="ickebinar">ICKE-BINÄR</option></select>
+                <select id="pPref" onchange="toggleBiOption()"><option value="bi" selected>BISEXUELL</option><option value="hetero">HETEROSEXUELL</option><option value="gay">HOMOSEXUELL</option></select>
+                
+                <div class="veto-container host-only">
+                    <span class="veto-title">Globala Inställningar (Endast Värd)</span>
+                    <div class="veto-grid">
+                        <label class="veto-option"><input type="checkbox" id="setting-manual-stars"> Manuella stjärnor</label>
+                        <div style="grid-column: span 2; margin-top: 15px; border-top: 1px solid #222; padding-top: 10px;">
+                            <small style="color: var(--gold); display: block; margin-bottom: 10px; text-transform: uppercase;">Tillgängliga Nivåer:</small>
+                            <div id="level-selection-grid" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+                                <div id="lvl-scanner-status" style="color:#444; font-size:0.7rem;">Söker efter filer...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="veto-container">
+                    <span class="veto-title">Vetos (Mina Gränser)</span>
+                    <div class="veto-grid">
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="smisk"> Smisk</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="oral"> Oralt</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="penetration"> Penetration</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="bindning"> Fasthållning</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="leksaker"> Leksaker</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="publik"> Publikt</label>
+                        <label class="veto-option" id="bi-special-ui"><input type="checkbox" id="bi-no-pen"> Bi-Sex Ingen penetration</label>
+                    </div>
+                </div>
+                <button class="btn btn-add" onclick="addPlayer()">LÄGG TILL MIG</button>
+            </div>
+
+            <div id="displayList" style="margin-top: 20px;"></div>
+
+            <div class="host-only">
+                <button class="btn btn-start" id="start-game-btn" onclick="startGame()">STARTA SPELET</button>
+            </div>
+            <div class="guest-only" style="margin-top: 30px; color: #666; font-style: italic;">Väntar på att värden ska starta...</div>
+            
+            <a href="rules.html" class="btn btn-rules" style="text-decoration:none; display:block; margin-top:20px;">VISA REGLER</a>
+            <button class="btn btn-back" style="margin-top: 10px;" onclick="location.reload()">TILLBAKA</button>
+        </div>
+    </div>
+
+    <!-- GAME -->
+    <div id="game-page" class="page">
+        <div id="player-status" class="status-bar"></div>
+        <div class="card-area" id="game-card">
+            <div id="next-up-info" style="color:#555; font-size:0.7rem; text-transform:uppercase; margin-bottom:5px;">PÅ TUR: ...</div>
+            <div id="active-lvl-display" style="color: #444; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 10px;">NIVÅ: <span id="current-lvl-text" style="color:var(--red); font-weight:bold;">---</span></div>
+            <div id="star-power-label" style="color:var(--gold); font-weight:bold; letter-spacing:5px; margin-bottom:20px; display:none;">⭐ GULDSTJÄRNA ⭐</div>
+            <div id="task-box" class="task-text">VÄNTAR PÅ KORT...</div>
+            <div id="timer-display">3:00</div>
+            <button id="btn-finish-timer" class="btn btn-lvl-up" style="display:none;" onclick="finishTimerEarly()">KLART, NÄSTA KORT</button>
+        </div>
+        <div class="game-controls">
+            <button class="btn btn-next" onclick="generateTurn()">NÄSTA KORT</button>
+            <button class="btn btn-lvl-up host-only" id="lvl-up-btn" onclick="advanceLevel()">HÖJ STÄMNINGEN 🔥</button>
+            <button class="btn btn-back" style="margin-top: 30px;" onclick="goToLobby()">LOBBY / REDIGERA</button>
+        </div>
+        <div class="reset-link" onclick="resetGame()">Nollställ allt</div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "firebase/app";
+    import { getAuth, signInAnonymously } from "firebase/auth";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDP6wOApu8C_iS1RRgmiXR2HOxntghHKO8",
+      authDomain: "dare-me-1c264.firebaseapp.com",
+      projectId: "dare-me-1c264",
+      storageBucket: "dare-me-1c264.firebasestorage.app",
+      messagingSenderId: "1002052194460",
+      appId: "1:1002052194460:web:9f55d47fbc82745a17dd59"
+    };
+
+    let allDares = {}; 
+    let state = {
+        introSeen: false,
+        modeSelected: false,
+        players: [],
+        selectedLevels: [],
+        activeLevelIdx: 0,
+        currentPlayerIdx: 0,
+        allowManualStars: false,
+        currentTask: "TRYCK FÖR KORT",
+        timer: null,
+        isPlaying: false,
+        roomCode: null
+    };
+
+    let isHost = false, lastStarCounts = {}, db, auth, unsubscribe;
+    const appId = "dare-me-dynamic";
+
+    function hideLoading() { document.getElementById('loading-screen').style.display = 'none'; }
+
+    async function scanForLevels() {
+        const grid = document.getElementById('level-selection-grid');
+        if (!grid) return;
+        let found = 0; grid.innerHTML = "";
+        for (let i = 1; i <= 10; i++) {
+            try {
+                const res = await fetch(`level${i}.json?t=${Date.now()}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    allDares[i] = data;
+                    grid.innerHTML += `<label class="veto-option"><input type="checkbox" class="lvl-cb" value="${i}" checked> ${data.difficulty} ${data.name}</label>`;
+                    found++;
+                }
+            } catch (e) {}
+        }
+        if (found === 0) grid.innerHTML = `<div style="color:var(--red); font-size:0.7rem;">Inga filer hittades på servern!</div>`;
+    }
+
+    async function initFirebase() {
+        try {
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app); db = getFirestore(app);
+            await signInAnonymously(auth); return true;
+        } catch (e) { return false; }
+    }
+
+    async function updateCloud() {
+        if (!state.roomCode || !db) return;
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode), state);
+    }
+
+    function showStarNotif(name) {
+        document.getElementById('notif-player-name').innerText = name;
+        document.getElementById('notif-overlay').style.display = 'flex';
+        setTimeout(() => { if(document.getElementById('notif-overlay')) document.getElementById('notif-overlay').style.display='none'; }, 4000);
+    }
+
+    function listenToRoom(code) {
+        if (!db) return;
+        if (unsubscribe) unsubscribe();
+        unsubscribe = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code), async (snapshot) => {
+            if (snapshot.exists()) {
+                const cloudData = snapshot.data();
+                if (cloudData.players) {
+                    cloudData.players.forEach(p => {
+                        if (lastStarCounts[p.id] !== undefined && p.stars > lastStarCounts[p.id]) showStarNotif(p.name);
+                        lastStarCounts[p.id] = p.stars;
+                    });
+                }
+                if (!isHost && (cloudData.isPlaying || JSON.stringify(cloudData.selectedLevels) !== JSON.stringify(state.selectedLevels))) {
+                    state.selectedLevels = cloudData.selectedLevels;
+                    for (let id of state.selectedLevels) {
+                        if (!allDares[id]) {
+                            const res = await fetch(`level${id}.json?t=${Date.now()}`);
+                            if (res.ok) allDares[id] = await res.json();
+                        }
+                    }
+                }
+                state = { ...state, ...cloudData };
+                applyStateToUI();
+            }
+        });
+    }
+
+    function applyStateToUI() {
+        const pages = ['intro-page', 'start-page', 'lobby-page', 'game-page'];
+        pages.forEach(p => document.getElementById(p).classList.remove('active'));
+        document.body.className = isHost ? "is-host" : "is-guest";
+        
+        if (!state.introSeen) {
+            document.getElementById('intro-page').classList.add('active');
+        } else if (!state.modeSelected) {
+            document.getElementById('start-page').classList.add('active');
+        } else if (state.isPlaying) {
+            document.getElementById('game-page').classList.add('active');
+            renderGameBar();
+            document.getElementById('task-box').innerHTML = state.currentTask;
+            const curLvlId = state.selectedLevels[state.activeLevelIdx];
+            const lvlObj = allDares[curLvlId];
+            document.getElementById('current-lvl-text').innerText = lvlObj ? `${lvlObj.difficulty} ${lvlObj.name}` : `Nivå ${curLvlId}`;
+            document.getElementById('lvl-up-btn').style.display = (isHost && state.activeLevelIdx < state.selectedLevels.length - 1) ? 'block' : 'none';
+            if (state.players.length > 0) {
+                const curPlayer = state.players[state.currentPlayerIdx];
+                document.getElementById('next-up-info').innerText = `PÅ TUR: ${curPlayer ? curPlayer.name : '...'}`;
+            }
+            if (state.timer) {
+                document.getElementById('timer-display').style.display = 'block';
+                document.getElementById('timer-display').innerText = state.timer;
+                document.getElementById('game-card').classList.add('star-power-active');
+                document.getElementById('star-power-label').style.display = 'block';
+                document.getElementById('btn-finish-timer').style.display = 'block';
+            } else {
+                document.getElementById('timer-display').style.display = 'none';
+                document.getElementById('game-card').classList.remove('star-power-active');
+                document.getElementById('star-power-label').style.display = 'none';
+                document.getElementById('btn-finish-timer').style.display = 'none';
+            }
+        } else {
+            document.getElementById('lobby-page').classList.add('active');
+            renderLobby();
+        }
+        document.getElementById('room-info').innerHTML = state.roomCode ? `RUMSKOD: <span class="room-code-display">${state.roomCode}</span>` : `LOKALT SPEL`;
+        hideLoading();
+    }
+
+    window.enterGame = () => { state.introSeen = true; applyStateToUI(); saveLocal(); };
+
+    window.initLocalGame = async () => { isHost = true; state.modeSelected = true; state.roomCode = null; await scanForLevels(); applyStateToUI(); };
+    window.initCreateRoom = async () => {
+        const ok = await initFirebase(); if (!ok) return;
+        isHost = true; state.modeSelected = true;
+        state.roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+        await scanForLevels(); listenToRoom(state.roomCode); updateCloud(); applyStateToUI();
+    };
+    window.initJoinRoom = async () => {
+        const code = document.getElementById('join-code-input').value.toUpperCase();
+        if(!code) return;
+        const ok = await initFirebase(); if (!ok) return;
+        const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code));
+        if (!snap.exists()) return alert("Rummet saknas.");
+        isHost = false; state.modeSelected = true; state.roomCode = code; listenToRoom(code); applyStateToUI();
+    };
+
+    window.addPlayer = () => {
+        const nameInput = document.getElementById('pName');
+        const name = nameInput.value.trim().toUpperCase();
+        if (!name) return;
+        state.players.push({
+            id: Date.now(), name, gender: document.getElementById('pGender').value,
+            pref: document.getElementById('pPref').value, vetos: Array.from(document.querySelectorAll('.veto-cb:checked')).map(cb => cb.value), 
+            biNoPen: document.getElementById('bi-no-pen').checked, stars: 0
+        });
+        nameInput.value = ""; document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = false);
+        document.getElementById('bi-no-pen').checked = false;
+        renderLobby(); updateCloud(); toggleBiOption();
+    };
+
+    window.removePlayer = (id) => { state.players = state.players.filter(p => p.id !== id); renderLobby(); updateCloud(); };
+    window.editPlayer = (id) => {
+        const p = state.players.find(x => x.id === id); if (!p) return;
+        document.getElementById('pName').value = p.name; document.getElementById('pGender').value = p.gender;
+        document.getElementById('pPref').value = p.pref; document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = p.vetos.includes(cb.value));
+        document.getElementById('bi-no-pen').checked = p.biNoPen; toggleBiOption(); removePlayer(id);
+    };
+
+    window.startGame = () => {
+        if (!isHost) return;
+        state.selectedLevels = Array.from(document.querySelectorAll('.lvl-cb:checked')).map(cb => parseInt(cb.value)).sort((a,b)=>a-b);
+        if (state.selectedLevels.length === 0) return alert("Välj en nivå!");
+        state.isPlaying = true; state.activeLevelIdx = 0; state.currentPlayerIdx = 0;
+        updateCloud(); applyStateToUI();
+    };
+
+    window.generateTurn = () => {
+        if (state.timer) stopTimer();
+        const active = state.players[state.currentPlayerIdx];
+        const validTargets = state.players.filter(p => p.id !== active.id);
+        const target = validTargets[Math.floor(Math.random() * validTargets.length)];
+        const curLvlId = state.selectedLevels[state.activeLevelIdx];
+        const pool = (allDares[curLvlId]?.dares || []).filter(d => {
+            if (d.tags && d.tags.some(tag => target.vetos.includes(tag))) return false;
+            if (active.gender === 'man' && target.gender === 'man' && target.pref === 'bi' && target.biNoPen && d.tags?.includes('penetration')) return false;
+            return true;
+        });
+        if (pool.length === 0) state.currentTask = "INGA MATCHANDE KORT HITTADES. KONTROLLERA VETOS.";
+        else {
+            const dare = pool[Math.floor(Math.random() * pool.length)];
+            const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
+            state.currentTask = `<span class="gold-name">${active.name}</span>, ${dare.text}`.replace(/\[TARGETS\]/g, `<span class="gold-name">${ts}</span>`).replace(/\[TARGET\]/g, `<span class="gold-name">${target.name}</span>`);
+            if (Math.random() < 0.05 && active.stars < 4) active.stars++;
+            state.currentPlayerIdx = (state.currentPlayerIdx + 1) % state.players.length;
+        }
+        updateCloud(); applyStateToUI();
+    };
+
+    window.advanceLevel = () => { if(isHost && state.activeLevelIdx < state.selectedLevels.length - 1) { state.activeLevelIdx++; updateCloud(); } };
+    window.activateStarPower = () => {
+        const active = state.players[selectedPlayerIndex];
+        active.stars--; closeModal();
+        state.currentTask = `<span class="gold-name">${active.name}</span>, DU HAR KONTROLLEN! Bestäm vad de andra ska göra.`;
+        startTimer(180); updateCloud();
+    };
+
+    let selectedPlayerIndex = -1;
+    window.openStarModal = (i) => {
+        selectedPlayerIndex = i; const p = state.players[i];
+        document.getElementById('modal-player-name').innerText = p.name;
+        document.getElementById('modal-star-count').innerText = p.stars;
+        document.getElementById('btn-use-star').style.display = p.stars > 0 ? 'block' : 'none';
+        document.getElementById('manual-star-btn').style.display = (isHost && state.allowManualStars) ? 'block' : 'none';
+        document.getElementById('modal-overlay').style.display = 'flex';
+    };
+    window.closeModal = () => document.getElementById('modal-overlay').style.display = 'none';
+    window.manualAddStar = () => { if(isHost && state.players[selectedPlayerIndex].stars < 4) { state.players[selectedPlayerIndex].stars++; updateCloud(); closeModal(); } };
+    
+    function startTimer(sec) {
+        let timeLeft = sec;
+        const tick = () => {
+            let m = Math.floor(timeLeft/60), s = timeLeft%60;
+            state.timer = `${m}:${s<10?'0':''}${s}`;
+            timeLeft--;
+            if (timeLeft < 0) { state.timer = "KLART!"; clearInterval(window.tInt); }
+            updateCloud(); applyStateToUI();
+        };
+        clearInterval(window.tInt); window.tInt = setInterval(tick, 1000); tick();
+    }
+    window.finishTimerEarly = () => { clearInterval(window.tInt); state.timer = null; updateCloud(); applyStateToUI(); };
+    function stopTimer() { clearInterval(window.tInt); state.timer = null; }
+    
+    function renderLobby() { 
+        document.getElementById('displayList').innerHTML = state.players.map(p => `
+            <div class="player-item">
+                <div class="player-info">
+                    <strong>${p.name}</strong>
+                    <small>${p.gender} • ${p.pref} ${p.biNoPen ? '(Ingen pen.)' : ''}</small>
+                </div>
+                <div class="action-btns">
+                    <span class="edit-btn" onclick="editPlayer(${p.id})">✎</span>
+                    <span class="delete-btn" onclick="removePlayer(${p.id})">×</span>
+                </div>
+            </div>`).join(''); 
+    }
+    
+    function renderGameBar() { 
+        document.getElementById('player-status').innerHTML = state.players.map((p, i) => `
+            <div class="p-chip ${state.currentPlayerIdx===i?'active-turn':''}" onclick="openStarModal(${i})">
+                <strong>${p.name}</strong>
+                <div class="star-count">${"⭐".repeat(p.stars)||0}</div>
+            </div>`).join(''); 
+    }
+    
+    window.toggleBiOption = () => { 
+        const gender = document.getElementById('pGender').value;
+        const pref = document.getElementById('pPref').value;
+        document.getElementById('bi-special-ui').style.display = (gender === 'man' && pref === 'bi') ? 'block' : 'none'; 
+    };
+
+    function saveLocal() { localStorage.setItem('dareme_state', JSON.stringify(state)); }
+    window.goToLobby = () => { state.isPlaying = false; applyStateToUI(); updateCloud(); };
+    window.resetGame = () => { if(confirm("Nollställ spelet?")) { localStorage.clear(); location.reload(); } };
+
+    window.addEventListener('load', () => { 
+        const saved = localStorage.getItem('dareme_state');
+        if (saved) {
+            const localData = JSON.parse(saved);
+            state = { ...state, ...localData };
+        }
+        hideLoading(); toggleBiOption(); applyStateToUI();
+    });
+</script>
+</body>
+</html>

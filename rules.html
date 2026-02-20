@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regler - Dare Me</title>
+    <style>
+        :root { 
+            --bg: #0a0a0a; 
+            --gold: #d4af37; 
+            --text: #eee; 
+            --panel: #111;
+            --border: #333;
+        }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 20px; 
+            margin: 0; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--panel);
+            padding: 40px;
+            border-radius: 30px;
+            border: 1px solid var(--border);
+            box-sizing: border-box;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        h1 { color: var(--gold); text-transform: uppercase; letter-spacing: 4px; text-align: center; margin-bottom: 40px; }
+        h2 { color: var(--gold); text-transform: uppercase; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 35px; display: flex; align-items: center; gap: 10px; }
+        
+        p, li { color: #bbb; font-size: 1rem; margin-bottom: 15px; }
+        ul, ol { padding-left: 20px; }
+        strong { color: #fff; }
+
+        .btn-back {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: var(--gold);
+            color: #000;
+            text-decoration: none;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 15px;
+            text-transform: uppercase;
+            margin-top: 40px;
+            letter-spacing: 1px;
+        }
+
+        .highlight-box {
+            border-left: 4px solid var(--gold);
+            padding-left: 20px;
+            margin: 25px 0;
+            font-style: italic;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Spelregler</h1>
+
+        <h2>🔁 SÅ HÄR GÅR DET TILL</h2>
+        <ol>
+            <li><strong>Vem är på tur?</strong> Titta på statusraden högst upp i spelet. Namnet som lyser med en guldram är den aktiva spelaren.</li>
+            <li><strong>Dra ett kort:</strong> Den aktiva spelaren trycker på knappen "NÄSTA KORT".</li>
+            <li><strong>Låt ödet bestämma:</strong> Appen väljer automatiskt ut en motspelare åt dig.</li>
+            <li><strong>Utför eller ta emot:</strong> Följ instruktionen på skärmen. Om en timer dyker upp, utför ni uppdraget tills tiden är ute.</li>
+        </ol>
+
+        <h2>🛡️ DIN TRYGGHET – VETO-SYSTEMET</h2>
+        <p>Till skillnad från en fysisk kortlek är <em>Dare Me</em> smart. Spelet kommer aldrig att ge dig ett uppdrag som du eller din motspelare har valt att blockera.</p>
+        <ul>
+            <li><strong>Vetos:</strong> Innan spelet börjar väljer varje spelare sina personliga gränser i inställningarna.</li>
+            <li><strong>Diskretion:</strong> Appen sköter filtreringen i bakgrunden. Ingen behöver förklara sina val under spelets gång – korten som visas är alltid "säkra" för just er konstellation.</li>
+        </ul>
+
+        <h2>🤝 SAMTYCKE & RESPEKT</h2>
+        <div class="highlight-box">
+            "Ett nej är alltid ett nej. Ingen ska någonsin känna sig tvingad att göra något man inte vill."
+        </div>
+        <p>Även om spelet utmanar er, så bygger allt på frivillighet och gemensam njutning. Spelet är till för att utforska lust, inte för att skapa obehag. Om en situation känns fel – avbryt direkt. Gränser är till för att respekteras, även i stundens hetta.</p>
+
+        <h2>🌶️ NIVÅERNA</h2>
+        <p>Värden styr vilka nivåer som är aktiva. Ni kan börja mjukt och låta spänningen byggas upp från massage och flirt till djupare intimitet och mer vågade utmaningar.</p>
+
+        <h2>⭐ GULDSTJÄRNAN</h2>
+        <p>Ibland vinner en spelare en Guldstjärna! Du får då total kontroll över rummet under en begränsad tid. Du bestämmer vad de andra ska göra – med varandra eller med dig.</p>
+        <p><strong>Spara din makt:</strong> Du behöver inte använda stjärnan direkt. Den sparas vid ditt namn. Klicka på ditt namn för att aktivera den när ögonblicket är rätt.</p>
+
+        <a href="index.html" class="btn-back">TILLBAKA TILL SPELET</a>
+    </div>
+
+</body>
+</html>
