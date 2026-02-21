@@ -207,7 +207,6 @@
 
     <!-- STARTVÄLJARE (SKAPA RUM-SIDAN) -->
     <div id="start-page" class="page">
-        <!-- LOGGA TILLAGD HÄR NU -->
         <div class="logo-container">
             <img src="dareme.png" alt="Dare Me Logo">
         </div>
@@ -361,6 +360,8 @@
     };
 
     let allDares = {}; 
+    let tempStars = 0; // Tillfällig ficka för stjärnor vid Edit
+    
     let state = {
         introSeen: false,
         modeSelected: false,
@@ -572,10 +573,15 @@
         const nameInput = document.getElementById('pName');
         const name = nameInput.value.trim().toUpperCase();
         if (!name) return;
+        
+        // Hämta sparade stjärnor om vi precis tryckt på Edit
+        const finalStars = tempStars;
+        tempStars = 0; // Töm fickan omedelbart så nästa "riktiga" nya spelare får 0
+
         state.players.push({
             id: Date.now(), name, gender: document.getElementById('pGender').value,
             pref: document.getElementById('pPref').value, vetos: Array.from(document.querySelectorAll('.veto-cb:checked')).map(cb => cb.value), 
-            biNoPen: document.getElementById('bi-no-pen').checked, stars: 0
+            biNoPen: document.getElementById('bi-no-pen').checked, stars: finalStars
         });
         nameInput.value = ""; document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = false);
         const biPenCb = document.getElementById('bi-no-pen');
@@ -584,8 +590,12 @@
     };
 
     window.removePlayer = (id) => { state.players = state.players.filter(p => p.id !== id); renderLobby(); updateCloud(); };
+    
     window.editPlayer = (id) => {
         const p = state.players.find(x => x.id === id); if (!p) return;
+        
+        tempStars = p.stars; // Lägg stjärnorna i fickan innan spelaren raderas
+
         document.getElementById('pName').value = p.name; document.getElementById('pGender').value = p.gender;
         document.getElementById('pPref').value = p.pref; document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = p.vetos.includes(cb.value));
         const biPenCb = document.getElementById('bi-no-pen');
