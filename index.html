@@ -249,7 +249,7 @@
         <div class="setup-container">
             <div id="setup-controls">
                 <input type="text" id="pName" placeholder="DITT NAMN" autocomplete="off">
-                <select id="pGender" onchange="toggleBiOption()"><option value="kvinna">KVINNA</option><option value="man">MAN</option><option value="ickebinar">ICKE-BINÄR</option></select>
+                <select id="pGender" onchange="toggleBiOption()"><option value="kvinna">KVINNA</option><option value="man">MAN</option></select>
                 <select id="pPref" onchange="toggleBiOption()"><option value="bi" selected>BISEXUELL</option><option value="hetero">HETEROSEXUELL</option><option value="gay">HOMOSEXUELL</option></select>
                 
                 <div class="veto-container host-only">
@@ -283,24 +283,24 @@
                 </div>
 
                 <div class="veto-container">
-                    <span class="veto-title">Vetos (Detta vill jag INTE)</span>
+                    <span class="veto-title">Vetos (Detta vill jag INTE göra)</span>
                     <div class="veto-grid">
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="smisk"> Smisk</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="oral"> Oralt</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="penetration"> Penetration</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="bindning"> Bindning/BDSM</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="bindning"> Bindas</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="leksaker"> Sexleksaker</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="publik"> Publik/Utomhus</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="publik"> Publik</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="impact"> Impact play</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="analt"> Analt</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="dominans"> Dominans</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="underkastelse"> Underkastelse</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="fornedring"> Förnedring</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="ogonbindel"> Ögonbindel/Blindfold</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="ogonbindel"> Ögonbindel</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="fotter"> Fötter</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="semen"> Sperma</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="blood"> Blod</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="wet"> Wet (Kissa)</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="wet"> Wet</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="wax"> Stearin</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="rollspel"> Rollspel</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="kon"> Kön</label>
@@ -326,7 +326,7 @@
     <div id="game-page" class="page">
         <div id="player-status" class="status-bar"></div>
         <div class="card-area" id="game-card">
-            <div id="next-up-info" style="color:#555; font-size:0.7rem; text-transform:uppercase; margin-bottom:5px;">PÅ TUR: ...</div>
+            <div id="next-up-info" style="color:#faa405; font-size:0.8rem; text-transform:uppercase; margin-bottom:5px;">NÄSTA PÅ TUR: ...</div>
             <div id="active-lvl-display" style="color: #444; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 10px;">NIVÅ: <span id="current-lvl-text" style="color:var(--red); font-weight:bold;">---</span></div>
             <div id="star-power-label" style="color:var(--gold); font-weight:bold; letter-spacing:5px; margin-bottom:20px; display:none;">⭐ GULDSTJÄRNA ⭐</div>
             <div id="task-box" class="task-text">VÄNTAR på kort...</div>
@@ -335,6 +335,7 @@
         </div>
         <div class="game-controls">
             <button class="btn btn-next" onclick="generateTurn()">NÄSTA KORT</button>
+            <button class="btn btn-rules" style="margin-bottom: 25px;" onclick="skipCard()">Detta gillade jag inte jag byter kort</button>
             <button class="btn btn-lvl-up host-only" id="lvl-up-btn" onclick="advanceLevel()">HÖJ STÄMNINGEN 🔥</button>
             <button class="btn btn-back" style="margin-top: 30px;" onclick="goToLobby()">LOBBY / REDIGERA</button>
         </div>
@@ -379,18 +380,30 @@
 
     async function scanForLevels() {
         const grid = document.getElementById('level-selection-grid');
+        const statusText = document.getElementById('lvl-scanner-status');
         if (!grid) return;
-        let found = 0; grid.innerHTML = "";
-        for (let i = 1; i <= 10; i++) {
+        
+        let foundCount = 0;
+        let htmlBuffer = "";
+
+        for (let i = 1; i <= 20; i++) {
             try {
                 const res = await fetch(`level${i}.json?t=${Date.now()}`);
                 if (res.ok) {
                     const data = await res.json();
                     allDares[i] = data;
-                    grid.innerHTML += `<label class="veto-option"><input type="checkbox" class="lvl-cb" value="${i}" checked> ${data.difficulty} ${data.name}</label>`;
-                    found++;
+                    htmlBuffer += `<label class="veto-option"><input type="checkbox" class="lvl-cb" value="${i}"> ${data.difficulty || '🌶️'} ${data.name || 'Nivå ' + i}</label>`;
+                    foundCount++;
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.warn(`Kunde inte läsa in level${i}.json.`, e);
+            }
+        }
+
+        if (foundCount > 0) {
+            grid.innerHTML = htmlBuffer;
+        } else {
+            if (statusText) statusText.innerText = "Inga nivå-filer hittades.";
         }
     }
 
@@ -482,13 +495,20 @@
             document.getElementById('game-page').classList.add('active');
             renderGameBar();
             document.getElementById('task-box').innerHTML = state.currentTask;
+            
             const curLvlId = state.selectedLevels[state.activeLevelIdx];
-            const lvlObj = allDares[curLvlId];
-            document.getElementById('current-lvl-text').innerText = lvlObj ? `${lvlObj.difficulty} ${lvlObj.name}` : `Nivå ${curLvlId}`;
-            document.getElementById('lvl-up-btn').style.display = (isHost && state.activeLevelIdx < state.selectedLevels.length - 1) ? 'block' : 'none';
+            if (curLvlId <= 2) {
+                const lvlObj = allDares[curLvlId];
+                document.getElementById('current-lvl-text').innerText = lvlObj ? `${lvlObj.difficulty} ${lvlObj.name}` : `Nivå ${curLvlId}`;
+            } else {
+                document.getElementById('current-lvl-text').innerText = "🔥 THE SHUFFLE ZONE (MIXAT)";
+            }
+
+            document.getElementById('lvl-up-btn').style.display = (isHost && curLvlId < 3 && state.activeLevelIdx < state.selectedLevels.length - 1) ? 'block' : 'none';
+
             if (state.players.length > 0) {
                 const curPlayer = state.players[state.currentPlayerIdx];
-                document.getElementById('next-up-info').innerText = `PÅ TUR: ${curPlayer ? curPlayer.name : '...'}`;
+                document.getElementById('next-up-info').innerText = "NÄSTA PÅ TUR: " + (curPlayer ? curPlayer.name : '...');
             }
             if (state.timer) {
                 document.getElementById('timer-display').style.display = 'block';
@@ -583,26 +603,92 @@
         const validTargets = state.players.filter(p => p.id !== active.id);
         if (validTargets.length === 0) return;
         const target = validTargets[Math.floor(Math.random() * validTargets.length)];
+        
         const curLvlId = state.selectedLevels[state.activeLevelIdx];
-        const pool = (allDares[curLvlId]?.dares || []).filter(d => {
-            if (d.tags && d.tags.some(tag => target.vetos.includes(tag))) return false;
+        let pool = [];
+        if (curLvlId <= 2) {
+            pool = (allDares[curLvlId]?.dares || []);
+        } else {
+            state.selectedLevels.filter(id => id > 2).forEach(id => {
+                if (allDares[id]) pool = pool.concat(allDares[id].dares);
+            });
+        }
+
+        const filteredPool = pool.filter(d => {
+            if (d.tags && d.tags.some(tag => target.vetos.includes(tag) || active.vetos.includes(tag))) return false;
             if (active.gender === 'man' && target.gender === 'man' && target.pref === 'bi' && target.biNoPen && d.tags?.includes('penetration')) return false;
             return true;
         });
-        if (pool.length === 0) state.currentTask = "INGA MATCHANDE KORT HITTADES. KONTROLLERA VETOS.";
+
+        if (filteredPool.length === 0) state.currentTask = "INGA MATCHANDE KORT HITTADES. KONTROLLERA VETOS.";
         else {
-            const dare = pool[Math.floor(Math.random() * pool.length)];
+            const dare = filteredPool[Math.floor(Math.random() * filteredPool.length)];
             const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
-            state.currentTask = `<span class="gold-name">${active.name}</span>, ${dare.text}`.replace(/\[TARGETS\]/g, `<span class="gold-name">${ts}</span>`).replace(/\[TARGET\]/g, `<span class="gold-name">${target.name}</span>`);
+            
+            const pronomen = target.gender === 'man' ? 'honom' : 'henne';
+            const pronomenPossessiv = target.gender === 'man' ? 'hans' : 'hennes';
+
+            state.currentTask = `<span class="gold-name">${active.name}</span>, ${dare.text}`
+                .replace(/\[TARGETS\]/g, `<span class="gold-name">${ts}</span>`)
+                .replace(/\[TARGET\]/g, `<span class="gold-name">${target.name}</span>`)
+                .replace(/\[HEN\]/g, pronomen)
+                .replace(/\[HENS\]/g, pronomenPossessiv);
+            
             const chanceValue = (state.starChance || 3) / 100;
             if (Math.random() < chanceValue && active.stars < 4) {
                 active.stars++;
-                // FIX: Trigga notifiering även i lokalt läge (utan roomCode)
                 if (!state.roomCode) showStarNotif(active.name);
             }
+            
             state.currentPlayerIdx = (state.currentPlayerIdx + 1) % state.players.length;
         }
-        updateCloud(); applyStateToUI();
+        updateCloud(); 
+        applyStateToUI();
+    };
+
+    window.skipCard = () => {
+        if (state.currentTask === "TRYCK FÖR KORT") return;
+        if (state.timer) stopTimer();
+        
+        // Hitta vem som är aktiv just nu
+        const activeIdx = (state.currentPlayerIdx - 1 + state.players.length) % state.players.length;
+        const active = state.players[activeIdx];
+        
+        const validTargets = state.players.filter(p => p.id !== active.id);
+        if (validTargets.length === 0) return;
+        const target = validTargets[Math.floor(Math.random() * validTargets.length)];
+        
+        const curLvlId = state.selectedLevels[state.activeLevelIdx];
+        let pool = [];
+        if (curLvlId <= 2) {
+            pool = (allDares[curLvlId]?.dares || []);
+        } else {
+            state.selectedLevels.filter(id => id > 2).forEach(id => {
+                if (allDares[id]) pool = pool.concat(allDares[id].dares);
+            });
+        }
+
+        const filteredPool = pool.filter(d => {
+            if (d.tags && d.tags.some(tag => target.vetos.includes(tag) || active.vetos.includes(tag))) return false;
+            if (active.gender === 'man' && target.gender === 'man' && target.pref === 'bi' && target.biNoPen && d.tags?.includes('penetration')) return false;
+            return true;
+        });
+
+        if (filteredPool.length === 0) state.currentTask = "INGA MATCHANDE KORT HITTADES. KONTROLLERA VETOS.";
+        else {
+            const dare = filteredPool[Math.floor(Math.random() * filteredPool.length)];
+            const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
+            const pronomen = target.gender === 'man' ? 'honom' : 'henne';
+            const pronomenPossessiv = target.gender === 'man' ? 'hans' : 'hennes';
+
+            state.currentTask = `<span class="gold-name">${active.name}</span>, ${dare.text}`
+                .replace(/\[TARGETS\]/g, `<span class="gold-name">${ts}</span>`)
+                .replace(/\[TARGET\]/g, `<span class="gold-name">${target.name}</span>`)
+                .replace(/\[HEN\]/g, pronomen)
+                .replace(/\[HENS\]/g, pronomenPossessiv);
+        }
+        updateCloud(); 
+        applyStateToUI();
     };
 
     window.advanceLevel = () => { if(isHost && state.activeLevelIdx < state.selectedLevels.length - 1) { state.activeLevelIdx++; updateCloud(); } };
@@ -624,11 +710,9 @@
         document.getElementById('modal-overlay').style.display = 'flex';
     };
     window.closeModal = () => document.getElementById('modal-overlay').style.display = 'none';
-    
     window.manualAddStar = () => { 
         if(isHost && state.players[selectedPlayerIndex].stars < 4) { 
             state.players[selectedPlayerIndex].stars++; 
-            // FIX: Trigga notifiering även vid manuell stjärna i lokalt läge
             if (!state.roomCode) showStarNotif(state.players[selectedPlayerIndex].name);
             updateCloud(); closeModal(); 
         } 
@@ -653,7 +737,7 @@
             <div class="player-item">
                 <div class="player-info">
                     <strong>${p.name}</strong>
-                    <small>${p.gender} • ${p.pref} ${p.biNoPen ? '(Ingen pen.)' : ''}</small>
+                    <small>${p.gender} • ${p.pref}</small>
                 </div>
                 <div class="action-btns">
                     <span class="edit-btn" onclick="editPlayer(${p.id})">✎</span>
@@ -663,8 +747,10 @@
     }
     
     function renderGameBar() { 
+        const activeIdx = (state.currentTask === "TRYCK FÖR KORT") ? -1 : (state.currentPlayerIdx - 1 + state.players.length) % state.players.length;
+
         document.getElementById('player-status').innerHTML = state.players.map((p, i) => `
-            <div class="p-chip ${state.currentPlayerIdx===i?'active-turn':''}" onclick="openStarModal(${i})">
+            <div class="p-chip ${activeIdx === i ? 'active-turn' : ''}" onclick="openStarModal(${i})">
                 <strong>${p.name}</strong>
                 <div class="star-count">${"⭐".repeat(p.stars)||0}</div>
             </div>`).join(''); 
@@ -687,8 +773,11 @@
             const localData = JSON.parse(saved);
             state = { ...state, ...localData };
         }
-        initFirebase().then(() => {
-            scanForLevels(); hideLoading(); toggleBiOption(); applyStateToUI();
+        initFirebase().then(async () => {
+            await scanForLevels(); 
+            hideLoading(); 
+            toggleBiOption(); 
+            applyStateToUI();
         });
     });
 </script>
