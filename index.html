@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dare Me</title>
     
-    <!-- FAVICON FRÅN DIN BILD -->
+    <!-- FAVICON -->
     <link rel="icon" type="image/png" href="dareme.png">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -205,8 +205,12 @@
         <a href="rules.html" class="btn btn-rules" style="text-decoration:none; display:block;">REGLER & SAMTYCKE</a>
     </div>
 
-    <!-- STARTVÄLJARE -->
+    <!-- STARTVÄLJARE (SKAPA RUM-SIDAN) -->
     <div id="start-page" class="page">
+        <!-- LOGGA TILLAGD HÄR NU -->
+        <div class="logo-container">
+            <img src="dareme.png" alt="Dare Me Logo">
+        </div>
         <h1>Dare Me</h1>
         <div class="setup-container">
             <button class="btn btn-start" onclick="initLocalGame()">SPELA PÅ DENNA ENHET</button>
@@ -335,7 +339,7 @@
         </div>
         <div class="game-controls">
             <button class="btn btn-next" onclick="generateTurn()">NÄSTA KORT</button>
-            <button class="btn btn-rules" style="margin-bottom: 25px;" onclick="skipCard()">Detta gillade jag inte jag byter kort</button>
+            <button class="btn btn-rules" style="margin-bottom: 25px;" onclick="skipCard()">BYT KORT 🔄</button>
             <button class="btn btn-lvl-up host-only" id="lvl-up-btn" onclick="advanceLevel()">HÖJ STÄMNINGEN 🔥</button>
             <button class="btn btn-back" style="margin-top: 30px;" onclick="goToLobby()">LOBBY / REDIGERA</button>
         </div>
@@ -650,7 +654,6 @@
         if (state.currentTask === "TRYCK FÖR KORT") return;
         if (state.timer) stopTimer();
         
-        // Hitta vem som är aktiv just nu
         const activeIdx = (state.currentPlayerIdx - 1 + state.players.length) % state.players.length;
         const active = state.players[activeIdx];
         
