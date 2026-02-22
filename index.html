@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" href="dareme.png">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Dare Me">
     <meta name="theme-color" content="#0a0a0a">
     
@@ -217,13 +217,12 @@
         
         <h1>Dare Me</h1>
         <div class="intro-text-container">
-            <span class="intro-title">Welcome to Dare Me</span>
+            <span class="intro-title">Välkommen till Dare Me</span>
             <div class="intro-body">
-                A seductive game of lust and limits.<br>
-                Hidden beneath each card, lies more<br> 
-                than just a command.<br><br>
-                You’ll tease. You’ll surrender. You’ll obey.<br>
-                <span class="intro-highlight">The Dare Me isn’t a game. It’s desire, waiting to be unwrapped.</span>
+                Ett förföriskt spel av lust och gränser.<br>
+                Bakom varje kort döljer sig mer än bara en befallning.<br><br>
+                Du kommer att frestas. Du kommer att kapitulera. Du kommer att lyda.<br>
+                <span class="intro-highlight">Dare Me är inte bara ett spel. Det är begär, som väntar på att packas upp.</span>
             </div>
         </div>
         <button class="btn btn-start" onclick="enterGame()">BÖRJA SPELET</button>
@@ -382,7 +381,6 @@
     import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
     import { getAnalytics, logEvent } from "firebase/analytics";
 
-    // ÅTERSTÄLLER API-NYCKEL TILL DEN SOM FUNGERAR FÖR FIRESTORE
     const firebaseConfig = {
       apiKey: "AIzaSyADzIduNhKHBKIMWMGIwwPtiqKkZk8xZK4",
       authDomain: "dare-me-1c264.firebaseapp.com",
