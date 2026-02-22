@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" href="dareme.png">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" black-translucent">
     <meta name="apple-mobile-web-app-title" content="Dare Me">
     <meta name="theme-color" content="#0a0a0a">
     
@@ -32,6 +32,8 @@
             --panel: #111;
             --border: #333;
         }
+
+        * { box-sizing: border-box; }
         
         body { 
             background: var(--bg); 
@@ -172,12 +174,34 @@
         .btn-lvl-up { background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); font-size: 0.8rem; padding: 10px; margin-top: 10px; }
 
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; color: var(--gold); font-weight: bold; text-transform: uppercase; }
-        .reset-link { margin-top: 60px; color: #333; font-size: 0.7rem; text-decoration: none; text-transform: uppercase; cursor: pointer; display: block; padding: 10px; }
         
         .host-only { display: none; }
         .is-host .host-only { display: block; }
         .guest-only { display: none; }
         .is-guest .guest-only { display: block; }
+
+        .btn-reset-danger { 
+            background: #1a1111; 
+            color: #666; 
+            border: 1px solid #300; 
+            font-size: 0.75rem; 
+            padding: 12px; 
+            margin: 50px auto 20px auto; 
+            width: auto; 
+            min-width: 220px; 
+            display: block;
+            cursor: pointer;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #btn-confirm-yes {
+            background: var(--red);
+            color: #fff;
+            font-weight: 800;
+            display: none;
+        }
     </style>
 </head>
 <body class="is-host">
@@ -230,14 +254,20 @@
         </div>
     </div>
 
-    <!-- STJÄRN-MENY -->
+    <!-- MODAL-BEHÅLLARE (VARNINGAR, STJÄRNOR & RESET) -->
     <div id="modal-overlay">
         <div class="modal-box">
-            <h3 id="modal-player-name" style="color:var(--gold); margin-top:0; text-transform:uppercase;">SPELARE</h3>
-            <div id="modal-star-info" style="margin-bottom: 25px; color:#888;">Antal Guldstjärnor: <span id="modal-star-count" style="color:var(--gold)">0</span></div>
+            <h3 id="modal-player-name" style="color:var(--gold); margin-top:0; text-transform:uppercase;">INFO</h3>
+            <div id="modal-star-info" style="margin-bottom: 25px; color:#888;">
+                <span id="modal-msg-text">Meddelande...</span> 
+                <span id="modal-star-count" style="color:var(--gold)"></span>
+            </div>
+            
             <button class="btn btn-next" id="btn-use-star" onclick="activateStarPower()">ANVÄND GULDSTJÄRNA ⭐</button>
             <button class="btn btn-add host-only" id="manual-star-btn" onclick="manualAddStar()">GE EN BONUS-STJÄRNA 🎁</button>
-            <button class="btn btn-back" onclick="closeModal()" style="margin-top:10px;">AVBRYT</button>
+            <button class="btn" id="btn-confirm-yes" onclick="confirmReset()">JA, RADERA ALLT</button>
+            
+            <button class="btn btn-back" id="btn-modal-close" onclick="closeModal()" style="margin-top:10px;">AVBRYT</button>
         </div>
     </div>
 
@@ -291,19 +321,19 @@
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="smisk"> Smisk</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="oral"> Oralt</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="penetration"> Penetration</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="bindning"> Bindas</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="bindning"> Bindning/BDSM</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="leksaker"> Sexleksaker</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="publik"> Publik</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="publik"> Publik/Utomhus</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="impact"> Impact play</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="analt"> Analt</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="dominans"> Dominans</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="underkastelse"> Underkastelse</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="fornedring"> Förnedring</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="ogonbindel"> Ögonbindel</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="ogonbindel"> Ögonbindel/Blindfold</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="fotter"> Fötter</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="semen"> Sperma</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="blood"> Blod</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="wet"> Wet</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="wet"> Wet (Kissa)</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="wax"> Stearin</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="rollspel"> Rollspel</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="kon"> Kön</label>
@@ -319,9 +349,10 @@
                 <button class="btn btn-start" id="start-game-btn" onclick="startGame()">STARTA SPELET</button>
             </div>
             <div class="guest-only" style="margin-top: 30px; color: #666; font-style: italic;">Väntar på att värden ska starta...</div>
-            <a href="rules.html" class="btn btn-rules" style="text-decoration:none; display:block; margin-top:20px;">VISA REGLER</a>
-            <button class="btn btn-back" style="margin-top: 10px;" onclick="location.reload()">TILLBAKA</button>
-            <div class="reset-link" onclick="resetGame()">Nollställ allt / Byt roll</div>
+            
+            <a href="rules.html" onclick="saveLocal()" class="btn btn-rules" style="text-decoration:none; display:block; margin-top:20px;">VISA REGLER</a>
+            
+            <button class="btn btn-reset-danger" onclick="requestReset()">Nollställ allt / Byt roll</button>
         </div>
     </div>
 
@@ -342,7 +373,6 @@
             <button class="btn btn-lvl-up host-only" id="lvl-up-btn" onclick="advanceLevel()">HÖJ STÄMNINGEN 🔥</button>
             <button class="btn btn-back" style="margin-top: 30px;" onclick="goToLobby()">LOBBY / REDIGERA</button>
         </div>
-        <div class="reset-link" onclick="resetGame()">Nollställ allt</div>
     </div>
 
 <script type="module">
@@ -360,11 +390,12 @@
     };
 
     let allDares = {}; 
-    let tempStars = 0; // Tillfällig ficka för stjärnor vid Edit
+    let tempStars = 0; 
     
     let state = {
         introSeen: false,
         modeSelected: false,
+        isHost: false,
         players: [],
         selectedLevels: [],
         activeLevelIdx: 0,
@@ -397,12 +428,11 @@
                 if (res.ok) {
                     const data = await res.json();
                     allDares[i] = data;
-                    htmlBuffer += `<label class="veto-option"><input type="checkbox" class="lvl-cb" value="${i}"> ${data.difficulty || '🌶️'} ${data.name || 'Nivå ' + i}</label>`;
+                    const isChecked = state.selectedLevels.includes(i) ? 'checked' : '';
+                    htmlBuffer += `<label class="veto-option"><input type="checkbox" class="lvl-cb" value="${i}" ${isChecked} onchange="toggleLevelSelection()"> ${data.difficulty || '🌶️'} ${data.name || 'Nivå ' + i}</label>`;
                     foundCount++;
                 }
-            } catch (e) {
-                console.warn(`Kunde inte läsa in level${i}.json.`, e);
-            }
+            } catch (e) { console.warn(`Kunde inte läsa in level${i}.json.`, e); }
         }
 
         if (foundCount > 0) {
@@ -411,6 +441,13 @@
             if (statusText) statusText.innerText = "Inga nivå-filer hittades.";
         }
     }
+
+    window.toggleLevelSelection = () => {
+        state.selectedLevels = Array.from(document.querySelectorAll('.lvl-cb:checked'))
+            .map(cb => parseInt(cb.value))
+            .sort((a,b) => a-b);
+        saveLocal(); 
+    };
 
     async function initFirebase() {
         try {
@@ -474,8 +511,12 @@
     }
 
     function applyStateToUI() {
+        isHost = state.isHost;
         const pages = ['intro-page', 'start-page', 'lobby-page', 'game-page'];
-        pages.forEach(p => document.getElementById(p).classList.remove('active'));
+        pages.forEach(p => {
+            const el = document.getElementById(p);
+            if (el) el.classList.remove('active');
+        });
         document.body.className = isHost ? "is-host" : "is-guest";
         
         if (isHost) {
@@ -485,11 +526,6 @@
             if (timerSel) timerSel.value = state.starPowerDuration || 3;
             const chanceSel = document.getElementById('star-chance-setting');
             if (chanceSel) chanceSel.value = state.starChance || 3;
-        } else {
-            const guestTimer = document.getElementById('guest-timer-info');
-            if (guestTimer) guestTimer.innerText = (state.starPowerDuration || 3) + " min";
-            const guestChance = document.getElementById('guest-chance-info');
-            if (guestChance) guestChance.innerText = (state.starChance || 3) + "%";
         }
 
         if (!state.introSeen) {
@@ -500,21 +536,9 @@
             document.getElementById('game-page').classList.add('active');
             renderGameBar();
             document.getElementById('task-box').innerHTML = state.currentTask;
-            
             const curLvlId = state.selectedLevels[state.activeLevelIdx];
-            if (curLvlId <= 2) {
-                const lvlObj = allDares[curLvlId];
-                document.getElementById('current-lvl-text').innerText = lvlObj ? `${lvlObj.difficulty} ${lvlObj.name}` : `Nivå ${curLvlId}`;
-            } else {
-                document.getElementById('current-lvl-text').innerText = "🔥 THE SHUFFLE ZONE (MIXAT)";
-            }
-
+            document.getElementById('current-lvl-text').innerText = curLvlId <= 2 ? (allDares[curLvlId]?.name || `Nivå ${curLvlId}`) : "🔥 THE SHUFFLE ZONE";
             document.getElementById('lvl-up-btn').style.display = (isHost && curLvlId < 3 && state.activeLevelIdx < state.selectedLevels.length - 1) ? 'block' : 'none';
-
-            if (state.players.length > 0) {
-                const curPlayer = state.players[state.currentPlayerIdx];
-                document.getElementById('next-up-info').innerText = "NÄSTA PÅ TUR: " + (curPlayer ? curPlayer.name : '...');
-            }
             if (state.timer) {
                 document.getElementById('timer-display').style.display = 'block';
                 document.getElementById('timer-display').innerText = state.timer;
@@ -536,29 +560,17 @@
         hideLoading();
     }
 
-    window.updateStarTimerSetting = () => {
-        state.starPowerDuration = parseInt(document.getElementById('star-timer-setting').value);
-        updateCloud();
-    };
-
-    window.updateStarChanceSetting = () => {
-        state.starChance = parseInt(document.getElementById('star-chance-setting').value);
-        updateCloud();
-    };
-
-    window.toggleManualStars = () => {
-        state.allowManualStars = document.getElementById('setting-manual-stars').checked;
-        updateCloud();
-    };
-
+    window.updateStarTimerSetting = () => { state.starPowerDuration = parseInt(document.getElementById('star-timer-setting').value); updateCloud(); saveLocal(); };
+    window.updateStarChanceSetting = () => { state.starChance = parseInt(document.getElementById('star-chance-setting').value); updateCloud(); saveLocal(); };
+    window.toggleManualStars = () => { state.allowManualStars = document.getElementById('setting-manual-stars').checked; updateCloud(); saveLocal(); };
     window.enterGame = () => { state.introSeen = true; applyStateToUI(); saveLocal(); };
 
-    window.initLocalGame = async () => { isHost = true; state.modeSelected = true; state.roomCode = null; await scanForLevels(); applyStateToUI(); };
+    window.initLocalGame = async () => { isHost = true; state.isHost = true; state.modeSelected = true; state.roomCode = null; await scanForLevels(); saveLocal(); applyStateToUI(); };
     window.initCreateRoom = async () => {
         const ok = await initFirebase(); if (!ok) return;
-        isHost = true; state.modeSelected = true;
+        isHost = true; state.isHost = true; state.modeSelected = true;
         state.roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-        await scanForLevels(); listenToRoom(state.roomCode); updateCloud(); applyStateToUI();
+        await scanForLevels(); listenToRoom(state.roomCode); updateCloud(); saveLocal(); applyStateToUI();
     };
     window.initJoinRoom = async () => {
         const code = document.getElementById('join-code-input').value.toUpperCase();
@@ -566,49 +578,39 @@
         const ok = await initFirebase(); if (!ok) return;
         const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code));
         if (!snap.exists()) return;
-        isHost = false; state.modeSelected = true; state.roomCode = code; listenToRoom(code); applyStateToUI();
+        isHost = false; state.isHost = false; state.modeSelected = true; state.roomCode = code; listenToRoom(code); applyStateToUI();
     };
 
     window.addPlayer = () => {
         const nameInput = document.getElementById('pName');
         const name = nameInput.value.trim().toUpperCase();
         if (!name) return;
-        
-        // Hämta sparade stjärnor om vi precis tryckt på Edit
-        const finalStars = tempStars;
-        tempStars = 0; // Töm fickan omedelbart så nästa "riktiga" nya spelare får 0
-
+        const finalStars = tempStars; tempStars = 0;
         state.players.push({
             id: Date.now(), name, gender: document.getElementById('pGender').value,
             pref: document.getElementById('pPref').value, vetos: Array.from(document.querySelectorAll('.veto-cb:checked')).map(cb => cb.value), 
             biNoPen: document.getElementById('bi-no-pen').checked, stars: finalStars
         });
         nameInput.value = ""; document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = false);
-        const biPenCb = document.getElementById('bi-no-pen');
-        if (biPenCb) biPenCb.checked = false;
-        renderLobby(); updateCloud(); toggleBiOption();
+        renderLobby(); updateCloud(); toggleBiOption(); saveLocal();
     };
 
-    window.removePlayer = (id) => { state.players = state.players.filter(p => p.id !== id); renderLobby(); updateCloud(); };
+    window.removePlayer = (id) => { state.players = state.players.filter(p => p.id !== id); renderLobby(); updateCloud(); saveLocal(); };
     
     window.editPlayer = (id) => {
         const p = state.players.find(x => x.id === id); if (!p) return;
-        
-        tempStars = p.stars; // Lägg stjärnorna i fickan innan spelaren raderas
-
+        tempStars = p.stars;
         document.getElementById('pName').value = p.name; document.getElementById('pGender').value = p.gender;
         document.getElementById('pPref').value = p.pref; document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = p.vetos.includes(cb.value));
-        const biPenCb = document.getElementById('bi-no-pen');
-        if (biPenCb) biPenCb.checked = p.biNoPen; 
         toggleBiOption(); removePlayer(id);
     };
 
     window.startGame = () => {
         if (!isHost) return;
         state.selectedLevels = Array.from(document.querySelectorAll('.lvl-cb:checked')).map(cb => parseInt(cb.value)).sort((a,b)=>a-b);
-        if (state.selectedLevels.length === 0) return;
-        state.isPlaying = true; state.activeLevelIdx = 0; state.currentPlayerIdx = 0;
-        updateCloud(); applyStateToUI();
+        if (state.selectedLevels.length === 0) { showLobbyWarning("Du måste välja minst en nivåfil för att kunna starta."); return; }
+        if (state.players.length < 2) { showLobbyWarning("Det krävs minst två spelare för att kunna börja."); return; }
+        state.isPlaying = true; state.activeLevelIdx = 0; state.currentPlayerIdx = 0; updateCloud(); saveLocal(); applyStateToUI();
     };
 
     window.generateTurn = () => {
@@ -617,16 +619,10 @@
         const validTargets = state.players.filter(p => p.id !== active.id);
         if (validTargets.length === 0) return;
         const target = validTargets[Math.floor(Math.random() * validTargets.length)];
-        
         const curLvlId = state.selectedLevels[state.activeLevelIdx];
         let pool = [];
-        if (curLvlId <= 2) {
-            pool = (allDares[curLvlId]?.dares || []);
-        } else {
-            state.selectedLevels.filter(id => id > 2).forEach(id => {
-                if (allDares[id]) pool = pool.concat(allDares[id].dares);
-            });
-        }
+        if (curLvlId <= 2) pool = (allDares[curLvlId]?.dares || []);
+        else state.selectedLevels.filter(id => id > 2).forEach(id => { if (allDares[id]) pool = pool.concat(allDares[id].dares); });
 
         const filteredPool = pool.filter(d => {
             if (d.tags && d.tags.some(tag => target.vetos.includes(tag) || active.vetos.includes(tag))) return false;
@@ -634,102 +630,76 @@
             return true;
         });
 
-        if (filteredPool.length === 0) state.currentTask = "INGA MATCHANDE KORT HITTADES. KONTROLLERA VETOS.";
+        if (filteredPool.length === 0) state.currentTask = "INGA MATCHANDE KORT HITTADES.";
         else {
             const dare = filteredPool[Math.floor(Math.random() * filteredPool.length)];
             const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
-            
             const pronomen = target.gender === 'man' ? 'honom' : 'henne';
             const pronomenPossessiv = target.gender === 'man' ? 'hans' : 'hennes';
-
-            state.currentTask = `<span class="gold-name">${active.name}</span>, ${dare.text}`
-                .replace(/\[TARGETS\]/g, `<span class="gold-name">${ts}</span>`)
-                .replace(/\[TARGET\]/g, `<span class="gold-name">${target.name}</span>`)
-                .replace(/\[HEN\]/g, pronomen)
-                .replace(/\[HENS\]/g, pronomenPossessiv);
-            
-            const chanceValue = (state.starChance || 3) / 100;
-            if (Math.random() < chanceValue && active.stars < 4) {
-                active.stars++;
-                if (!state.roomCode) showStarNotif(active.name);
-            }
-            
+            state.currentTask = `<span class="gold-name">${active.name}</span>, ${dare.text}`.replace(/\[TARGETS\]/g, `<span class="gold-name">${ts}</span>`).replace(/\[TARGET\]/g, `<span class="gold-name">${target.name}</span>`).replace(/\[HEN\]/g, pronomen).replace(/\[HENS\]/g, pronomenPossessiv);
+            if (Math.random() < (state.starChance/100) && active.stars < 4) { active.stars++; if (!state.roomCode) showStarNotif(active.name); }
             state.currentPlayerIdx = (state.currentPlayerIdx + 1) % state.players.length;
         }
-        updateCloud(); 
-        applyStateToUI();
+        updateCloud(); saveLocal(); applyStateToUI();
     };
 
     window.skipCard = () => {
-        if (state.currentTask === "TRYCK FÖR KORT") return;
-        if (state.timer) stopTimer();
-        
         const activeIdx = (state.currentPlayerIdx - 1 + state.players.length) % state.players.length;
-        const active = state.players[activeIdx];
-        
-        const validTargets = state.players.filter(p => p.id !== active.id);
-        if (validTargets.length === 0) return;
-        const target = validTargets[Math.floor(Math.random() * validTargets.length)];
-        
-        const curLvlId = state.selectedLevels[state.activeLevelIdx];
-        let pool = [];
-        if (curLvlId <= 2) {
-            pool = (allDares[curLvlId]?.dares || []);
-        } else {
-            state.selectedLevels.filter(id => id > 2).forEach(id => {
-                if (allDares[id]) pool = pool.concat(allDares[id].dares);
-            });
-        }
-
-        const filteredPool = pool.filter(d => {
-            if (d.tags && d.tags.some(tag => target.vetos.includes(tag) || active.vetos.includes(tag))) return false;
-            if (active.gender === 'man' && target.gender === 'man' && target.pref === 'bi' && target.biNoPen && d.tags?.includes('penetration')) return false;
-            return true;
-        });
-
-        if (filteredPool.length === 0) state.currentTask = "INGA MATCHANDE KORT HITTADES. KONTROLLERA VETOS.";
-        else {
-            const dare = filteredPool[Math.floor(Math.random() * filteredPool.length)];
-            const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
-            const pronomen = target.gender === 'man' ? 'honom' : 'henne';
-            const pronomenPossessiv = target.gender === 'man' ? 'hans' : 'hennes';
-
-            state.currentTask = `<span class="gold-name">${active.name}</span>, ${dare.text}`
-                .replace(/\[TARGETS\]/g, `<span class="gold-name">${ts}</span>`)
-                .replace(/\[TARGET\]/g, `<span class="gold-name">${target.name}</span>`)
-                .replace(/\[HEN\]/g, pronomen)
-                .replace(/\[HENS\]/g, pronomenPossessiv);
-        }
-        updateCloud(); 
-        applyStateToUI();
+        state.currentPlayerIdx = activeIdx; 
+        window.generateTurn();
     };
 
-    window.advanceLevel = () => { if(isHost && state.activeLevelIdx < state.selectedLevels.length - 1) { state.activeLevelIdx++; updateCloud(); } };
+    window.advanceLevel = () => { if(isHost && state.activeLevelIdx < state.selectedLevels.length - 1) { state.activeLevelIdx++; updateCloud(); saveLocal(); } };
+    
     window.activateStarPower = () => {
         const active = state.players[selectedPlayerIndex];
         active.stars--; closeModal();
         state.currentTask = `<span class="gold-name">${active.name}</span>, DU HAR KONTROLLEN! Bestäm vad de andra ska göra.`;
         startTimer((state.starPowerDuration || 3) * 60);
-        updateCloud();
+        updateCloud(); saveLocal();
     };
+
+    window.showLobbyWarning = (msg) => {
+        document.getElementById('modal-player-name').innerText = "OBS!";
+        document.getElementById('modal-msg-text').innerText = msg;
+        document.getElementById('modal-star-count').innerText = "";
+        document.getElementById('btn-use-star').style.display = 'none';
+        document.getElementById('manual-star-btn').style.display = 'none';
+        document.getElementById('btn-confirm-yes').style.display = 'none';
+        document.getElementById('modal-overlay').style.display = 'flex';
+    };
+
+    window.requestReset = () => {
+        document.getElementById('modal-player-name').innerText = "ÄR DU SÄKER?";
+        document.getElementById('modal-msg-text').innerText = "Detta raderar alla spelare, inställningar och din roll som värd på denna enhet.";
+        document.getElementById('modal-star-count').innerText = "";
+        
+        document.getElementById('btn-use-star').style.display = 'none';
+        document.getElementById('manual-star-btn').style.display = 'none';
+        document.getElementById('btn-confirm-yes').style.display = 'block';
+        document.getElementById('modal-overlay').style.display = 'flex';
+    };
+
+    window.confirmReset = () => { localStorage.clear(); location.reload(); };
 
     let selectedPlayerIndex = -1;
     window.openStarModal = (i) => {
         selectedPlayerIndex = i; const p = state.players[i];
         document.getElementById('modal-player-name').innerText = p.name;
+        document.getElementById('modal-msg-text').innerText = "Antal Guldstjärnor: ";
         document.getElementById('modal-star-count').innerText = p.stars;
         document.getElementById('btn-use-star').style.display = p.stars > 0 ? 'block' : 'none';
         document.getElementById('manual-star-btn').style.display = (isHost && state.allowManualStars) ? 'block' : 'none';
+        document.getElementById('btn-confirm-yes').style.display = 'none';
         document.getElementById('modal-overlay').style.display = 'flex';
     };
-    window.closeModal = () => document.getElementById('modal-overlay').style.display = 'none';
-    window.manualAddStar = () => { 
-        if(isHost && state.players[selectedPlayerIndex].stars < 4) { 
-            state.players[selectedPlayerIndex].stars++; 
-            if (!state.roomCode) showStarNotif(state.players[selectedPlayerIndex].name);
-            updateCloud(); closeModal(); 
-        } 
+    
+    window.closeModal = () => { 
+        document.getElementById('modal-overlay').style.display = 'none'; 
+        document.getElementById('btn-confirm-yes').style.display = 'none';
     };
+
+    window.manualAddStar = () => { if(isHost && state.players[selectedPlayerIndex].stars < 4) { state.players[selectedPlayerIndex].stars++; updateCloud(); saveLocal(); closeModal(); } };
     
     function startTimer(sec) {
         let timeLeft = sec;
@@ -738,7 +708,7 @@
             state.timer = `${m}:${s<10?'0':''}${s}`;
             timeLeft--;
             if (timeLeft < 0) { state.timer = "KLART!"; clearInterval(window.tInt); }
-            updateCloud(); applyStateToUI();
+            updateCloud(); saveLocal(); applyStateToUI();
         };
         clearInterval(window.tInt); window.tInt = setInterval(tick, 1000); tick();
     }
@@ -748,24 +718,16 @@
     function renderLobby() { 
         document.getElementById('displayList').innerHTML = state.players.map(p => `
             <div class="player-item">
-                <div class="player-info">
-                    <strong>${p.name}</strong>
-                    <small>${p.gender} • ${p.pref}</small>
-                </div>
-                <div class="action-btns">
-                    <span class="edit-btn" onclick="editPlayer(${p.id})">✎</span>
-                    <span class="delete-btn" onclick="removePlayer(${p.id})">×</span>
-                </div>
+                <div class="player-info"><strong>${p.name}</strong><small>${p.gender} • ${p.pref}</small></div>
+                <div class="action-btns"><span class="edit-btn" onclick="editPlayer(${p.id})">✎</span><span class="delete-btn" onclick="removePlayer(${p.id})">×</span></div>
             </div>`).join(''); 
     }
     
     function renderGameBar() { 
         const activeIdx = (state.currentTask === "TRYCK FÖR KORT") ? -1 : (state.currentPlayerIdx - 1 + state.players.length) % state.players.length;
-
         document.getElementById('player-status').innerHTML = state.players.map((p, i) => `
             <div class="p-chip ${activeIdx === i ? 'active-turn' : ''}" onclick="openStarModal(${i})">
-                <strong>${p.name}</strong>
-                <div class="star-count">${"⭐".repeat(p.stars)||0}</div>
+                <strong>${p.name}</strong><div class="star-count">${"⭐".repeat(p.stars)||0}</div>
             </div>`).join(''); 
     }
     
@@ -777,21 +739,12 @@
     };
 
     function saveLocal() { localStorage.setItem('dareme_state', JSON.stringify(state)); }
-    window.goToLobby = () => { state.isPlaying = false; applyStateToUI(); updateCloud(); };
-    window.resetGame = () => { localStorage.clear(); location.reload(); };
+    window.goToLobby = () => { state.isPlaying = false; applyStateToUI(); updateCloud(); saveLocal(); };
 
     window.addEventListener('load', () => { 
         const saved = localStorage.getItem('dareme_state');
-        if (saved) {
-            const localData = JSON.parse(saved);
-            state = { ...state, ...localData };
-        }
-        initFirebase().then(async () => {
-            await scanForLevels(); 
-            hideLoading(); 
-            toggleBiOption(); 
-            applyStateToUI();
-        });
+        if (saved) { state = { ...state, ...JSON.parse(saved) }; }
+        initFirebase().then(async () => { await scanForLevels(); hideLoading(); toggleBiOption(); applyStateToUI(); });
     });
 </script>
 </body>
