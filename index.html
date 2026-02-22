@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" href="dareme.png">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" black-translucent">
     <meta name="apple-mobile-web-app-title" content="Dare Me">
     <meta name="theme-color" content="#0a0a0a">
     
@@ -539,6 +539,12 @@
         } else if (state.isPlaying) {
             document.getElementById('game-page').classList.add('active');
             renderGameBar();
+            
+            // LOGIK FÖR NÄSTA PÅ TUR (ÖVERST PÅ KORTET)
+            const nextP = state.players[state.currentPlayerIdx];
+            const nextUpEl = document.getElementById('next-up-info');
+            if (nextUpEl) nextUpEl.innerText = nextP ? `NÄSTA PÅ TUR: ${nextP.name}` : "NÄSTA PÅ TUR: ...";
+
             document.getElementById('task-box').innerHTML = state.currentTask;
             const curLvlId = state.selectedLevels[state.activeLevelIdx];
             document.getElementById('current-lvl-text').innerText = curLvlId <= 2 ? (allDares[curLvlId]?.name || `Nivå ${curLvlId}`) : "🔥 THE SHUFFLE ZONE";
