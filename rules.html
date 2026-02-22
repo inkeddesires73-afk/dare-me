@@ -12,6 +12,11 @@
             --panel: #111;
             --border: #333;
         }
+
+        /* Fixar så att padding inte trycker ut element utanför bredden */
+        * {
+            box-sizing: border-box;
+        }
         
         body { 
             background: var(--bg); 
@@ -32,9 +37,8 @@
             padding: 40px;
             border-radius: 30px;
             border: 1px solid var(--border);
-            box-sizing: border-box;
             box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            padding-bottom: 60px; /* Ger guldknappen i botten tillräckligt med luft */
+            padding-bottom: 60px;
         }
 
         h1 { color: var(--gold); text-transform: uppercase; letter-spacing: 4px; text-align: center; margin-bottom: 40px; }
@@ -44,11 +48,10 @@
         ul, ol { padding-left: 20px; }
         strong { color: #fff; }
 
-        /* VISUELL JUSTERING AV TILLBAKA-KNAPP */
         .btn-back {
             display: block;
             width: 100%;
-            padding: 20px; /* Standardiserad höjd för att matcha huvudmenyn */
+            padding: 20px;
             background: var(--gold);
             color: #000;
             text-decoration: none;
@@ -58,7 +61,6 @@
             text-transform: uppercase;
             margin-top: 50px;
             letter-spacing: 1.5px;
-            box-sizing: border-box;
             transition: transform 0.1s;
         }
         .btn-back:active { transform: scale(0.97); }
@@ -69,6 +71,28 @@
             margin: 25px 0;
             font-style: italic;
             color: #fff;
+        }
+
+        /* Stil för säkerhetsboxen */
+        .warning-box {
+            border: 1px solid var(--gold);
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(212, 175, 55, 0.05);
+            margin-top: 40px;
+        }
+
+        .warning-title {
+            color: var(--gold);
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .gold-text {
+            color: var(--gold);
+            font-weight: bold;
         }
     </style>
 </head>
@@ -86,10 +110,11 @@
         </ol>
 
         <h2>🛡️ DIN TRYGGHET – VETO-SYSTEMET</h2>
-        <p>Till skillnad från en fysisk kortlek är <em>Dare Me</em> smart. Spelet kommer aldrig att ge dig ett uppdrag som du eller din motspelare har valt att blockera.</p>
+        <p>Veto-systemet är byggt för att automatiskt filtrera bort uppdrag som rör ämnen du eller din motspelare valt att undvika. Det är ett kraftfullt verktyg för att skapa en trygg miljö, men säkerheten är ett samspel mellan tekniken och er spelare.</p>
         <ul>
-            <li><strong>Vetos:</strong> Innan spelet börjar väljer varje spelare sina personliga gränser i inställningarna.</li>
-            <li><strong>Diskretion:</strong> Appen sköter filtreringen i bakgrunden. Ingen behöver förklara sina val under spelets gång – korten som visas är alltid "säkra" för just er konstellation.</li>
+            <li><strong>Filtrering:</strong> Innan spelet börjar väljer varje spelare sina personliga gränser. Appen strävar efter att endast visa kort som matchar allas inställningar.</li>
+            <li><strong>Diskretion:</strong> Du behöver aldrig förklara dina val. Appen sköter gallringen i bakgrunden.</li>
+            <li><strong>Säkerhetsventilen (Viktigt):</strong> Skulle ett uppdrag mot förmodan dyka upp som känns fel eller som borde ha filtrerats bort (t.ex. på grund av mänskliga fel vid taggning), använd <strong>"BYT KORT" 🔄</strong> knappen omedelbart. Inga frågor ställs, och turen stannar kvar hos den aktiva spelaren.</li>
         </ul>
 
         <h2>🤝 SAMTYCKE & RESPEKT</h2>
@@ -102,8 +127,31 @@
         <p>Värden styr vilka nivåer som är aktiva. Ni kan börja mjukt och låta spänningen byggas upp från massage och flirt till djupare intimitet och mer vågade utmaningar.</p>
 
         <h2>⭐ GULDSTJÄRNAN</h2>
-        <p>Ibland vinner en spelare en Guldstjärna! Du får då total kontroll över rummet under en begränsad tid. Du bestämmer vad de andra ska göra – med varandra eller med dig.</p>
-        <p><strong>Spara din makt:</strong> Du behöver aldrig använda stjärnan direkt. Den sparas vid ditt namn. Klicka på ditt namn för att aktivera den när ögonblicket är rätt.</p>
+        <p>Ibland vinner en spelare en Guldstjärna! Det ger dig total kontroll över rummet under en begränsad tid där du bestämmer vad de andra ska göra – med varandra eller med dig.</p>
+        <ul>
+            <li><strong>Spara din makt:</strong> Du behöver aldrig använda stjärnan direkt. Dina intjänade stjärnor visas vid ditt namn i statusraden högst upp.</li>
+            <li><strong>Aktivering:</strong> För att använda din stjärna måste du <span class="gold-text">klicka på ditt eget namn</span> i statusraden. Då öppnas en meny där du väljer att aktivera din "Star Power".</li>
+            <li><strong>Värdens inställningar:</strong> Den som skapat rummet (Host) styr förutsättningarna för stjärnorna:
+                <ul>
+                    <li><strong>Chans (1–10 %):</strong> Värden ställer in hur ofta spelet ska dela ut stjärnor vid ett nytt kort.</li>
+                    <li><strong>Global Timer:</strong> Värden bestämmer hur länge en stjärna ska gälla (1–5 minuter).</li>
+                    <li><strong>Bonusstjärnor:</strong> Om värden aktiverat funktionen kan hen även dela ut manuella stjärnor till spelare som gjort något extra bra.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <!-- SÄKERHETSAVSNITTET LÄNGST NER -->
+        <div class="warning-box">
+            <span class="warning-title">⚠️ Ansvar & Säkerhet (Viktigt)</span>
+            <p>Spelet <em>Dare Me</em> är endast avsett som ett inspirationsverktyg för samtyckande vuxna. Allt deltagande och utförande av spelets utmaningar sker helt på egen risk.</p>
+            <p><strong>Spelutvecklaren frånsäger sig allt ansvar</strong> för eventuella fysiska skador, psykiskt obehag, juridiska konsekvenser eller skador på personliga relationer som kan uppstå vid användning av denna app. Genom att använda spelet bekräftar ni att:</p>
+            <ul>
+                <li>Ni deltar frivilligt och är myndiga.</li>
+                <li>Ni bär det fulla ansvaret för att kommunicera och respektera era egna och andras gränser.</li>
+                <li>Ni förstår att appens instruktioner är förslag och aldrig ett tvång.</li>
+                <li><span class="gold-text">Ni är införstådda med att man bör vara varsam med alkohol vid spel.</span> Berusning försämrar omdömet och kan leda till att man gör saker eller går med på utmaningar som man inte hade valt om man var nykter. Säkert samtycke kräver att alla inblandade har full kontroll över sina beslut.</li>
+            </ul>
+        </div>
 
         <a href="index.html" class="btn-back">TILLBAKA TILL SPELET</a>
     </div>
