@@ -18,7 +18,8 @@
       "imports": {
         "firebase/app": "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js",
         "firebase/auth": "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js",
-        "firebase/firestore": "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js",
+        "firebase/analytics": "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js"
       }
     }
     </script>
@@ -379,6 +380,7 @@
     import { initializeApp } from "firebase/app";
     import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "firebase/auth";
     import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
+    import { getAnalytics } from "firebase/analytics";
 
     const firebaseConfig = {
       apiKey: "AIzaSyADzIduNhKHBKIMWMGIwwPtiqKkZk8xZK4",
@@ -386,8 +388,12 @@
       projectId: "dare-me-1c264",
       storageBucket: "dare-me-1c264.firebasestorage.app",
       messagingSenderId: "1002052194460",
-      appId: "1:1002052194460:web:9f55d47fbc82745a17dd59"
+      appId: "1:1002052194460:web:9f55d47fbc82745a17dd59",
+      measurementId: "G-SZC2F73JDZ"
     };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
 
     let allDares = {}; 
     let tempStars = 0; 
@@ -451,7 +457,6 @@
 
     async function initFirebase() {
         try {
-            const app = initializeApp(firebaseConfig);
             auth = getAuth(app); db = getFirestore(app);
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                 await signInWithCustomToken(auth, __initial_auth_token);
