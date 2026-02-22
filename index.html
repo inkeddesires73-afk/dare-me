@@ -380,8 +380,9 @@
     import { initializeApp } from "firebase/app";
     import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "firebase/auth";
     import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
-    import { getAnalytics } from "firebase/analytics";
+    import { getAnalytics, logEvent } from "firebase/analytics";
 
+    // ÅTERSTÄLLER API-NYCKEL TILL DEN SOM FUNGERAR FÖR FIRESTORE
     const firebaseConfig = {
       apiKey: "AIzaSyADzIduNhKHBKIMWMGIwwPtiqKkZk8xZK4",
       authDomain: "dare-me-1c264.firebaseapp.com",
@@ -749,7 +750,14 @@
     window.addEventListener('load', () => { 
         const saved = localStorage.getItem('dareme_state');
         if (saved) { state = { ...state, ...JSON.parse(saved) }; }
-        initFirebase().then(async () => { await scanForLevels(); hideLoading(); toggleBiOption(); applyStateToUI(); });
+        initFirebase().then(async () => { 
+            await scanForLevels(); 
+            hideLoading(); 
+            toggleBiOption(); 
+            applyStateToUI();
+            // EXTRA TRIGGER FÖR ANALYTICS REALTIME
+            logEvent(analytics, 'app_open', { platform: 'web' });
+        });
     });
 </script>
 </body>
