@@ -35,6 +35,7 @@
         }
 
         * { box-sizing: border-box; }
+        html { overflow-anchor: none; scroll-behavior: auto; }
         
         body { 
             background: var(--bg); 
@@ -548,8 +549,12 @@
     }
 
     function applyStateToUI() {
-        // Varje vy ska börja från toppen, även efter att sidan scrollats på laptop.
-        window.scrollTo(0, 0);
+        // Återställ även efter att innehållet har renderats klart.
+        const resetScroll = () => window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        resetScroll();
+        requestAnimationFrame(resetScroll);
+        setTimeout(resetScroll, 0);
+        setTimeout(resetScroll, 150);
         isHost = state.isHost;
         const pages = ['intro-page', 'start-page', 'lobby-page', 'game-page'];
         pages.forEach(p => {
