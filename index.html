@@ -239,8 +239,9 @@
             <button class="btn btn-start" onclick="initLocalGame()">SPELA PÅ DENNA ENHET</button>
             <div style="margin: 20px 0; color: #444;">— ELLER SYNKAT LÄGE —</div>
             <button class="btn btn-add" onclick="initCreateRoom()">SKAPA RUM (HOST)</button>
-            <input type="text" id="join-code-input" placeholder="ANGE RUMSKOD" maxlength="5" style="text-align: center; margin-top: 10px;">
-            <button class="btn btn-add" onclick="initJoinRoom()">GÅ MED I RUM</button>
+            <button class="btn btn-add" id="show-join-room-btn" onclick="showJoinRoomInput()">GÅ MED I RUM</button>
+            <input type="text" id="join-code-input" placeholder="ANGE RUMSKOD" maxlength="5" autocomplete="off" style="display:none; text-align: center; margin-top: 10px;">
+            <button class="btn btn-start" id="join-room-submit" onclick="initJoinRoom()" style="display:none;">ANSLUT TILL RUM</button>
         </div>
     </div>
 
@@ -378,7 +379,7 @@
 <script type="module">
     import { initializeApp } from "firebase/app";
     import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "firebase/auth";
-    import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc } from "firebase/firestore";
     import { getAnalytics, logEvent } from "firebase/analytics";
 
     const firebaseConfig = {
@@ -600,6 +601,13 @@
     window.toggleManualStars = () => { state.allowManualStars = document.getElementById('setting-manual-stars').checked; updateCloud(); saveLocal(); };
     window.enterGame = () => { state.introSeen = true; applyStateToUI(); saveLocal(); };
 
+    window.showJoinRoomInput = () => {
+        document.getElementById('show-join-room-btn').style.display = 'none';
+        document.getElementById('join-code-input').style.display = 'block';
+        document.getElementById('join-room-submit').style.display = 'block';
+        document.getElementById('join-code-input').focus();
+    };
+
     window.initLocalGame = async () => { isHost = true; state.isHost = true; state.modeSelected = true; state.roomCode = null; await scanForLevels(); saveLocal(); applyStateToUI(); };
     window.initCreateRoom = async () => {
         const ok = await initFirebase(); if (!ok) return;
@@ -732,7 +740,20 @@
         document.getElementById('modal-overlay').style.display = 'flex';
     };
 
-    window.confirmReset = () => { localStorage.clear(); location.reload(); };
+    window.confirmReset = async () => {
+        try {
+            // Värden avslutar och raderar sitt molnrum. En gäst lämnar bara rummet.
+            if (state.roomCode && isHost && db && user) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode));
+            }
+            if (unsubscribe) unsubscribe();
+            localStorage.clear();
+            location.reload();
+        } catch (e) {
+            console.error('Kunde inte radera Firebase-rummet.', e);
+            document.getElementById('modal-msg-text').innerText = 'Rummet kunde inte raderas. Kontrollera anslutningen och försök igen.';
+        }
+    };
 
     let selectedPlayerIndex = -1;
     window.openStarModal = (i) => {
