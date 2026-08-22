@@ -812,7 +812,22 @@
     };
 
     function saveLocal() { localStorage.setItem('dareme_state', JSON.stringify(state)); }
-    window.goToLobby = () => { state.isPlaying = false; applyStateToUI(); updateCloud(); saveLocal(); };
+    window.goToLobby = () => {
+        if (!isHost && state.roomCode) {
+            // En gäst lämnar bara sin egen klient och får inte skriva över värdens spelstatus.
+            if (unsubscribe) unsubscribe();
+            unsubscribe = null;
+            isHost = false;
+            state = { ...state, isHost: false, modeSelected: false, isPlaying: false, roomCode: null, hostUid: null, currentTask: "TRYCK FÖR KORT" };
+            saveLocal();
+            applyStateToUI();
+            return;
+        }
+        state.isPlaying = false;
+        applyStateToUI();
+        updateCloud().catch(e => console.warn('Kunde inte synkronisera lobbystatus.', e));
+        saveLocal();
+    };
 
     window.addEventListener('load', () => { 
         const saved = localStorage.getItem('dareme_state');
