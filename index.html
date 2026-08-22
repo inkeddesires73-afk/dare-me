@@ -514,7 +514,14 @@
         if (!db || !user) return;
         if (unsubscribe) unsubscribe();
         unsubscribe = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code), (snapshot) => {
-            if (snapshot.exists()) {
+            if (!snapshot.exists()) {
+                if (!isHost) {
+                    window.goToLobby();
+                    showLobbyWarning('Rummet har avslutats av värden.');
+                }
+                return;
+            }
+            {
                 const cloudData = snapshot.data();
                 if (cloudData.players) {
                     cloudData.players.forEach(p => {
