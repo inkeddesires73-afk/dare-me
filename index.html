@@ -411,13 +411,36 @@
         currentTask: "TRYCK FÖR KORT",
         timer: null,
         isPlaying: false,
-        roomCode: null
+        roomCode: null,
+        hostUid: null
     };
 
     let isHost = false, lastStarCounts = {}, db, auth, unsubscribe, user;
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'dare-me-dynamic';
 
     function hideLoading() { document.getElementById('loading-screen').style.display = 'none'; }
+
+    // All user/content values pass through this before being inserted into HTML.
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[char]));
+    }
+
+    function sanitizeTaskHtml(value) {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = String(value ?? '');
+        wrapper.querySelectorAll('*').forEach(element => {
+            if (element.tagName === 'SPAN' && element.classList.contains('gold-name')) {
+                element.replaceChildren(...Array.from(element.childNodes).map(node => document.createTextNode(node.textContent || '')));
+                element.setAttribute('class', 'gold-name');
+                Array.from(element.attributes).forEach(attribute => { if (attribute.name !== 'class') element.removeAttribute(attribute.name); });
+            } else {
+                element.replaceWith(document.createTextNode(element.textContent || ''));
+            }
+        });
+        return wrapper.innerHTML;
+    }
 
     async function scanForLevels() {
         const grid = document.getElementById('level-selection-grid');
@@ -434,7 +457,7 @@
                     const data = await res.json();
                     allDares[i] = data;
                     const isChecked = state.selectedLevels.includes(i) ? 'checked' : '';
-                    htmlBuffer += `<label class="veto-option"><input type="checkbox" class="lvl-cb" value="${i}" ${isChecked} onchange="toggleLevelSelection()"> ${data.difficulty || '🌶️'} ${data.name || 'Nivå ' + i}</label>`;
+                    htmlBuffer += `<label class="veto-option"><input type="checkbox" class="lvl-cb" value="${i}" ${isChecked} onchange="toggleLevelSelection()"> ${escapeHtml(data.difficulty || '🌶️')} ${escapeHtml(data.name || 'Nivå ' + i)}</label>`;
                     foundCount++;
                 }
             } catch (e) { console.warn(`Kunde inte läsa in level${i}.json.`, e); }
@@ -545,7 +568,7 @@
             const nextUpEl = document.getElementById('next-up-info');
             if (nextUpEl) nextUpEl.innerText = nextP ? `NÄSTA PÅ TUR: ${nextP.name}` : "NÄSTA PÅ TUR: ...";
 
-            document.getElementById('task-box').innerHTML = state.currentTask;
+            document.getElementById('task-box').innerHTML = sanitizeTaskHtml(state.currentTask);
             const curLvlId = state.selectedLevels[state.activeLevelIdx];
             document.getElementById('current-lvl-text').innerText = curLvlId <= 2 ? (allDares[curLvlId]?.name || `Nivå ${curLvlId}`) : "🔥 THE SHUFFLE ZONE";
             document.getElementById('lvl-up-btn').style.display = (isHost && curLvlId < 3 && state.activeLevelIdx < state.selectedLevels.length - 1) ? 'block' : 'none';
@@ -566,7 +589,7 @@
             renderLobby();
         }
         const roomInfo = document.getElementById('room-info');
-        if (roomInfo) roomInfo.innerHTML = state.roomCode ? `RUMSKOD: <span class="room-code-display">${state.roomCode}</span>` : `LOKALT SPEL`;
+        if (roomInfo) roomInfo.innerHTML = state.roomCode ? `RUMSKOD: <span class="room-code-display">${escapeHtml(state.roomCode)}</span>` : `LOKALT SPEL`;
         hideLoading();
     }
 
@@ -580,6 +603,7 @@
         const ok = await initFirebase(); if (!ok) return;
         isHost = true; state.isHost = true; state.modeSelected = true;
         state.roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+        state.hostUid = user ? user.uid : null;
         await scanForLevels(); listenToRoom(state.roomCode); updateCloud(); saveLocal(); applyStateToUI();
     };
     window.initJoinRoom = async () => {
@@ -646,7 +670,7 @@
             const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
             const pronomen = target.gender === 'man' ? 'honom' : 'henne';
             const pronomenPossessiv = target.gender === 'man' ? 'hans' : 'hennes';
-            state.currentTask = `<span class="gold-name">${active.name}</span>, ${dare.text}`.replace(/\[TARGETS\]/g, `<span class="gold-name">${ts}</span>`).replace(/\[TARGET\]/g, `<span class="gold-name">${target.name}</span>`).replace(/\[HEN\]/g, pronomen).replace(/\[HENS\]/g, pronomenPossessiv);
+            state.currentTask = `<span class="gold-name">${escapeHtml(active.name)}</span>, ${escapeHtml(dare.text)}`.replace(/\[TARGETS\]/g, `<span class="gold-name">${escapeHtml(ts)}</span>`).replace(/\[TARGET\]/g, `<span class="gold-name">${escapeHtml(target.name)}</span>`).replace(/\[HEN\]/g, pronomen).replace(/\[HENS\]/g, pronomenPossessiv);
             if (Math.random() < (state.starChance/100) && active.stars < 4) { active.stars++; if (!state.roomCode) showStarNotif(active.name); }
             state.currentPlayerIdx = (state.currentPlayerIdx + 1) % state.players.length;
         }
@@ -664,7 +688,7 @@
     window.activateStarPower = () => {
         const active = state.players[selectedPlayerIndex];
         active.stars--; closeModal();
-        state.currentTask = `<span class="gold-name">${active.name}</span>, DU HAR KONTROLLEN! Bestäm vad de andra ska göra.`;
+        state.currentTask = `<span class="gold-name">${escapeHtml(active.name)}</span>, DU HAR KONTROLLEN! Bestäm vad de andra ska göra.`;
         startTimer((state.starPowerDuration || 3) * 60);
         updateCloud(); saveLocal();
     };
@@ -728,7 +752,7 @@
     function renderLobby() { 
         document.getElementById('displayList').innerHTML = state.players.map(p => `
             <div class="player-item">
-                <div class="player-info"><strong>${p.name}</strong><small>${p.gender} • ${p.pref}</small></div>
+                <div class="player-info"><strong>${escapeHtml(p.name)}</strong><small>${escapeHtml(p.gender)} • ${escapeHtml(p.pref)}</small></div>
                 <div class="action-btns"><span class="edit-btn" onclick="editPlayer(${p.id})">✎</span><span class="delete-btn" onclick="removePlayer(${p.id})">×</span></div>
             </div>`).join(''); 
     }
@@ -737,7 +761,7 @@
         const activeIdx = (state.currentTask === "TRYCK FÖR KORT") ? -1 : (state.currentPlayerIdx - 1 + state.players.length) % state.players.length;
         document.getElementById('player-status').innerHTML = state.players.map((p, i) => `
             <div class="p-chip ${activeIdx === i ? 'active-turn' : ''}" onclick="openStarModal(${i})">
-                <strong>${p.name}</strong><div class="star-count">${"⭐".repeat(p.stars)||0}</div>
+                <strong>${escapeHtml(p.name)}</strong><div class="star-count">${"⭐".repeat(p.stars)||0}</div>
             </div>`).join(''); 
     }
     
@@ -753,7 +777,18 @@
 
     window.addEventListener('load', () => { 
         const saved = localStorage.getItem('dareme_state');
-        if (saved) { state = { ...state, ...JSON.parse(saved) }; }
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                const players = Array.isArray(parsed.players) ? parsed.players
+                    .filter(p => p && typeof p.name === 'string' && Number.isFinite(Number(p.id)))
+                    .map(p => ({ ...p, id: Number(p.id), name: p.name.slice(0, 40), stars: Math.max(0, Math.min(4, Number(p.stars) || 0)), vetos: Array.isArray(p.vetos) ? p.vetos.filter(v => typeof v === 'string') : [] })) : [];
+                state = { ...state, ...parsed, players, selectedLevels: Array.isArray(parsed.selectedLevels) ? parsed.selectedLevels.filter(Number.isInteger) : [] };
+            } catch (e) {
+                localStorage.removeItem('dareme_state');
+                console.warn('Sparad speldata kunde inte läsas och ignorerades.', e);
+            }
+        }
         initFirebase().then(async () => { 
             await scanForLevels(); 
             hideLoading(); 
