@@ -485,6 +485,8 @@
             } else {
                 await signInAnonymously(auth);
             }
+            user = auth.currentUser;
+            if (!user) throw new Error('Firebase-användaren kunde inte skapas.');
             onAuthStateChanged(auth, (u) => {
                 user = u;
                 if (u && state.roomCode) listenToRoom(state.roomCode);
@@ -494,7 +496,7 @@
     }
 
     async function updateCloud() {
-        if (!state.roomCode || !db || !user) return;
+        if (!state.roomCode || !db || !user) throw new Error('Firebase är inte redo.');
         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode), state);
     }
 
@@ -604,15 +606,31 @@
         isHost = true; state.isHost = true; state.modeSelected = true;
         state.roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
         state.hostUid = user ? user.uid : null;
-        await scanForLevels(); listenToRoom(state.roomCode); updateCloud(); saveLocal(); applyStateToUI();
+        await scanForLevels();
+        try {
+            await updateCloud();
+            listenToRoom(state.roomCode);
+            saveLocal();
+            applyStateToUI();
+        } catch (e) {
+            console.error('Kunde inte skapa Firebase-rum.', e);
+            state.roomCode = null;
+            showLobbyWarning('Rummet kunde inte skapas. Kontrollera Firebase-reglerna och försök igen.');
+        }
     };
     window.initJoinRoom = async () => {
         const code = document.getElementById('join-code-input').value.toUpperCase();
         if(!code) return;
         const ok = await initFirebase(); if (!ok) return;
-        const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code));
-        if (!snap.exists()) return;
-        isHost = false; state.isHost = false; state.modeSelected = true; state.roomCode = code; listenToRoom(code); applyStateToUI();
+        try {
+            const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code));
+            if (!snap.exists()) { showLobbyWarning('Rummet hittades inte. Kontrollera koden.'); return; }
+            isHost = false; state.isHost = false; state.modeSelected = true; state.roomCode = code;
+            listenToRoom(code); saveLocal(); applyStateToUI();
+        } catch (e) {
+            console.error('Kunde inte ansluta till Firebase-rum.', e);
+            showLobbyWarning('Kunde inte ansluta till rummet. Kontrollera rumskoden och Firebase-reglerna.');
+        }
     };
 
     window.addPlayer = () => {
