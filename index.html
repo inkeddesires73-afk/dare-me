@@ -422,6 +422,7 @@
         starChance: 3,
         currentTask: "TRYCK FÖR KORT",
         timer: null,
+        timerEndsAt: null,
         isPlaying: false,
         roomCode: null,
         hostUid: null
@@ -576,6 +577,7 @@
             currentPlayerIdx: 0,
             currentTask: 'TRYCK FÖR KORT',
             timer: null,
+            timerEndsAt: null,
             isPlaying: false,
             roomCode: null,
             hostUid: null
@@ -629,6 +631,7 @@
     }
 
     function applyStateToUI() {
+        startTimerDisplayLoop();
         // Återställ även efter att innehållet har renderats klart.
         const resetScroll = () => window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
         resetScroll();
@@ -671,9 +674,10 @@
             const curLvlId = state.selectedLevels[state.activeLevelIdx];
             document.getElementById('current-lvl-text').innerText = curLvlId <= 2 ? (allDares[curLvlId]?.name || `Nivå ${curLvlId}`) : "🔥 THE SHUFFLE ZONE";
             document.getElementById('lvl-up-btn').style.display = (isHost && curLvlId < 3 && state.activeLevelIdx < state.selectedLevels.length - 1) ? 'block' : 'none';
-            if (state.timer) {
+            const timerText = getTimerDisplayText();
+            if (timerText) {
                 document.getElementById('timer-display').style.display = 'block';
-                document.getElementById('timer-display').innerText = state.timer;
+                document.getElementById('timer-display').innerText = timerText;
                 document.getElementById('game-card').classList.add('star-power-active');
                 document.getElementById('star-power-label').style.display = 'block';
                 document.getElementById('btn-finish-timer').style.display = 'block';
@@ -855,7 +859,6 @@
         active.stars--; closeModal();
         state.currentTask = `<span class="gold-name">${escapeHtml(active.name)}</span>, DU HAR KONTROLLEN! Bestäm vad de andra ska göra.`;
         startTimer((state.starPowerDuration || 3) * 60);
-        updateCloud(); saveLocal();
     };
 
     window.showLobbyWarning = (msg) => {
@@ -920,20 +923,52 @@
     };
 
     window.manualAddStar = () => { if(isHost && state.players[selectedPlayerIndex].stars < 4) { state.players[selectedPlayerIndex].stars++; updateCloud(); saveLocal(); closeModal(); } };
-    
-    function startTimer(sec) {
-        let timeLeft = sec;
-        const tick = () => {
-            let m = Math.floor(timeLeft/60), s = timeLeft%60;
-            state.timer = `${m}:${s<10?'0':''}${s}`;
-            timeLeft--;
-            if (timeLeft < 0) { state.timer = "KLART!"; clearInterval(window.tInt); }
-            updateCloud(); saveLocal(); applyStateToUI();
-        };
-        clearInterval(window.tInt); window.tInt = setInterval(tick, 1000); tick();
+
+    function getTimerDisplayText() {
+        if (state.timerEndsAt) {
+            const remaining = Math.ceil((Number(state.timerEndsAt) - Date.now()) / 1000);
+            if (remaining <= 0) return 'KLART!';
+            const m = Math.floor(remaining / 60);
+            const s = remaining % 60;
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+        return state.timer || null;
     }
-    window.finishTimerEarly = () => { clearInterval(window.tInt); state.timer = null; updateCloud(); applyStateToUI(); };
-    function stopTimer() { clearInterval(window.tInt); state.timer = null; }
+
+    function refreshTimerDisplay() {
+        const timerEl = document.getElementById('timer-display');
+        if (!timerEl || !state.timerEndsAt) return;
+        timerEl.innerText = getTimerDisplayText();
+    }
+
+    function startTimerDisplayLoop() {
+        if (!window.tInt) window.tInt = setInterval(refreshTimerDisplay, 1000);
+    }
+
+    function startTimer(sec) {
+        startTimerDisplayLoop();
+        state.timerEndsAt = Date.now() + (sec * 1000);
+        state.timer = getTimerDisplayText();
+        updateCloud();
+        saveLocal();
+        applyStateToUI();
+    }
+
+    window.finishTimerEarly = () => {
+        clearInterval(window.tInt);
+        window.tInt = null;
+        state.timer = null;
+        state.timerEndsAt = null;
+        updateCloud();
+        applyStateToUI();
+    };
+
+    function stopTimer() {
+        clearInterval(window.tInt);
+        window.tInt = null;
+        state.timer = null;
+        state.timerEndsAt = null;
+    }
     
     function renderLobby() { 
         document.getElementById('displayList').innerHTML = state.players.map(p => `
