@@ -548,6 +548,8 @@
     }
 
     function applyStateToUI() {
+        // Varje vy ska börja från toppen, även efter att sidan scrollats på laptop.
+        window.scrollTo(0, 0);
         isHost = state.isHost;
         const pages = ['intro-page', 'start-page', 'lobby-page', 'game-page'];
         pages.forEach(p => {
