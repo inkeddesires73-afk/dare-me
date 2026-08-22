@@ -542,7 +542,10 @@
                         }
                     }
                 }
-                state = { ...state, ...cloudData };
+                // Molndata får synkronisera spelet, men aldrig skriva över
+                // den lokala klientens roll som värd eller gäst.
+                const localHostRole = isHost;
+                state = { ...state, ...cloudData, isHost: localHostRole };
                 applyStateToUI();
             }
         }, (err) => { console.error("Snapshot error:", err); });
