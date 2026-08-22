@@ -742,8 +742,9 @@
             const dare = filteredPool[Math.floor(Math.random() * filteredPool.length)];
             const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
             const pronomen = target.gender === 'man' ? 'honom' : 'henne';
+            const pronomenSubject = target.gender === 'man' ? 'han' : 'hon';
             const pronomenPossessiv = target.gender === 'man' ? 'hans' : 'hennes';
-            state.currentTask = `<span class="gold-name">${escapeHtml(active.name)}</span>, ${escapeHtml(dare.text)}`.replace(/\[TARGETS\]/g, `<span class="gold-name">${escapeHtml(ts)}</span>`).replace(/\[TARGET\]/g, `<span class="gold-name">${escapeHtml(target.name)}</span>`).replace(/\[HEN\]/g, pronomen).replace(/\[HENS\]/g, pronomenPossessiv);
+            state.currentTask = `<span class="gold-name">${escapeHtml(active.name)}</span>, ${escapeHtml(dare.text)}`.replace(/\[TARGETS\]/g, `<span class="gold-name">${escapeHtml(ts)}</span>`).replace(/\[TARGET\]/g, `<span class="gold-name">${escapeHtml(target.name)}</span>`).replace(/\[SUBJECT\]/g, pronomenSubject).replace(/\[HEN\]/g, pronomen).replace(/\[HENS\]/g, pronomenPossessiv);
             if (Math.random() < (state.starChance/100) && active.stars < 4) { active.stars++; if (!state.roomCode) showStarNotif(active.name); }
             state.currentPlayerIdx = (state.currentPlayerIdx + 1) % state.players.length;
         }
