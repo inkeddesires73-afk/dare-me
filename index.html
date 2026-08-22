@@ -720,6 +720,22 @@
         state.isPlaying = true; state.activeLevelIdx = 0; state.currentPlayerIdx = 0; updateCloud(); saveLocal(); applyStateToUI();
     };
 
+    function isSexualDare(dare) {
+        return dare.tags?.some(tag => ['oral', 'onani', 'penetration', 'kon', 'leksaker'].includes(tag));
+    }
+
+    function orientationAllows(actor, target) {
+        if (!actor || !target || !actor.pref || !target.pref) return true;
+        if (actor.gender === target.gender) {
+            return actor.pref === 'bi' || actor.pref === 'gay';
+        }
+        return actor.pref === 'bi' || actor.pref === 'hetero';
+    }
+
+    function pairIsAllowed(actor, target) {
+        return orientationAllows(actor, target) && orientationAllows(target, actor);
+    }
+
     window.generateTurn = () => {
         if (state.timer) stopTimer();
         const active = state.players[state.currentPlayerIdx];
@@ -727,6 +743,9 @@
         if (validTargets.length === 0) return;
         const target = validTargets[Math.floor(Math.random() * validTargets.length)];
         const partnerCandidates = state.players.filter(p => p.id !== active.id && p.id !== target.id);
+        const partner = partnerCandidates.length > 0
+            ? partnerCandidates[Math.floor(Math.random() * partnerCandidates.length)]
+            : null;
         const curLvlId = state.selectedLevels[state.activeLevelIdx];
         let pool = [];
         if (curLvlId <= 2) pool = (allDares[curLvlId]?.dares || []);
@@ -734,7 +753,13 @@
 
         const filteredPool = pool.filter(d => {
             if (d.tags && d.tags.some(tag => target.vetos.includes(tag) || active.vetos.includes(tag))) return false;
-            if (active.gender === 'man' && target.gender === 'man' && target.pref === 'bi' && target.biNoPen && d.tags?.includes('penetration')) return false;
+            const sexual = isSexualDare(d);
+            if (sexual && !pairIsAllowed(active, target)) return false;
+            if (sexual && d.text.includes('[PARTNER]') && (!partner || !pairIsAllowed(partner, target))) return false;
+            if (d.tags?.includes('penetration') && target.biNoPen) {
+                if ((active.gender === target.gender && active.pref === 'bi') ||
+                    (partner && d.text.includes('[PARTNER]') && partner.gender === target.gender && partner.pref === 'bi')) return false;
+            }
             return true;
         });
 
@@ -745,9 +770,6 @@
         if (availablePool.length === 0) state.currentTask = "INGA MATCHANDE KORT HITTADES.";
         else {
             const dare = availablePool[Math.floor(Math.random() * availablePool.length)];
-            const partner = partnerCandidates.length > 0
-                ? partnerCandidates[Math.floor(Math.random() * partnerCandidates.length)]
-                : null;
             const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
             const pronomen = target.gender === 'man' ? 'honom' : 'henne';
             const pronomenSubject = target.gender === 'man' ? 'han' : 'hon';
