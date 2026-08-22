@@ -726,6 +726,7 @@
         const validTargets = state.players.filter(p => p.id !== active.id);
         if (validTargets.length === 0) return;
         const target = validTargets[Math.floor(Math.random() * validTargets.length)];
+        const partnerCandidates = state.players.filter(p => p.id !== active.id && p.id !== target.id);
         const curLvlId = state.selectedLevels[state.activeLevelIdx];
         let pool = [];
         if (curLvlId <= 2) pool = (allDares[curLvlId]?.dares || []);
@@ -737,14 +738,32 @@
             return true;
         });
 
-        if (filteredPool.length === 0) state.currentTask = "INGA MATCHANDE KORT HITTADES.";
+        const availablePool = partnerCandidates.length > 0
+            ? filteredPool
+            : filteredPool.filter(d => !/\[(?:ACTIVE|PARTNER)\]/.test(d.text));
+
+        if (availablePool.length === 0) state.currentTask = "INGA MATCHANDE KORT HITTADES.";
         else {
-            const dare = filteredPool[Math.floor(Math.random() * filteredPool.length)];
+            const dare = availablePool[Math.floor(Math.random() * availablePool.length)];
+            const partner = partnerCandidates.length > 0
+                ? partnerCandidates[Math.floor(Math.random() * partnerCandidates.length)]
+                : null;
             const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
             const pronomen = target.gender === 'man' ? 'honom' : 'henne';
             const pronomenSubject = target.gender === 'man' ? 'han' : 'hon';
             const pronomenPossessiv = target.gender === 'man' ? 'hans' : 'hennes';
-            state.currentTask = `<span class="gold-name">${escapeHtml(active.name)}</span>, ${escapeHtml(dare.text)}`.replace(/\[TARGETS\]/g, `<span class="gold-name">${escapeHtml(ts)}</span>`).replace(/\[TARGET\]/g, `<span class="gold-name">${escapeHtml(target.name)}</span>`).replace(/\[SUBJECT\]/g, pronomenSubject).replace(/\[HEN\]/g, pronomen).replace(/\[HENS\]/g, pronomenPossessiv);
+            const usesActivePlaceholder = dare.text.includes('[ACTIVE]');
+            const renderedText = escapeHtml(dare.text)
+                .replace(/\[ACTIVE\]/g, `<span class="gold-name">${escapeHtml(active.name)}</span>`)
+                .replace(/\[PARTNER\]/g, `<span class="gold-name">${escapeHtml(partner?.name || '')}</span>`)
+                .replace(/\[TARGETS\]/g, `<span class="gold-name">${escapeHtml(ts)}</span>`)
+                .replace(/\[TARGET\]/g, `<span class="gold-name">${escapeHtml(target.name)}</span>`)
+                .replace(/\[SUBJECT\]/g, pronomenSubject)
+                .replace(/\[HEN\]/g, pronomen)
+                .replace(/\[HENS\]/g, pronomenPossessiv);
+            state.currentTask = usesActivePlaceholder
+                ? renderedText
+                : `<span class="gold-name">${escapeHtml(active.name)}</span>, ${renderedText}`;
             if (Math.random() < (state.starChance/100) && active.stars < 4) { active.stars++; if (!state.roomCode) showStarNotif(active.name); }
             state.currentPlayerIdx = (state.currentPlayerIdx + 1) % state.players.length;
         }
