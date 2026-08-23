@@ -484,6 +484,7 @@
         starChance: 3,
         autoLevelUpCards: 0,
         cardsSinceLevelUp: 0,
+        usedDareKeys: [],
         currentTask: "TRYCK FÖR KORT",
         timer: null,
         timerEndsAt: null,
@@ -687,6 +688,7 @@
             timer: null,
             timerEndsAt: null,
             cardsSinceLevelUp: 0,
+            usedDareKeys: [],
             isPlaying: false,
             gamePaused: false,
             roomCode: null,
@@ -1117,7 +1119,7 @@
         if (state.selectedLevels.length === 0) { showLobbyWarning("Du måste välja minst en nivåfil för att kunna starta."); return; }
         if (state.players.length < 2) { showLobbyWarning("Det krävs minst två spelare för att kunna börja."); return; }
         maybeShowLevel4Notice(state.selectedLevels);
-        state.isPlaying = true; state.gamePaused = false; state.activeLevelIdx = 0; state.currentPlayerIdx = 0; state.cardsSinceLevelUp = 0; updateCloud(); saveLocal(); applyStateToUI();
+        state.isPlaying = true; state.gamePaused = false; state.activeLevelIdx = 0; state.currentPlayerIdx = 0; state.cardsSinceLevelUp = 0; state.usedDareKeys = []; updateCloud(); saveLocal(); applyStateToUI();
     };
 
     function isSexualDare(dare) {
@@ -1211,21 +1213,37 @@
         const curLvlId = state.selectedLevels[state.activeLevelIdx];
         const pool = allDares[curLvlId]?.dares || [];
         const validTargets = state.players.filter(p => p.id !== active.id);
-        const possibleTurns = [];
-        for (const dare of pool) {
-            for (const target of validTargets) {
-                const partnerCandidates = state.players.filter(p => p.id !== active.id && p.id !== target.id);
-                const partners = dare.text.includes('[PARTNER]') ? partnerCandidates : [null];
-                for (const partner of partners) {
-                    if (/\[(?:ACTIVE|PARTNER)\]/.test(dare.text) && !partner && dare.text.includes('[PARTNER]')) continue;
-                    if (dareIsAllowed(dare, active, target, partner)) possibleTurns.push({ dare, target, partner });
+        if (!Array.isArray(state.usedDareKeys)) state.usedDareKeys = [];
+        const usedDareKeys = new Set(state.usedDareKeys);
+        const collectPossibleTurns = (ignoreUsed = false) => {
+            const turns = [];
+            for (let dareIndex = 0; dareIndex < pool.length; dareIndex++) {
+                const dare = pool[dareIndex];
+                const dareKey = `${curLvlId}:${dareIndex}`;
+                if (!ignoreUsed && usedDareKeys.has(dareKey)) continue;
+                for (const target of validTargets) {
+                    const partnerCandidates = state.players.filter(p => p.id !== active.id && p.id !== target.id);
+                    const partners = dare.text.includes('[PARTNER]') ? partnerCandidates : [null];
+                    for (const partner of partners) {
+                        if (/\[(?:ACTIVE|PARTNER)\]/.test(dare.text) && !partner && dare.text.includes('[PARTNER]')) continue;
+                        if (dareIsAllowed(dare, active, target, partner)) turns.push({ dare, dareIndex, target, partner });
+                    }
                 }
             }
+            return turns;
+        };
+        let possibleTurns = collectPossibleTurns();
+        if (possibleTurns.length === 0 && pool.length && pool.every((_, index) => usedDareKeys.has(`${curLvlId}:${index}`))) {
+            state.usedDareKeys = state.usedDareKeys.filter(key => !key.startsWith(`${curLvlId}:`));
+            usedDareKeys.clear();
+            possibleTurns = collectPossibleTurns();
         }
 
         if (possibleTurns.length === 0) state.currentTask = "INGA MATCHANDE KORT HITTADES.";
         else {
-            const { dare, target, partner } = possibleTurns[Math.floor(Math.random() * possibleTurns.length)];
+            const { dare, dareIndex, target, partner } = possibleTurns[Math.floor(Math.random() * possibleTurns.length)];
+            const dareKey = `${curLvlId}:${dareIndex}`;
+            if (!state.usedDareKeys.includes(dareKey)) state.usedDareKeys.push(dareKey);
             const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
             const pronomen = target.gender === 'man' ? 'honom' : 'henne';
             const pronomenSubject = target.gender === 'man' ? 'han' : 'hon';
