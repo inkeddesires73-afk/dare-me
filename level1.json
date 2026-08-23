@@ -62,7 +62,7 @@
 { "text": "låt [TARGET] hålla dina händer medan du viskar något flirtigt.", "tags": [] },
 { "text": "sätt dig bakom [TARGET] och vila hakan mot [HENS] axel.", "tags": [] },
 { "text": "ge [TARGET] en långsam massage över händerna.", "tags": [] },
-{ "text": "låt [TARGET] välja om du ska hålla [HEN] i handen eller om midjan.", "tags": [] },
+    { "text": "låt [TARGET] välja om du ska hålla [HEN] i handen eller runt midjan.", "tags": [] },
 { "text": "smek försiktigt [TARGETS] kind med baksidan av handen.", "tags": [] },
 { "text": "ge [TARGET] en kyss på halsen och viska [HENS] namn.", "tags": [] },
 { "text": "sitt i [TARGETS] knä i trettio sekunder och håll ögonkontakt.", "tags": [] },
@@ -71,7 +71,7 @@
 { "text": "ge [TARGET] tre kyssar på valfria platser på armen.", "tags": [] },
 { "text": "låt [TARGET] bestämma var på din kropp du ska få en mjuk massage.", "tags": [] },
 { "text": "berätta för [TARGET] vilken typ av kyss du tycker bäst om.", "tags": [] },
-{ "text": "håll [TARGET] i midjan medan [SUBJECT] berättar något du tycker är attraktivt.", "tags": [] },
+    { "text": "lägg armen om [TARGETS] midja medan du berättar något du tycker är attraktivt hos [HEN].", "tags": [] },
 { "text": "låt [TARGET] långsamt knäppa upp en knapp på dina kläder.", "tags": ["nakenhet"] },
 { "text": "ge [TARGET] en långsam kyss som får [HEN] att vilja ha en till.", "tags": [] },
 { "text": "sitt mittemot [TARGET] och stryk försiktigt med foten mot [HENS].", "tags": [] },
@@ -79,8 +79,8 @@
 { "text": "smek [TARGETS] nacke medan du viskar vad du tycker om hos [HEN].", "tags": [] },
 { "text": "låt [TARGET] lägga sig med huvudet i ditt knä medan du smeker [HENS] hår.", "tags": [] },
 { "text": "ge [TARGET] en mjuk kyss och håll kvar [HEN] nära dig i tio sekunder.", "tags": [] },
-{ "text": "låt [TARGET] bestämma om du ska ge [HEN] en kyss eller en försiktig kyss med tänderna.", "tags": ["bitas"] },
-{ "text": "lägg en hand på [TARGETS] lår och fråga om [SUBJECT] vill att du ska flytta den högre upp.", "tags": [] },
+    { "text": "låt [TARGET] bestämma om du ska ge [HEN] en kyss eller ett försiktigt nafs.", "tags": ["bitas"] },
+    { "text": "lägg en hand på [TARGETS] lår och fråga om [SUBJECT] vill att du flyttar den högre upp.", "tags": [] },
 { "text": "låt [TARGET] välja ett klädesplagg som du ska ta av dig och behåll ögonkontakten under tiden.", "tags": ["nakenhet"] }
   ]
 }
