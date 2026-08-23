@@ -642,7 +642,7 @@
                 const localHostRole = isHost;
                 const roomPlayers = Array.isArray(cloudData.players) ? cloudData.players : [];
                 state = { ...state, ...cloudData, isHost: localHostRole };
-                mergeSyncedPlayers(roomPlayers);
+                mergeSyncedPlayers(roomPlayers, cloudData.hostUid);
                 applyStateToUI();
                 if (!isHost) maybeShowLevel4Notice(state.selectedLevels);
             }
@@ -666,12 +666,18 @@
         );
     }
 
-    function mergeSyncedPlayers(roomPlayers = state.players) {
+    function mergeSyncedPlayers(roomPlayers = state.players, roomHostUid = state.hostUid) {
         if (!state.roomCode) return;
         const roomList = Array.isArray(roomPlayers) ? roomPlayers : [];
         // Värdens egna spelare kommer från rummet. Alla gäster kommer enbart från
         // participants-samlingen, så en fördröjd rumssnapshot aldrig kan radera dem.
-        const hostPlayers = roomList.filter(player => !player.uid || player.uid === state.hostUid);
+        const participantIds = new Set(participantPlayers.map(player => player.uid));
+        let hostPlayers = roomList.filter(player => !player.uid || player.uid === roomHostUid);
+        // Äldre rum kan sakna korrekt hostUid på en sparad spelarpost. Behåll då
+        // rumsinnehållet som reserv, men aldrig poster som redan finns som gäster.
+        if (hostPlayers.length === 0 && roomList.length > 0) {
+            hostPlayers = roomList.filter(player => !participantIds.has(player.uid));
+        }
         state.players = [...hostPlayers, ...participantPlayers];
     }
 
@@ -822,6 +828,7 @@
             const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code));
             if (!snap.exists()) { showLobbyWarning('Rummet hittades inte. Kontrollera koden.'); return; }
             isHost = false; state.isHost = false; state.modeSelected = true; state.roomCode = code;
+            participantPlayers = []; lastStarCounts = {};
             listenToRoom(code); saveLocal(); applyStateToUI();
         } catch (e) {
             console.error('Kunde inte ansluta till Firebase-rum.', e);
