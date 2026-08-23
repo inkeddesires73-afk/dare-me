@@ -1146,7 +1146,18 @@
         return active?.gender === 'man';
     }
 
+    function playerCountIsEnough(dare) {
+        const text = String(dare.text || '').toLowerCase();
+        let required = 2;
+        if (dare.text.includes('[PARTNER]')) required = Math.max(required, 3);
+        if (textHas(text, /två\s+(hemliga|tysta|andra)\s+spelare|två\s+spelare/)) required = Math.max(required, 4);
+        else if (textHas(text, /tre\s+(hemliga|tysta|andra)\s+spelare|tre\s+spelare/)) required = Math.max(required, 5);
+        else if (textHas(text, /gruppen|flera\s+medverkande|flera\s+spelare/)) required = Math.max(required, 3);
+        return state.players.length >= required;
+    }
+
     function dareIsAllowed(dare, active, target, partner) {
+        if (!playerCountIsEnough(dare)) return false;
         const involved = [active, target, partner].filter(Boolean);
         if (dare.tags?.some(tag => involved.some(player => player.vetos?.includes(tag)))) return false;
         const sexual = isSexualDare(dare);
