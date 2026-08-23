@@ -437,7 +437,7 @@
         hostUid: null
     };
 
-    let isHost = false, lastStarCounts = {}, db, auth, unsubscribe, unsubscribeParticipants, unsubscribeActions, user;
+    let isHost = false, lastStarCounts = {}, participantPlayers = [], db, auth, unsubscribe, unsubscribeParticipants, unsubscribeActions, user;
     let lastLevel4NoticeKey = '';
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'dare-me-dynamic';
 
@@ -581,6 +581,7 @@
         unsubscribeParticipants = null;
         unsubscribeActions = null;
         lastStarCounts = {};
+        participantPlayers = [];
         isHost = false;
         state = {
             ...state,
@@ -639,7 +640,9 @@
                 // Molndata får synkronisera spelet, men aldrig skriva över
                 // den lokala klientens roll som värd eller gäst.
                 const localHostRole = isHost;
+                const roomPlayers = Array.isArray(cloudData.players) ? cloudData.players : [];
                 state = { ...state, ...cloudData, isHost: localHostRole };
+                mergeSyncedPlayers(roomPlayers);
                 applyStateToUI();
                 if (!isHost) maybeShowLevel4Notice(state.selectedLevels);
             }
@@ -654,14 +657,22 @@
         unsubscribeParticipants = onSnapshot(
             collection(db, 'artifacts', appId, 'public', 'data', 'rooms', code, 'participants'),
             (snapshot) => {
-                const guestPlayers = snapshot.docs.map(item => ({ ...item.data(), uid: item.id }));
-                const retainedPlayers = state.players.filter(p => !p.uid || (isHost && p.uid === user?.uid));
-                state.players = [...retainedPlayers, ...guestPlayers.filter(p => !retainedPlayers.some(existing => existing.uid === p.uid))];
+                participantPlayers = snapshot.docs.map(item => ({ ...item.data(), uid: item.id }));
+                mergeSyncedPlayers();
                 renderLobby();
                 if (state.isPlaying) renderGameBar();
             },
             (err) => console.warn('Deltagare kunde inte synkas.', err)
         );
+    }
+
+    function mergeSyncedPlayers(roomPlayers = state.players) {
+        if (!state.roomCode) return;
+        const roomList = Array.isArray(roomPlayers) ? roomPlayers : [];
+        // Värdens egna spelare kommer från rummet. Alla gäster kommer enbart från
+        // participants-samlingen, så en fördröjd rumssnapshot aldrig kan radera dem.
+        const hostPlayers = roomList.filter(player => !player.uid || player.uid === state.hostUid);
+        state.players = [...hostPlayers, ...participantPlayers];
     }
 
     async function requestRoomAction(type, extra = {}) {
