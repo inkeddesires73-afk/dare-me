@@ -1,0 +1,75 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /artifacts/{appId}/public/data/rooms/{roomId} {
+      function signedIn() {
+        return request.auth != null;
+      }
+
+      function validRoom(data) {
+        return data.roomCode == roomId
+          && data.roomCode is string
+          && data.roomCode.matches('[A-Z0-9]{5}')
+          && data.players is list
+          && data.players.size() <= 20
+          && data.selectedLevels is list
+          && data.selectedLevels.size() <= 20
+          && data.currentTask is string
+          && data.currentTask.size() <= 2000;
+      }
+
+      // Alla inloggade deltagare får läsa ett rum. Endast värden får ändra
+      // själva rumsdokumentet. Gäster använder de begränsade underdokumenten nedan.
+      allow read: if signedIn() && resource.data.roomCode == roomId;
+      allow create: if signedIn()
+        && request.resource.data.hostUid == request.auth.uid
+        && validRoom(request.resource.data);
+      allow update: if (signedIn()
+        && resource.data.hostUid == request.auth.uid
+        && request.resource.data.hostUid == resource.data.hostUid
+        && validRoom(request.resource.data))
+        ;
+      allow delete: if signedIn() && resource.data.hostUid == request.auth.uid;
+
+      match /participants/{participantId} {
+        allow read: if signedIn()
+          && get(/databases/$(database)/documents/artifacts/$(appId)/public/data/rooms/$(roomId)).data.roomCode == roomId;
+        allow create, update: if signedIn()
+          && participantId == request.auth.uid
+          && get(/databases/$(database)/documents/artifacts/$(appId)/public/data/rooms/$(roomId)).data.roomCode == roomId
+          && request.resource.data.keys().hasOnly(['id', 'uid', 'name', 'gender', 'pref', 'vetos', 'biNoPen', 'stars'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.id is int
+          && request.resource.data.name is string
+          && request.resource.data.name.size() <= 40
+          && request.resource.data.gender is string
+          && request.resource.data.pref is string
+          && request.resource.data.vetos is list
+          && request.resource.data.vetos.size() <= 30
+          && request.resource.data.biNoPen is bool
+          && request.resource.data.stars is int
+          && request.resource.data.stars >= 0
+          && request.resource.data.stars <= 4;
+        allow delete: if signedIn()
+          && (participantId == request.auth.uid
+            || get(/databases/$(database)/documents/artifacts/$(appId)/public/data/rooms/$(roomId)).data.hostUid == request.auth.uid);
+      }
+
+      match /actions/{actionId} {
+        allow read: if signedIn()
+          && get(/databases/$(database)/documents/artifacts/$(appId)/public/data/rooms/$(roomId)).data.hostUid == request.auth.uid;
+        allow create: if signedIn()
+          && exists(/databases/$(database)/documents/artifacts/$(appId)/public/data/rooms/$(roomId)/participants/$(request.auth.uid))
+          && request.resource.data.keys().hasOnly(['uid', 'type', 'playerUid'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.type in ['nextCard', 'useStar']
+          && (request.resource.data.type == 'nextCard'
+              || (request.resource.data.type == 'useStar' && request.resource.data.playerUid == request.auth.uid));
+        allow delete: if signedIn()
+          && get(/databases/$(database)/documents/artifacts/$(appId)/public/data/rooms/$(roomId)).data.hostUid == request.auth.uid;
+      }
+    }
+  }
+}
+
