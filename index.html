@@ -398,7 +398,7 @@
 <script type="module">
     import { initializeApp } from "firebase/app";
     import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "firebase/auth";
-    import { getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc, collection, addDoc } from "firebase/firestore";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc, collection, addDoc, writeBatch } from "firebase/firestore";
     import { getAnalytics, logEvent } from "firebase/analytics";
 
     const firebaseConfig = {
@@ -548,9 +548,17 @@
             }
             user = auth.currentUser;
             if (!user) throw new Error('Firebase-användaren kunde inte skapas.');
-            onAuthStateChanged(auth, (u) => {
+            onAuthStateChanged(auth, async (u) => {
                 user = u;
-                if (u && state.roomCode) listenToRoom(state.roomCode);
+                if (u && state.roomCode) {
+                    if (state.isHost) {
+                        listenToRoom(state.roomCode);
+                    } else {
+                        const participant = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'participants', u.uid));
+                        if (participant.exists()) listenToRoom(state.roomCode);
+                        else leaveGuestRoom('Du har lämnat rummet. Lägg till dig igen för att ansluta.');
+                    }
+                }
             });
             return true;
         } catch (e) { return false; }
@@ -825,7 +833,13 @@
         state.hostUid = user ? user.uid : null;
         await scanForLevels();
         try {
-            await updateCloud();
+            const batch = writeBatch(db);
+            batch.set(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode), state);
+            batch.set(doc(db, 'artifacts', appId, 'public', 'data', 'roomDirectory', state.roomCode), {
+                roomCode: state.roomCode,
+                hostUid: state.hostUid
+            });
+            await batch.commit();
             listenToRoom(state.roomCode);
             saveLocal();
             applyStateToUI();
@@ -840,11 +854,12 @@
         if(!code) return;
         const ok = await initFirebase(); if (!ok) return;
         try {
-            const snap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code));
-            if (!snap.exists()) { showLobbyWarning('Rummet hittades inte. Kontrollera koden.'); return; }
+            const directorySnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'roomDirectory', code));
+            if (!directorySnap.exists()) { showLobbyWarning('Rummet hittades inte. Kontrollera koden.'); return; }
             isHost = false; state.isHost = false; state.modeSelected = true; state.roomCode = code;
             participantPlayers = []; lastStarCounts = {};
-            listenToRoom(code); saveLocal(); applyStateToUI();
+            state.hostUid = directorySnap.data().hostUid || null;
+            saveLocal(); applyStateToUI();
         } catch (e) {
             console.error('Kunde inte ansluta till Firebase-rum.', e);
             showLobbyWarning('Kunde inte ansluta till rummet. Kontrollera rumskoden och Firebase-reglerna.');
@@ -870,6 +885,7 @@
                 saveLocal();
             } else if (!isHost && user) {
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'participants', user.uid), newPlayer);
+                listenToRoom(state.roomCode);
             } else {
                 await updateCloud();
             }
@@ -1051,7 +1067,10 @@
             }
             // Värden avslutar och raderar sitt molnrum. En gäst lämnar bara rummet.
             if (state.roomCode && isHost && db && user) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode));
+                const batch = writeBatch(db);
+                batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode));
+                batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'roomDirectory', state.roomCode));
+                await batch.commit();
             }
             if (unsubscribe) unsubscribe();
             localStorage.clear();
