@@ -961,6 +961,8 @@
             biNoPen: document.getElementById('bi-no-pen').checked, stars: finalStars,
             uid: user?.uid || null
         };
+        // På mobil ska synkningen inte kasta tillbaka gästen till sidans topp.
+        if (!isHost && state.roomCode) preserveScrollY = window.scrollY;
         state.players.push(newPlayer);
         nameInput.value = ""; document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = false);
         renderLobby(); toggleBiOption(); saveLocal();
@@ -972,6 +974,7 @@
                 participantPlayers = [newPlayer];
                 mergeSyncedPlayers();
                 updateGuestTurnControls();
+                preserveScrollY = window.scrollY;
                 listenToRoom(state.roomCode);
             } else {
                 await updateCloud();
