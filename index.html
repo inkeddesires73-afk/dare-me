@@ -1150,6 +1150,11 @@
         return [active, target, partner].some(player => player?.gender === 'man');
     }
 
+    function anatomyIsPossible(dare, target) {
+        if (textHas(dare.text, /klitoris/)) return target?.gender === 'kvinna';
+        return true;
+    }
+
     // Penetration med dildo, leksak eller fingrar fungerar oavsett kön.
     // Formuleringar som "knulla", "ta" eller "penetrera" utan ett sådant redskap
     // kräver däremot en man i den aktiva penetrerande rollen.
@@ -1184,6 +1189,7 @@
         if (sexual && !pairIsAllowed(active, target)) return false;
         if (sexual && dare.text.includes('[PARTNER]') && (!partner || !pairIsAllowed(partner, target))) return false;
         if (!semenRolesArePossible(dare, active, target, partner)) return false;
+        if (!anatomyIsPossible(dare, target)) return false;
         if (!penetrationRolesArePossible(dare, active, target, partner)) return false;
         if (dare.tags?.includes('penetration') && target.biNoPen) {
             if ((active.gender === target.gender && active.pref === 'bi') ||
