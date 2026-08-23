@@ -74,7 +74,7 @@ service cloud.firestore {
           && request.resource.data.keys().hasOnly(['uid', 'type', 'playerUid'])
           && request.resource.data.uid == request.auth.uid
           && request.resource.data.type in ['nextCard', 'useStar']
-          && (request.resource.data.type == 'nextCard'
+          && ((request.resource.data.type == 'nextCard' && request.resource.data.playerUid == request.auth.uid)
               || (request.resource.data.type == 'useStar' && request.resource.data.playerUid == request.auth.uid));
         allow delete: if signedIn()
           && get(/databases/$(database)/documents/artifacts/$(appId)/public/data/rooms/$(roomId)).data.hostUid == request.auth.uid;
