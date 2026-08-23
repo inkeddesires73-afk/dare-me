@@ -626,6 +626,17 @@
         unsubscribeActions = null;
         lastStarCounts = {};
         participantPlayers = [];
+        const joinInput = document.getElementById('join-code-input');
+        const joinButton = document.getElementById('join-room-submit');
+        const showJoinButton = document.getElementById('show-join-room-btn');
+        const startPage = document.getElementById('start-page');
+        if (joinInput) {
+            joinInput.value = '';
+            joinInput.style.display = 'none';
+        }
+        if (joinButton) joinButton.style.display = 'none';
+        if (showJoinButton) showJoinButton.style.display = 'block';
+        if (startPage) startPage.classList.remove('join-mode');
         isHost = false;
         state = {
             ...state,
