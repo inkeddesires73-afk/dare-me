@@ -6,10 +6,12 @@
     <title>Dare Me</title>
     
     <!-- FAVICON -->
-    <link rel="icon" type="image/png" href="dareme.png">
+    <link rel="icon" type="image/png" href="./dareme.png">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="apple-touch-icon" href="./dareme.png">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Dare Me">
     <meta name="theme-color" content="#0a0a0a">
     
@@ -1226,6 +1228,10 @@
     };
 
     window.addEventListener('load', () => { 
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .catch(error => console.warn('PWA-cache kunde inte startas.', error));
+        }
         const saved = localStorage.getItem('dareme_state');
         if (saved) {
             try {
