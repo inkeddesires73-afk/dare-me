@@ -31,7 +31,7 @@
 { "text": "lägg ditt huvud i [TARGETS] knä och låt [HEN] smeka ditt hår.", "tags": [] },
 { "text": "ge [TARGET] en långsam kyss på handen.", "tags": [] },
 { "text": "sitt mittemot [TARGET] och härma [HENS] kroppsspråk i en minut.", "tags": [] },
-{ "text": "låt [TARGET] välja en plats på din kropp där [HEN] vill bli kysst.", "tags": [] },
+{ "text": "låt [TARGET] välja en plats på din kropp där [SUBJECT] vill bli kysst.", "tags": [] },
 { "text": "lägg handen på [TARGETS] lår och håll den där i trettio sekunder.", "tags": [] },
 { "text": "ge [TARGET] en långsam kyss medan du håller [HEN] i midjan.", "tags": [] },
 { "text": "berätta för [TARGET] vad du först lade märke till hos [HEN].", "tags": [] },
@@ -71,7 +71,7 @@
 { "text": "ge [TARGET] tre kyssar på valfria platser på armen.", "tags": [] },
 { "text": "låt [TARGET] bestämma var på din kropp du ska få en mjuk massage.", "tags": [] },
 { "text": "berätta för [TARGET] vilken typ av kyss du tycker bäst om.", "tags": [] },
-{ "text": "håll [TARGET] i midjan medan [HEN] berättar något du tycker är attraktivt.", "tags": [] },
+{ "text": "håll [TARGET] i midjan medan [SUBJECT] berättar något du tycker är attraktivt.", "tags": [] },
 { "text": "låt [TARGET] långsamt knäppa upp en knapp på dina kläder.", "tags": ["nakenhet"] },
 { "text": "ge [TARGET] en långsam kyss som får [HEN] att vilja ha en till.", "tags": [] },
 { "text": "sitt mittemot [TARGET] och stryk försiktigt med foten mot [HENS].", "tags": [] },
@@ -80,7 +80,7 @@
 { "text": "låt [TARGET] lägga sig med huvudet i ditt knä medan du smeker [HENS] hår.", "tags": [] },
 { "text": "ge [TARGET] en mjuk kyss och håll kvar [HEN] nära dig i tio sekunder.", "tags": [] },
 { "text": "låt [TARGET] bestämma om du ska ge [HEN] en kyss eller en försiktig kyss med tänderna.", "tags": ["bitas"] },
-{ "text": "lägg en hand på [TARGETS] lår och fråga om [HEN] vill att du ska flytta den högre upp.", "tags": [] },
+{ "text": "lägg en hand på [TARGETS] lår och fråga om [SUBJECT] vill att du ska flytta den högre upp.", "tags": [] },
 { "text": "låt [TARGET] välja ett klädesplagg som du ska ta av dig och behåll ögonkontakten under tiden.", "tags": ["nakenhet"] }
   ]
 }
