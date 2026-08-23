@@ -119,6 +119,10 @@
 
         .room-tag { color: #555; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 2px; }
         .room-code-display { color: var(--gold); font-weight: bold; font-size: 1.2rem; }
+        .connection-status { min-height: 1.2em; margin: -12px 0 16px; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: #777; }
+        .connection-status[data-status="online"] { color: #77b77a; }
+        .connection-status[data-status="connecting"] { color: #c8a84e; }
+        .connection-status[data-status="offline"], .connection-status[data-status="error"] { color: #d08080; }
 
         .setup-container { 
             background: var(--panel); padding: 25px; border-radius: 20px; border: 1px solid var(--border); 
@@ -319,6 +323,7 @@
         </div>
 
         <div id="room-info" class="room-tag">LOKALT SPEL</div>
+        <div id="connection-status" class="connection-status" data-status="local" aria-live="polite">LOKALT SPEL</div>
         <div class="setup-container">
             <div id="setup-controls">
                 <input type="text" id="pName" placeholder="DITT NAMN" autocomplete="off">
@@ -576,6 +581,7 @@
     }
 
     async function initFirebase() {
+        setConnectionStatus('connecting', 'Ansluter...');
         try {
             auth = getAuth(app); db = getFirestore(app);
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -597,8 +603,19 @@
                     }
                 }
             });
+            setConnectionStatus('online', 'Ansluten');
             return true;
-        } catch (e) { return false; }
+        } catch (e) {
+            setConnectionStatus('error', 'Kunde inte ansluta');
+            return false;
+        }
+    }
+
+    function setConnectionStatus(status, message) {
+        const element = document.getElementById('connection-status');
+        if (!element) return;
+        element.dataset.status = status;
+        element.innerText = message;
     }
 
     async function updateCloud() {
@@ -675,6 +692,7 @@
                 return;
             }
             {
+                setConnectionStatus('online', 'Ansluten');
                 const cloudData = snapshot.data();
                 if (cloudData.players) {
                     cloudData.players.forEach(p => {
@@ -705,6 +723,7 @@
             }
         }, (err) => {
             console.error("Snapshot error:", err);
+            setConnectionStatus('error', 'Anslutningen bröts – försöker igen');
             if (!isHost && state.roomCode === code) leaveGuestRoom('Anslutningen till rummet avslutades.');
         });
     }
@@ -898,6 +917,13 @@
     if (window.visualViewport) {
         window.visualViewport.addEventListener('resize', () => setTimeout(keepJoinControlsVisible, 100));
     }
+
+    window.addEventListener('online', () => {
+        if (state.roomCode) setConnectionStatus('connecting', 'Återansluter...');
+    });
+    window.addEventListener('offline', () => {
+        if (state.roomCode) setConnectionStatus('offline', 'Ingen internetanslutning');
+    });
 
     window.initLocalGame = async () => { isHost = true; state.isHost = true; state.modeSelected = true; state.roomCode = null; await scanForLevels(); saveLocal(); applyStateToUI(); };
     window.initCreateRoom = async () => {
