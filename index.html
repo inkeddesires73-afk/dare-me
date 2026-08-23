@@ -306,6 +306,12 @@
                                 <option value="1">1%</option><option value="2">2%</option><option value="3" selected>3%</option><option value="4">4%</option><option value="5">5%</option><option value="6">6%</option><option value="7">7%</option><option value="8">8%</option><option value="9">9%</option><option value="10">10%</option>
                             </select>
                         </div>
+                        <div class="veto-option" style="gap: 8px; margin: 0;">
+                            <span style="font-size: 0.65rem; color: var(--gold); text-transform: uppercase;">Nivåhöjning:</span>
+                            <select id="auto-level-setting" onchange="updateAutoLevelSetting()" style="width: auto; padding: 6px 10px; margin: 0; font-size: 0.8rem; border-radius: 8px; background: #000; color: #fff; border: 1px solid #444; outline: none;">
+                                <option value="0" selected>Av</option><option value="1">1 kort/spelare</option><option value="2">2 kort/spelare</option><option value="3">3 kort/spelare</option><option value="4">4 kort/spelare</option>
+                            </select>
+                        </div>
                     </div>
                     <div style="border-top: 1px solid #222; padding-top: 15px;">
                         <small style="color: var(--gold); display: block; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Tillgängliga Nivåer:</small>
@@ -317,7 +323,8 @@
 
                 <div class="guest-only" style="text-align: left; font-size: 0.65rem; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">
                     Timer: <span id="guest-timer-info" style="color: var(--gold); font-weight: bold; margin-right: 15px;">3 min</span>
-                    Chans: <span id="guest-chance-info" style="color: var(--gold); font-weight: bold;">3%</span>
+                    Chans: <span id="guest-chance-info" style="color: var(--gold); font-weight: bold; margin-right: 15px;">3%</span>
+                    Nivåhöjning: <span id="guest-level-info" style="color: var(--gold); font-weight: bold;">Av</span>
                 </div>
 
                 <div class="veto-container">
@@ -420,6 +427,8 @@
         allowManualStars: false,
         starPowerDuration: 3,
         starChance: 3,
+        autoLevelUpCards: 0,
+        cardsSinceLevelUp: 0,
         currentTask: "TRYCK FÖR KORT",
         timer: null,
         timerEndsAt: null,
@@ -578,6 +587,7 @@
             currentTask: 'TRYCK FÖR KORT',
             timer: null,
             timerEndsAt: null,
+            cardsSinceLevelUp: 0,
             isPlaying: false,
             roomCode: null,
             hostUid: null
@@ -655,7 +665,12 @@
             if (timerSel) timerSel.value = state.starPowerDuration || 3;
             const chanceSel = document.getElementById('star-chance-setting');
             if (chanceSel) chanceSel.value = state.starChance || 3;
+            const autoLevelSel = document.getElementById('auto-level-setting');
+            if (autoLevelSel) autoLevelSel.value = state.autoLevelUpCards || 0;
         }
+
+        const guestLevelInfo = document.getElementById('guest-level-info');
+        if (guestLevelInfo) guestLevelInfo.innerText = state.autoLevelUpCards ? `${state.autoLevelUpCards} kort/spelare` : 'Av';
 
         if (!state.introSeen) {
             document.getElementById('intro-page').classList.add('active');
@@ -698,6 +713,7 @@
 
     window.updateStarTimerSetting = () => { state.starPowerDuration = parseInt(document.getElementById('star-timer-setting').value); updateCloud(); saveLocal(); };
     window.updateStarChanceSetting = () => { state.starChance = parseInt(document.getElementById('star-chance-setting').value); updateCloud(); saveLocal(); };
+    window.updateAutoLevelSetting = () => { state.autoLevelUpCards = parseInt(document.getElementById('auto-level-setting').value) || 0; state.cardsSinceLevelUp = 0; updateCloud(); saveLocal(); };
     window.toggleManualStars = () => { state.allowManualStars = document.getElementById('setting-manual-stars').checked; updateCloud(); saveLocal(); };
     window.enterGame = () => { state.introSeen = true; applyStateToUI(); saveLocal(); };
 
@@ -771,7 +787,7 @@
         if (state.selectedLevels.length === 0) { showLobbyWarning("Du måste välja minst en nivåfil för att kunna starta."); return; }
         if (state.players.length < 2) { showLobbyWarning("Det krävs minst två spelare för att kunna börja."); return; }
         maybeShowLevel4Notice(state.selectedLevels);
-        state.isPlaying = true; state.activeLevelIdx = 0; state.currentPlayerIdx = 0; updateCloud(); saveLocal(); applyStateToUI();
+        state.isPlaying = true; state.activeLevelIdx = 0; state.currentPlayerIdx = 0; state.cardsSinceLevelUp = 0; updateCloud(); saveLocal(); applyStateToUI();
     };
 
     function isSexualDare(dare) {
@@ -842,6 +858,13 @@
                 : `<span class="gold-name">${escapeHtml(active.name)}</span>, ${renderedText}`;
             if (Math.random() < (state.starChance/100) && active.stars < 4) { active.stars++; if (!state.roomCode) showStarNotif(active.name); }
             state.currentPlayerIdx = (state.currentPlayerIdx + 1) % state.players.length;
+            state.cardsSinceLevelUp = (state.cardsSinceLevelUp || 0) + 1;
+            const completedRound = state.currentPlayerIdx === 0;
+            const canAutoLevelUp = state.autoLevelUpCards > 0 && curLvlId < 3 && state.activeLevelIdx < state.selectedLevels.length - 1;
+            if (completedRound && canAutoLevelUp && state.cardsSinceLevelUp >= state.players.length * state.autoLevelUpCards) {
+                state.activeLevelIdx++;
+                state.cardsSinceLevelUp = 0;
+            }
         }
         updateCloud(); saveLocal(); applyStateToUI();
     };
@@ -852,7 +875,7 @@
         window.generateTurn();
     };
 
-    window.advanceLevel = () => { if(isHost && state.activeLevelIdx < state.selectedLevels.length - 1) { state.activeLevelIdx++; updateCloud(); saveLocal(); } };
+    window.advanceLevel = () => { if(isHost && state.activeLevelIdx < state.selectedLevels.length - 1 && state.selectedLevels[state.activeLevelIdx] < 3) { state.activeLevelIdx++; state.cardsSinceLevelUp = 0; updateCloud(); saveLocal(); } };
     
     window.activateStarPower = () => {
         const active = state.players[selectedPlayerIndex];
