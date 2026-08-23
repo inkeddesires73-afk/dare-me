@@ -722,9 +722,9 @@
         try {
             if (action.type === 'nextCard') {
                 const activePlayer = state.players[state.currentPlayerIdx];
-                if (activePlayer?.uid === action.uid && action.playerUid === action.uid) window.generateTurn(true);
+                if (activePlayer?.id === action.playerId && action.playerUid === action.uid) window.generateTurn(true);
             } else if (action.type === 'useStar' && action.playerUid) {
-                const playerIndex = state.players.findIndex(p => p.uid === action.playerUid && p.uid === action.uid);
+                const playerIndex = state.players.findIndex(p => p.id === action.playerId);
                 if (playerIndex >= 0) activateStarPowerForPlayer(playerIndex);
             }
         } finally {
@@ -809,7 +809,9 @@
 
     function updateGuestTurnControls() {
         const activePlayer = state.players[state.currentPlayerIdx];
-        const guestCanAct = isHost || !state.roomCode || activePlayer?.uid === user?.uid;
+        const ownPlayer = participantPlayers.find(player => player.uid === user?.uid);
+        const guestCanAct = isHost || !state.roomCode || Boolean(ownPlayer && activePlayer &&
+            (activePlayer.id === ownPlayer.id || activePlayer.uid === ownPlayer.uid));
         ['btn-next-card', 'btn-skip-card'].forEach(id => {
             const button = document.getElementById(id);
             if (button) button.disabled = !guestCanAct;
@@ -980,8 +982,9 @@
     window.generateTurn = (fromRoomAction = false) => {
         if (!isHost && state.roomCode && !fromRoomAction) {
             const activePlayer = state.players[state.currentPlayerIdx];
-            if (activePlayer?.uid !== user?.uid) return;
-            requestRoomAction('nextCard', { playerUid: user.uid }).catch(() => showLobbyWarning('Kortet kunde inte begäras. Kontrollera anslutningen.'));
+            const ownPlayer = participantPlayers.find(player => player.uid === user?.uid);
+            if (!ownPlayer || !activePlayer || (activePlayer.id !== ownPlayer.id && activePlayer.uid !== ownPlayer.uid)) return;
+            requestRoomAction('nextCard', { playerUid: user.uid, playerId: ownPlayer.id }).catch(() => showLobbyWarning('Kortet kunde inte begäras. Kontrollera anslutningen.'));
             return;
         }
         if (state.timer) stopTimer();
@@ -1066,7 +1069,7 @@
         const active = state.players[selectedPlayerIndex];
         if (!active || active.stars <= 0) return;
         if (!isHost && state.roomCode) {
-            requestRoomAction('useStar', { playerUid: active.uid })
+            requestRoomAction('useStar', { playerUid: user.uid, playerId: active.id })
                 .then(closeModal)
                 .catch(() => showLobbyWarning('Stjärnan kunde inte användas. Kontrollera anslutningen.'));
             return;
