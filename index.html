@@ -154,6 +154,7 @@
         .p-chip { background: var(--panel); padding: 12px 8px; border-radius: 12px; border: 1px solid var(--border); min-width: 85px; cursor: pointer; transition: 0.3s; }
         .p-chip.active-turn { border-color: var(--gold); box-shadow: 0 0 15px rgba(212,175,55,0.4); transform: scale(1.05); }
         .star-count { color: var(--gold); font-weight: bold; display: block; margin-top: 5px; font-size: 1rem; }
+        .turn-help { color: #888; font-size: 0.8rem; line-height: 1.4; margin: -4px 0 12px; min-height: 1.2em; }
 
         .card-area { 
             background: var(--panel); border: 2px solid #222; border-radius: 30px; 
@@ -410,14 +411,15 @@
     <div id="game-page" class="page">
         <div id="player-status" class="status-bar"></div>
         <div class="card-area" id="game-card">
-            <div id="next-up-info" style="color:#faa405; font-size:0.8rem; text-transform:uppercase; margin-bottom:5px;">NÄSTA PÅ TUR: ...</div>
-            <div id="active-lvl-display" style="color: #444; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 10px;">NIVÅ: <span id="current-lvl-text" style="color:var(--red); font-weight:bold;">---</span></div>
+            <div id="next-up-info" style="color:#faa405; font-size:0.85rem; text-transform:uppercase; margin-bottom:8px; font-weight:700;">NÄSTA PÅ TUR: ...</div>
+            <div id="active-lvl-display" style="color: #777; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 14px;">AKTUELL NIVÅ: <span id="current-lvl-text" style="color:var(--red); font-weight:bold;">---</span></div>
             <div id="star-power-label" style="color:var(--gold); font-weight:bold; letter-spacing:5px; margin-bottom:20px; display:none;">⭐ GULDSTJÄRNA ⭐</div>
             <div id="task-box" class="task-text">VÄNTAR på kort...</div>
             <div id="timer-display">3:00</div>
             <button id="btn-finish-timer" class="btn btn-lvl-up" style="display:none;" onclick="finishTimerEarly()">KLART, NÄSTA KORT</button>
         </div>
         <div class="game-controls">
+            <div id="turn-help" class="turn-help" aria-live="polite"></div>
             <button class="btn btn-next" id="btn-next-card" onclick="generateTurn()">NÄSTA KORT</button>
             <button class="btn btn-rules" id="btn-skip-card" style="margin-bottom: 25px;" onclick="skipCard()">BYT KORT 🔄</button>
             <button class="btn btn-lvl-up host-only" id="lvl-up-btn" onclick="advanceLevel()">HÖJ STÄMNINGEN 🔥</button>
@@ -845,6 +847,12 @@
             const button = document.getElementById(id);
             if (button) button.disabled = !guestCanAct;
         });
+        const turnHelp = document.getElementById('turn-help');
+        if (turnHelp) {
+            if (isHost) turnHelp.innerText = 'Värden styr kortdragningen och kan alltid gå vidare.';
+            else if (guestCanAct) turnHelp.innerText = 'Det är din tur – välj nästa kort eller byt kort.';
+            else turnHelp.innerText = activePlayer ? `Väntar på ${activePlayer.name}...` : 'Väntar på nästa tur...';
+        }
         const guestHasPlayer = !isHost && state.roomCode && participantPlayers.some(player => player.uid === user?.uid);
         const addButton = document.querySelector('#setup-controls .btn-add[onclick="addPlayer()"]');
         if (addButton) addButton.disabled = Boolean(guestHasPlayer);
