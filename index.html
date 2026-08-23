@@ -397,7 +397,7 @@
 <script type="module">
     import { initializeApp } from "firebase/app";
     import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "firebase/auth";
-    import { getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc, collection } from "firebase/firestore";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc, collection, addDoc } from "firebase/firestore";
     import { getAnalytics, logEvent } from "firebase/analytics";
 
     const firebaseConfig = {
@@ -437,7 +437,7 @@
         hostUid: null
     };
 
-    let isHost = false, lastStarCounts = {}, db, auth, unsubscribe, unsubscribeParticipants, user;
+    let isHost = false, lastStarCounts = {}, db, auth, unsubscribe, unsubscribeParticipants, unsubscribeActions, user;
     let lastLevel4NoticeKey = '';
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'dare-me-dynamic';
 
@@ -576,8 +576,10 @@
         clearInterval(window.tInt);
         if (unsubscribe) unsubscribe();
         if (unsubscribeParticipants) unsubscribeParticipants();
+        if (unsubscribeActions) unsubscribeActions();
         unsubscribe = null;
         unsubscribeParticipants = null;
+        unsubscribeActions = null;
         lastStarCounts = {};
         isHost = false;
         state = {
@@ -606,6 +608,7 @@
         if (!db || !user) return;
         if (unsubscribe) unsubscribe();
         listenToParticipants(code);
+        listenToRoomActions(code);
         unsubscribe = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code), (snapshot) => {
             if (!snapshot.exists()) {
                 if (!isHost) {
@@ -659,6 +662,43 @@
             },
             (err) => console.warn('Deltagare kunde inte synkas.', err)
         );
+    }
+
+    async function requestRoomAction(type, extra = {}) {
+        if (!state.roomCode || !db || !user) return;
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'actions'), {
+            uid: user.uid,
+            type,
+            ...extra
+        });
+    }
+
+    function listenToRoomActions(code) {
+        if (unsubscribeActions) unsubscribeActions();
+        unsubscribeActions = onSnapshot(
+            collection(db, 'artifacts', appId, 'public', 'data', 'rooms', code, 'actions'),
+            (snapshot) => {
+                if (!isHost) return;
+                snapshot.docChanges().filter(change => change.type === 'added').forEach(change => {
+                    processRoomAction(change.doc.id, change.doc.data()).catch(err => console.warn('Rumsåtgärd kunde inte behandlas.', err));
+                });
+            },
+            (err) => console.warn('Rumsåtgärder kunde inte synkas.', err)
+        );
+    }
+
+    async function processRoomAction(actionId, action) {
+        if (!isHost || !state.roomCode || !db || !user) return;
+        try {
+            if (action.type === 'nextCard') {
+                window.generateTurn(true);
+            } else if (action.type === 'useStar' && action.playerUid) {
+                const playerIndex = state.players.findIndex(p => p.uid === action.playerUid && p.uid === action.uid);
+                if (playerIndex >= 0) activateStarPowerForPlayer(playerIndex);
+            }
+        } finally {
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'actions', actionId));
+        }
     }
 
     function applyStateToUI() {
@@ -851,7 +891,11 @@
         return orientationAllows(actor, target) && orientationAllows(target, actor);
     }
 
-    window.generateTurn = () => {
+    window.generateTurn = (fromRoomAction = false) => {
+        if (!isHost && state.roomCode && !fromRoomAction) {
+            requestRoomAction('nextCard').catch(() => showLobbyWarning('Kortet kunde inte begäras. Kontrollera anslutningen.'));
+            return;
+        }
         if (state.timer) stopTimer();
         const active = state.players[state.currentPlayerIdx];
         const validTargets = state.players.filter(p => p.id !== active.id);
@@ -922,11 +966,25 @@
 
     window.advanceLevel = () => { if(isHost && state.activeLevelIdx < state.selectedLevels.length - 1 && state.selectedLevels[state.activeLevelIdx] < 3) { state.activeLevelIdx++; state.cardsSinceLevelUp = 0; updateCloud(); saveLocal(); } };
     
-    window.activateStarPower = () => {
-        const active = state.players[selectedPlayerIndex];
-        active.stars--; closeModal();
+    function activateStarPowerForPlayer(playerIndex) {
+        const active = state.players[playerIndex];
+        if (!active || active.stars <= 0) return;
+        active.stars--;
+        closeModal();
         state.currentTask = `<span class="gold-name">${escapeHtml(active.name)}</span>, DU HAR KONTROLLEN! Bestäm vad de andra ska göra.`;
         startTimer((state.starPowerDuration || 3) * 60);
+    }
+
+    window.activateStarPower = () => {
+        const active = state.players[selectedPlayerIndex];
+        if (!active || active.stars <= 0) return;
+        if (!isHost && state.roomCode) {
+            requestRoomAction('useStar', { playerUid: active.uid })
+                .then(closeModal)
+                .catch(() => showLobbyWarning('Stjärnan kunde inte användas. Kontrollera anslutningen.'));
+            return;
+        }
+        activateStarPowerForPlayer(selectedPlayerIndex);
     };
 
     window.showLobbyWarning = (msg) => {
@@ -977,7 +1035,7 @@
         document.getElementById('modal-player-name').innerText = p.name;
         document.getElementById('modal-msg-text').innerText = "Antal Guldstjärnor: ";
         document.getElementById('modal-star-count').innerText = p.stars;
-        document.getElementById('btn-use-star').style.display = p.stars > 0 ? 'block' : 'none';
+        document.getElementById('btn-use-star').style.display = p.stars > 0 && (isHost || p.uid === user?.uid) ? 'block' : 'none';
         document.getElementById('manual-star-btn').style.display = (isHost && state.allowManualStars) ? 'block' : 'none';
         document.getElementById('btn-confirm-yes').style.display = 'none';
         document.getElementById('btn-modal-close').innerText = 'AVBRYT';
