@@ -34,6 +34,8 @@
             --text: #eee; 
             --panel: #111;
             --border: #333;
+            --gold-soft: #e2bd4f;
+            --panel-raised: #151515;
         }
 
         * { box-sizing: border-box; }
@@ -55,8 +57,8 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .page { display: none; width: 100%; max-width: 620px; padding: clamp(14px, 3vw, 28px); box-sizing: border-box; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .page { display: none; width: 100%; max-width: 620px; padding: clamp(14px, 3vw, 28px); box-sizing: border-box; animation: fadeIn 0.35s ease both; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .active { display: block; }
 
         @media (min-width: 1000px) {
@@ -110,10 +112,10 @@
             100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.1)); }
         }
 
-        h1 { color: var(--gold); letter-spacing: 5px; margin: 10px 0 30px 0; text-transform: uppercase; font-size: 2.2rem; }
+        h1 { color: var(--gold); letter-spacing: 3px; margin: 10px 0 30px 0; font-size: 2.2rem; }
         
-        .intro-text-container { margin: 30px 0; line-height: 1.8; letter-spacing: 1px; }
-        .intro-title { color: var(--gold); font-size: 1.6rem; text-transform: uppercase; margin-bottom: 20px; display: block; }
+        .intro-text-container { margin: 30px 0; line-height: 1.8; letter-spacing: 0.4px; }
+        .intro-title { color: var(--gold); font-size: 1.6rem; margin-bottom: 20px; display: block; }
         .intro-body { color: #888; font-style: italic; font-size: 1.1rem; }
         .intro-highlight { color: #bbb; display: block; margin-top: 20px; font-weight: bold; }
 
@@ -166,13 +168,15 @@
         #next-up-info { display: inline-block; color: #f0b429 !important; font-size: clamp(1rem, 2.2vw, 1.25rem) !important; letter-spacing: 0.04em; line-height: 1.25; }
 
         .card-area { 
-            background: var(--panel); border: 2px solid #222; border-radius: 30px; 
+            background: linear-gradient(145deg, #151515, #101010); border: 1px solid #2d2d2d; border-radius: 24px; 
             padding: clamp(28px, 5vw, 50px) clamp(16px, 4vw, 25px); margin: 10px 0 30px 0; min-height: clamp(300px, 52vh, 520px); 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.7); position: relative;
+            box-shadow: 0 18px 36px rgba(0,0,0,0.55); position: relative;
         }
         .star-power-active { border-color: var(--gold) !important; box-shadow: 0 0 50px rgba(212,175,55,0.4) !important; }
-        .task-text { font-size: clamp(1.35rem, 3vw, 2.6rem); font-weight: bold; text-transform: uppercase; line-height: 1.4; color: #fff; max-width: 100%; overflow-wrap: anywhere; }
+        .task-text { font-size: clamp(1.35rem, 3vw, 2.6rem); font-weight: bold; line-height: 1.4; color: #fff; max-width: 100%; overflow-wrap: anywhere; }
+        .task-text.card-deal { animation: cardDeal 0.32s ease both; }
+        @keyframes cardDeal { from { opacity: 0; transform: translateY(8px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .gold-name { color: var(--gold); text-shadow: 0 0 15px rgba(212,175,55,0.5); }
         
         #timer-display { font-size: 4.5rem; color: var(--gold); font-weight: 900; margin-top: 25px; display: none; }
@@ -196,16 +200,17 @@
         .btn { 
             width: 100%; padding: 20px; border-radius: 15px; border: none; 
             font-weight: 800; cursor: pointer; text-transform: uppercase; 
-            letter-spacing: 1.5px; margin-bottom: 12px; transition: transform 0.1s, opacity 0.2s; 
+            letter-spacing: 1px; margin-bottom: 12px; transition: transform 0.15s ease, opacity 0.2s, box-shadow 0.2s ease, background-color 0.2s ease; 
             font-size: 1.05rem; box-sizing: border-box;
         }
+        .btn:hover:not(:disabled) { box-shadow: 0 6px 18px rgba(0,0,0,0.25); }
         .btn:active { transform: scale(0.97); }
         .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
         .btn-add { background: #1a1a1a; color: var(--gold); border: 1px solid var(--border); margin-top: 35px; }
         .btn-start { background: var(--gold); color: #000; font-size: 1.25rem; margin-top: 25px; }
         .btn-rules { background: transparent; color: var(--gold); border: 1px solid var(--gold); font-size: 0.95rem; padding: 16px; margin-top: 5px; }
-        .btn-next { background: var(--gold); color: #000; font-size: 1.4rem; box-shadow: 0 5px 25px rgba(212, 175, 55, 0.4); }
+        .btn-next { background: var(--gold); color: #000; font-size: 1.4rem; box-shadow: 0 5px 20px rgba(212, 175, 55, 0.28); }
         .btn-back { background: #222; color: #eee; border: 1px solid #444; font-size: 1rem; margin-top: 15px; }
         .btn-lvl-up { background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); font-size: 0.8rem; padding: 10px; margin-top: 10px; }
         #start-page.join-mode { padding-bottom: 50vh; }
@@ -873,7 +878,11 @@
             const nextUpEl = document.getElementById('next-up-info');
             if (nextUpEl) nextUpEl.innerText = nextP ? `NÄSTA PÅ TUR: ${nextP.name}` : "NÄSTA PÅ TUR: ...";
 
-            document.getElementById('task-box').innerHTML = sanitizeTaskHtml(state.currentTask);
+            const taskBox = document.getElementById('task-box');
+            taskBox.classList.remove('card-deal');
+            void taskBox.offsetWidth;
+            taskBox.innerHTML = sanitizeTaskHtml(state.currentTask);
+            taskBox.classList.add('card-deal');
             const pausedBanner = document.getElementById('game-paused-banner');
             if (pausedBanner) pausedBanner.style.display = state.gamePaused ? 'block' : 'none';
             const pauseButton = document.getElementById('btn-pause-game');
