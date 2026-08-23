@@ -757,23 +757,32 @@
         }
     };
 
-    window.addPlayer = () => {
+    window.addPlayer = async () => {
         const nameInput = document.getElementById('pName');
         const name = nameInput.value.trim().toUpperCase();
         if (!name) return;
         const finalStars = tempStars; tempStars = 0;
-        state.players.push({
+        const newPlayer = {
             id: Date.now(), name, gender: document.getElementById('pGender').value,
             pref: document.getElementById('pPref').value, vetos: Array.from(document.querySelectorAll('.veto-cb:checked')).map(cb => cb.value), 
             biNoPen: document.getElementById('bi-no-pen').checked, stars: finalStars
-        });
+        };
+        state.players.push(newPlayer);
         nameInput.value = ""; document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = false);
-        renderLobby(); updateCloud(); toggleBiOption(); saveLocal();
+        renderLobby(); toggleBiOption(); saveLocal();
+        try {
+            await updateCloud();
+        } catch (e) {
+            state.players = state.players.filter(p => p.id !== newPlayer.id);
+            renderLobby();
+            showLobbyWarning('Spelaren kunde inte läggas till. Kontrollera Firebase-reglerna.');
+        }
     };
 
-    window.removePlayer = (id) => { state.players = state.players.filter(p => p.id !== id); renderLobby(); updateCloud(); saveLocal(); };
+    window.removePlayer = (id) => { if (!isHost) return; state.players = state.players.filter(p => p.id !== id); renderLobby(); updateCloud(); saveLocal(); };
     
     window.editPlayer = (id) => {
+        if (!isHost) return;
         const p = state.players.find(x => x.id === id); if (!p) return;
         tempStars = p.stars;
         document.getElementById('pName').value = p.name; document.getElementById('pGender').value = p.gender;
@@ -997,7 +1006,7 @@
         document.getElementById('displayList').innerHTML = state.players.map(p => `
             <div class="player-item">
                 <div class="player-info"><strong>${escapeHtml(p.name)}</strong><small>${escapeHtml(p.gender)} • ${escapeHtml(p.pref)}</small></div>
-                <div class="action-btns"><span class="edit-btn" onclick="editPlayer(${p.id})">✎</span><span class="delete-btn" onclick="removePlayer(${p.id})">×</span></div>
+                ${isHost ? `<div class="action-btns"><span class="edit-btn" onclick="editPlayer(${p.id})">✎</span><span class="delete-btn" onclick="removePlayer(${p.id})">×</span></div>` : ''}
             </div>`).join(''); 
     }
     
