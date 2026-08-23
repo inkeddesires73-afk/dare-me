@@ -439,6 +439,7 @@
     };
 
     let isHost = false, lastStarCounts = {}, participantPlayers = [], db, auth, unsubscribe, unsubscribeParticipants, unsubscribeActions, user;
+    let preserveScrollY = null;
     let lastLevel4NoticeKey = '';
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'dare-me-dynamic';
 
@@ -495,6 +496,7 @@
     }
 
     window.toggleLevelSelection = () => {
+        preserveScrollY = (isHost && state.roomCode) ? window.scrollY : null;
         state.selectedLevels = Array.from(document.querySelectorAll('.lvl-cb:checked'))
             .map(cb => parseInt(cb.value))
             .sort((a,b) => a-b);
@@ -729,12 +731,15 @@
 
     function applyStateToUI() {
         startTimerDisplayLoop();
-        // Återställ även efter att innehållet har renderats klart.
-        const resetScroll = () => window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-        resetScroll();
-        requestAnimationFrame(resetScroll);
-        setTimeout(resetScroll, 0);
-        setTimeout(resetScroll, 150);
+        // Nivåval synkas i realtid. Behåll då scrollpositionen så att värden
+        // kan markera flera nivåer utan att behöva rulla ner efter varje klick.
+        const scrollY = preserveScrollY;
+        preserveScrollY = null;
+        const restoreScroll = () => window.scrollTo({ top: scrollY ?? 0, left: 0, behavior: 'auto' });
+        restoreScroll();
+        requestAnimationFrame(restoreScroll);
+        setTimeout(restoreScroll, 0);
+        setTimeout(restoreScroll, 150);
         isHost = state.isHost;
         const exitButton = document.getElementById('btn-exit-room');
         if (exitButton) exitButton.innerText = isHost ? 'LOBBY / REDIGERA' : 'LÄMNA RUM';
