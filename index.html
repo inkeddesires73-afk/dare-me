@@ -424,6 +424,7 @@
             <div id="next-up-info" style="color:#faa405; font-size:0.85rem; text-transform:uppercase; margin-bottom:8px; font-weight:700;">NÄSTA PÅ TUR: ...</div>
             <div id="active-lvl-display" style="color: #777; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 14px;">AKTUELL NIVÅ: <span id="current-lvl-text" style="color:var(--red); font-weight:bold;">---</span></div>
             <div id="star-power-label" style="color:var(--gold); font-weight:bold; letter-spacing:5px; margin-bottom:20px; display:none;">⭐ GULDSTJÄRNA ⭐</div>
+            <div id="game-paused-banner" style="display:none; color:#f0b429; font-weight:800; letter-spacing:1px; margin:0 0 18px;">⏸ SPELET ÄR PAUSAT</div>
             <div id="task-box" class="task-text">VÄNTAR på kort...</div>
             <div id="timer-display">3:00</div>
             <button id="btn-finish-timer" class="btn btn-lvl-up" style="display:none;" onclick="finishTimerEarly()">KLART, NÄSTA KORT</button>
@@ -432,6 +433,8 @@
             <div id="turn-help" class="turn-help" aria-live="polite"></div>
             <button class="btn btn-next" id="btn-next-card" onclick="generateTurn()">NÄSTA KORT</button>
             <button class="btn btn-rules" id="btn-skip-card" style="margin-bottom: 25px;" onclick="skipCard()">BYT KORT 🔄</button>
+            <button class="btn btn-lvl-up host-only" id="btn-pause-game" onclick="togglePause()">PAUSA SPELET ⏸</button>
+            <button class="btn btn-lvl-up guest-only" id="btn-request-pause" onclick="requestPause()">BEGÄR PAUS ⏸</button>
             <button class="btn btn-lvl-up host-only" id="lvl-up-btn" onclick="advanceLevel()">HÖJ STÄMNINGEN 🔥</button>
             <button class="btn btn-back" id="btn-exit-room" style="margin-top: 30px;" onclick="goToLobby()">LOBBY / REDIGERA</button>
         </div>
@@ -476,6 +479,7 @@
         timer: null,
         timerEndsAt: null,
         isPlaying: false,
+        gamePaused: false,
         roomCode: null,
         hostUid: null
     };
@@ -808,6 +812,12 @@
             } else if (action.type === 'useStar' && action.playerUid) {
                 const playerIndex = state.players.findIndex(p => p.id === action.playerId);
                 if (playerIndex >= 0) activateStarPowerForPlayer(playerIndex);
+            } else if (action.type === 'pauseRequest' && action.playerUid) {
+                const playerExists = state.players.some(p => p.id === action.playerId && p.uid === action.playerUid);
+                if (playerExists && !state.gamePaused) {
+                    state.gamePaused = true;
+                    updateCloud(); saveLocal(); applyStateToUI();
+                }
             }
         } finally {
             await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'actions', actionId));
@@ -863,6 +873,10 @@
             if (nextUpEl) nextUpEl.innerText = nextP ? `NÄSTA PÅ TUR: ${nextP.name}` : "NÄSTA PÅ TUR: ...";
 
             document.getElementById('task-box').innerHTML = sanitizeTaskHtml(state.currentTask);
+            const pausedBanner = document.getElementById('game-paused-banner');
+            if (pausedBanner) pausedBanner.style.display = state.gamePaused ? 'block' : 'none';
+            const pauseButton = document.getElementById('btn-pause-game');
+            if (pauseButton) pauseButton.innerText = state.gamePaused ? 'FORTSÄTT SPELET ▶' : 'PAUSA SPELET ⏸';
             const curLvlId = state.selectedLevels[state.activeLevelIdx];
             document.getElementById('current-lvl-text').innerText = allDares[curLvlId]?.name || `Nivå ${curLvlId}`;
             document.getElementById('lvl-up-btn').style.display = (isHost && state.activeLevelIdx < state.selectedLevels.length - 1) ? 'block' : 'none';
@@ -892,15 +906,18 @@
     function updateGuestTurnControls() {
         const activePlayer = state.players[state.currentPlayerIdx];
         const ownPlayer = participantPlayers.find(player => player.uid === user?.uid);
-        const guestCanAct = isHost || !state.roomCode || Boolean(ownPlayer && activePlayer &&
-            (activePlayer.id === ownPlayer.id || activePlayer.uid === ownPlayer.uid));
+        const guestCanAct = !state.gamePaused && (isHost || !state.roomCode || Boolean(ownPlayer && activePlayer &&
+            (activePlayer.id === ownPlayer.id || activePlayer.uid === ownPlayer.uid)));
         ['btn-next-card', 'btn-skip-card'].forEach(id => {
             const button = document.getElementById(id);
             if (button) button.disabled = !guestCanAct;
         });
+        const pauseRequestButton = document.getElementById('btn-request-pause');
+        if (pauseRequestButton) pauseRequestButton.disabled = Boolean(state.gamePaused || !ownPlayer);
         const turnHelp = document.getElementById('turn-help');
         if (turnHelp) {
-            if (isHost) turnHelp.innerText = 'Värden styr kortdragningen och kan alltid gå vidare.';
+            if (state.gamePaused) turnHelp.innerText = isHost ? 'Spelet är pausat. Fortsätt när alla är redo.' : 'Spelet är pausat av värden.';
+            else if (isHost) turnHelp.innerText = 'Värden styr kortdragningen och kan alltid gå vidare.';
             else if (guestCanAct) turnHelp.innerText = 'Det är din tur – välj nästa kort eller byt kort.';
             else turnHelp.innerText = activePlayer ? `Väntar på ${activePlayer.name}...` : 'Väntar på nästa tur...';
         }
@@ -912,6 +929,16 @@
     window.updateStarTimerSetting = () => { state.starPowerDuration = parseInt(document.getElementById('star-timer-setting').value); updateCloud(); saveLocal(); };
     window.updateStarChanceSetting = () => { state.starChance = parseInt(document.getElementById('star-chance-setting').value); updateCloud(); saveLocal(); };
     window.updateAutoLevelSetting = () => { state.autoLevelUpCards = parseInt(document.getElementById('auto-level-setting').value) || 0; state.cardsSinceLevelUp = 0; updateCloud(); saveLocal(); };
+    window.togglePause = () => {
+        if (!isHost) return;
+        state.gamePaused = !state.gamePaused;
+        updateCloud(); saveLocal(); applyStateToUI();
+    };
+    window.requestPause = () => {
+        if (isHost || !state.roomCode || state.gamePaused) return;
+        const ownPlayer = participantPlayers.find(player => player.uid === user?.uid);
+        if (ownPlayer) requestRoomAction('pauseRequest', { playerUid: user.uid, playerId: ownPlayer.id }).catch(() => showLobbyWarning('Pausen kunde inte begäras.'));
+    };
     window.toggleManualStars = () => { state.allowManualStars = document.getElementById('setting-manual-stars').checked; updateCloud(); saveLocal(); };
     window.enterGame = () => { state.introSeen = true; applyStateToUI(); saveLocal(); };
 
