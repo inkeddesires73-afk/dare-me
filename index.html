@@ -1152,7 +1152,7 @@
         if (dare.text.includes('[PARTNER]')) required = Math.max(required, 3);
         if (textHas(text, /två\s+(hemliga|tysta|andra)\s+(med)?spelare|två\s+spelare/)) required = Math.max(required, 4);
         else if (textHas(text, /tre\s+(hemliga|tysta|andra)\s+(med)?spelare|tre\s+spelare/)) required = Math.max(required, 5);
-        else if (textHas(text, /gruppen|flera\s+medverkande|flera\s+spelare/)) required = Math.max(required, 3);
+        else if (textHas(text, /gruppen|flera\s+medverkande|flera\s+spelare|okänd\s+spelare|hemlig\s+spelare|\båt\s+alla\b/)) required = Math.max(required, 3);
         return state.players.length >= required;
     }
 
