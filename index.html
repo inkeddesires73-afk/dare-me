@@ -170,6 +170,7 @@
             font-size: 1.05rem; box-sizing: border-box;
         }
         .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
         .btn-add { background: #1a1a1a; color: var(--gold); border: 1px solid var(--border); margin-top: 35px; }
         .btn-start { background: var(--gold); color: #000; font-size: 1.25rem; margin-top: 25px; }
@@ -388,8 +389,8 @@
             <button id="btn-finish-timer" class="btn btn-lvl-up" style="display:none;" onclick="finishTimerEarly()">KLART, NÄSTA KORT</button>
         </div>
         <div class="game-controls">
-            <button class="btn btn-next" onclick="generateTurn()">NÄSTA KORT</button>
-            <button class="btn btn-rules" style="margin-bottom: 25px;" onclick="skipCard()">BYT KORT 🔄</button>
+            <button class="btn btn-next" id="btn-next-card" onclick="generateTurn()">NÄSTA KORT</button>
+            <button class="btn btn-rules" id="btn-skip-card" style="margin-bottom: 25px;" onclick="skipCard()">BYT KORT 🔄</button>
             <button class="btn btn-lvl-up host-only" id="lvl-up-btn" onclick="advanceLevel()">HÖJ STÄMNINGEN 🔥</button>
             <button class="btn btn-back" id="btn-exit-room" style="margin-top: 30px;" onclick="goToLobby()">LOBBY / REDIGERA</button>
         </div>
@@ -672,6 +673,7 @@
                 mergeSyncedPlayers();
                 renderLobby();
                 if (state.isPlaying) renderGameBar();
+                updateGuestTurnControls();
             },
             (err) => console.warn('Deltagare kunde inte synkas.', err)
         );
@@ -719,7 +721,8 @@
         if (!isHost || !state.roomCode || !db || !user) return;
         try {
             if (action.type === 'nextCard') {
-                window.generateTurn(true);
+                const activePlayer = state.players[state.currentPlayerIdx];
+                if (activePlayer?.uid === action.uid && action.playerUid === action.uid) window.generateTurn(true);
             } else if (action.type === 'useStar' && action.playerUid) {
                 const playerIndex = state.players.findIndex(p => p.uid === action.playerUid && p.uid === action.uid);
                 if (playerIndex >= 0) activateStarPowerForPlayer(playerIndex);
@@ -798,9 +801,22 @@
             document.getElementById('lobby-page').classList.add('active');
             renderLobby();
         }
+        updateGuestTurnControls();
         const roomInfo = document.getElementById('room-info');
         if (roomInfo) roomInfo.innerHTML = state.roomCode ? `RUMSKOD: <span class="room-code-display">${escapeHtml(state.roomCode)}</span>` : `LOKALT SPEL`;
         hideLoading();
+    }
+
+    function updateGuestTurnControls() {
+        const activePlayer = state.players[state.currentPlayerIdx];
+        const guestCanAct = isHost || !state.roomCode || activePlayer?.uid === user?.uid;
+        ['btn-next-card', 'btn-skip-card'].forEach(id => {
+            const button = document.getElementById(id);
+            if (button) button.disabled = !guestCanAct;
+        });
+        const guestHasPlayer = !isHost && state.roomCode && participantPlayers.some(player => player.uid === user?.uid);
+        const addButton = document.querySelector('#setup-controls .btn-add[onclick="addPlayer()"]');
+        if (addButton) addButton.disabled = Boolean(guestHasPlayer);
     }
 
     window.updateStarTimerSetting = () => { state.starPowerDuration = parseInt(document.getElementById('star-timer-setting').value); updateCloud(); saveLocal(); };
@@ -883,6 +899,10 @@
         const nameInput = document.getElementById('pName');
         const name = nameInput.value.trim().toUpperCase();
         if (!name) return;
+        if (!isHost && state.roomCode && participantPlayers.some(player => player.uid === user?.uid)) {
+            showLobbyWarning('Den här enheten har redan en spelare i rummet.');
+            return;
+        }
         const finalStars = tempStars; tempStars = 0;
         const newPlayer = {
             id: Date.now(), name, gender: document.getElementById('pGender').value,
@@ -898,11 +918,15 @@
                 saveLocal();
             } else if (!isHost && user) {
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'participants', user.uid), newPlayer);
+                participantPlayers = [newPlayer];
+                mergeSyncedPlayers();
+                updateGuestTurnControls();
                 listenToRoom(state.roomCode);
             } else {
                 await updateCloud();
             }
         } catch (e) {
+            if (!isHost && state.roomCode) participantPlayers = [];
             state.players = state.players.filter(p => p.id !== newPlayer.id);
             renderLobby();
             showLobbyWarning('Spelaren kunde inte läggas till. Kontrollera Firebase-reglerna.');
@@ -955,7 +979,9 @@
 
     window.generateTurn = (fromRoomAction = false) => {
         if (!isHost && state.roomCode && !fromRoomAction) {
-            requestRoomAction('nextCard').catch(() => showLobbyWarning('Kortet kunde inte begäras. Kontrollera anslutningen.'));
+            const activePlayer = state.players[state.currentPlayerIdx];
+            if (activePlayer?.uid !== user?.uid) return;
+            requestRoomAction('nextCard', { playerUid: user.uid }).catch(() => showLobbyWarning('Kortet kunde inte begäras. Kontrollera anslutningen.'));
             return;
         }
         if (state.timer) stopTimer();
