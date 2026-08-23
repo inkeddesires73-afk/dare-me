@@ -73,7 +73,7 @@ service cloud.firestore {
           && exists(/databases/$(database)/documents/artifacts/$(appId)/public/data/rooms/$(roomId)/participants/$(request.auth.uid))
           && request.resource.data.keys().hasOnly(['uid', 'type', 'playerUid', 'playerId'])
           && request.resource.data.uid == request.auth.uid
-          && request.resource.data.type in ['nextCard', 'useStar']
+          && request.resource.data.type in ['nextCard', 'useStar', 'pauseRequest']
           && request.resource.data.playerUid == request.auth.uid
           && request.resource.data.playerId is int
           && get(/databases/$(database)/documents/artifacts/$(appId)/public/data/rooms/$(roomId)/participants/$(request.auth.uid)).data.id == request.resource.data.playerId;
