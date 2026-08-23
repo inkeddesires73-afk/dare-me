@@ -2,6 +2,14 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    match /artifacts/{appId}/public/data/roomDirectory/{roomId} {
+      allow read: if request.auth != null && resource.data.roomCode == roomId;
+      allow create: if request.auth != null
+        && request.resource.data.roomCode == roomId
+        && request.resource.data.hostUid == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.hostUid == request.auth.uid;
+    }
+
     match /artifacts/{appId}/public/data/rooms/{roomId} {
       function signedIn() {
         return request.auth != null;
@@ -21,7 +29,9 @@ service cloud.firestore {
 
       // Alla inloggade deltagare får läsa ett rum. Endast värden får ändra
       // själva rumsdokumentet. Gäster använder de begränsade underdokumenten nedan.
-      allow read: if signedIn() && resource.data.roomCode == roomId;
+      allow read: if signedIn()
+        && (resource.data.hostUid == request.auth.uid
+          || exists(/databases/$(database)/documents/artifacts/$(appId)/public/data/rooms/$(roomId)/participants/$(request.auth.uid)));
       allow create: if signedIn()
         && request.resource.data.hostUid == request.auth.uid
         && validRoom(request.resource.data);
