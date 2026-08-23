@@ -779,8 +779,8 @@
 
             document.getElementById('task-box').innerHTML = sanitizeTaskHtml(state.currentTask);
             const curLvlId = state.selectedLevels[state.activeLevelIdx];
-            document.getElementById('current-lvl-text').innerText = curLvlId <= 2 ? (allDares[curLvlId]?.name || `Nivå ${curLvlId}`) : "🔥 THE SHUFFLE ZONE";
-            document.getElementById('lvl-up-btn').style.display = (isHost && curLvlId < 3 && state.activeLevelIdx < state.selectedLevels.length - 1) ? 'block' : 'none';
+            document.getElementById('current-lvl-text').innerText = allDares[curLvlId]?.name || `Nivå ${curLvlId}`;
+            document.getElementById('lvl-up-btn').style.display = (isHost && state.activeLevelIdx < state.selectedLevels.length - 1) ? 'block' : 'none';
             const timerText = getTimerDisplayText();
             if (timerText) {
                 document.getElementById('timer-display').style.display = 'block';
@@ -969,8 +969,7 @@
             : null;
         const curLvlId = state.selectedLevels[state.activeLevelIdx];
         let pool = [];
-        if (curLvlId <= 2) pool = (allDares[curLvlId]?.dares || []);
-        else state.selectedLevels.filter(id => id > 2).forEach(id => { if (allDares[id]) pool = pool.concat(allDares[id].dares); });
+        pool = (allDares[curLvlId]?.dares || []);
 
         const filteredPool = pool.filter(d => {
             if (d.tags && d.tags.some(tag => target.vetos.includes(tag) || active.vetos.includes(tag))) return false;
@@ -1011,7 +1010,7 @@
             state.currentPlayerIdx = (state.currentPlayerIdx + 1) % state.players.length;
             state.cardsSinceLevelUp = (state.cardsSinceLevelUp || 0) + 1;
             const completedRound = state.currentPlayerIdx === 0;
-            const canAutoLevelUp = state.autoLevelUpCards > 0 && curLvlId < 3 && state.activeLevelIdx < state.selectedLevels.length - 1;
+            const canAutoLevelUp = state.autoLevelUpCards > 0 && state.activeLevelIdx < state.selectedLevels.length - 1;
             if (completedRound && canAutoLevelUp && state.cardsSinceLevelUp >= state.players.length * state.autoLevelUpCards) {
                 state.activeLevelIdx++;
                 state.cardsSinceLevelUp = 0;
@@ -1026,7 +1025,7 @@
         window.generateTurn();
     };
 
-    window.advanceLevel = () => { if(isHost && state.activeLevelIdx < state.selectedLevels.length - 1 && state.selectedLevels[state.activeLevelIdx] < 3) { state.activeLevelIdx++; state.cardsSinceLevelUp = 0; updateCloud(); saveLocal(); } };
+    window.advanceLevel = () => { if(isHost && state.activeLevelIdx < state.selectedLevels.length - 1) { state.activeLevelIdx++; state.cardsSinceLevelUp = 0; updateCloud(); saveLocal(); } };
     
     function activateStarPowerForPlayer(playerIndex) {
         const active = state.players[playerIndex];
