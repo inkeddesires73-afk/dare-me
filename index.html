@@ -181,6 +181,8 @@
         
         #timer-display { font-size: 4.5rem; color: var(--gold); font-weight: 900; margin-top: 25px; display: none; }
         #notif-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; }
+        #level-banner { position: fixed; top: 18px; left: 50%; transform: translate(-50%, -18px); width: min(92vw, 520px); padding: 16px 20px; border: 1px solid var(--gold); border-radius: 14px; background: rgba(17,17,17,0.97); color: var(--gold); font-weight: 900; letter-spacing: 0.08em; text-align: center; box-shadow: 0 10px 28px rgba(0,0,0,0.45), 0 0 24px rgba(212,175,55,0.25); opacity: 0; pointer-events: none; z-index: 3500; transition: opacity 0.25s ease, transform 0.25s ease; }
+        #level-banner.show { opacity: 1; transform: translate(-50%, 0); }
         #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; padding: 16px; overflow-y: auto; }
         .modal-box { background: var(--panel); border: 1px solid var(--gold); padding: 30px; border-radius: 25px; width: 100%; max-width: 400px; max-height: calc(100dvh - 32px); display: flex; flex-direction: column; overflow: hidden; }
         #modal-star-info { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
@@ -304,6 +306,8 @@
             <small style="color:#666; margin-top:20px; display:block;">Tryck för att fortsätta</small>
         </div>
     </div>
+
+    <div id="level-banner" role="status" aria-live="polite">NIVÅ 4 – EXTREME ÄR AKTIV</div>
 
     <!-- MODAL-BEHÅLLARE (VARNINGAR, STJÄRNOR & RESET) -->
     <div id="modal-overlay">
@@ -830,6 +834,17 @@
         }
     }
 
+    let lastRenderedLevelId = null;
+    let levelBannerTimer = null;
+
+    function showLevel4Banner() {
+        const banner = document.getElementById('level-banner');
+        if (!banner) return;
+        banner.classList.add('show');
+        clearTimeout(levelBannerTimer);
+        levelBannerTimer = setTimeout(() => banner.classList.remove('show'), 4000);
+    }
+
     function applyStateToUI() {
         startTimerDisplayLoop();
         // Nivåval synkas i realtid. Behåll då scrollpositionen så att värden
@@ -888,6 +903,11 @@
             const pauseButton = document.getElementById('btn-pause-game');
             if (pauseButton) pauseButton.innerText = state.gamePaused ? 'FORTSÄTT SPELET ▶' : 'PAUSA SPELET ⏸';
             const curLvlId = state.selectedLevels[state.activeLevelIdx];
+            if (lastRenderedLevelId === null) lastRenderedLevelId = curLvlId;
+            else {
+                if (curLvlId === 4 && lastRenderedLevelId !== 4) showLevel4Banner();
+                lastRenderedLevelId = curLvlId;
+            }
             document.getElementById('current-lvl-text').innerText = allDares[curLvlId]?.name || `Nivå ${curLvlId}`;
             document.getElementById('lvl-up-btn').style.display = (isHost && state.activeLevelIdx < state.selectedLevels.length - 1) ? 'block' : 'none';
             const timerText = getTimerDisplayText();
