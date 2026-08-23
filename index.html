@@ -397,7 +397,7 @@
 <script type="module">
     import { initializeApp } from "firebase/app";
     import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "firebase/auth";
-    import { getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc } from "firebase/firestore";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc, collection } from "firebase/firestore";
     import { getAnalytics, logEvent } from "firebase/analytics";
 
     const firebaseConfig = {
@@ -437,7 +437,7 @@
         hostUid: null
     };
 
-    let isHost = false, lastStarCounts = {}, db, auth, unsubscribe, user;
+    let isHost = false, lastStarCounts = {}, db, auth, unsubscribe, unsubscribeParticipants, user;
     let lastLevel4NoticeKey = '';
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'dare-me-dynamic';
 
@@ -570,9 +570,14 @@
     }
 
     function leaveGuestRoom(message = '') {
+        if (!isHost && state.roomCode && user && db) {
+            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'participants', user.uid)).catch(() => {});
+        }
         clearInterval(window.tInt);
         if (unsubscribe) unsubscribe();
+        if (unsubscribeParticipants) unsubscribeParticipants();
         unsubscribe = null;
+        unsubscribeParticipants = null;
         lastStarCounts = {};
         isHost = false;
         state = {
@@ -600,6 +605,7 @@
     function listenToRoom(code) {
         if (!db || !user) return;
         if (unsubscribe) unsubscribe();
+        listenToParticipants(code);
         unsubscribe = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code), (snapshot) => {
             if (!snapshot.exists()) {
                 if (!isHost) {
@@ -638,6 +644,21 @@
             console.error("Snapshot error:", err);
             if (!isHost && state.roomCode === code) leaveGuestRoom('Anslutningen till rummet avslutades.');
         });
+    }
+
+    function listenToParticipants(code) {
+        if (unsubscribeParticipants) unsubscribeParticipants();
+        unsubscribeParticipants = onSnapshot(
+            collection(db, 'artifacts', appId, 'public', 'data', 'rooms', code, 'participants'),
+            (snapshot) => {
+                const guestPlayers = snapshot.docs.map(item => ({ ...item.data(), uid: item.id }));
+                const retainedPlayers = state.players.filter(p => !p.uid || (isHost && p.uid === user?.uid));
+                state.players = [...retainedPlayers, ...guestPlayers.filter(p => !retainedPlayers.some(existing => existing.uid === p.uid))];
+                renderLobby();
+                if (state.isPlaying) renderGameBar();
+            },
+            (err) => console.warn('Deltagare kunde inte synkas.', err)
+        );
     }
 
     function applyStateToUI() {
@@ -765,13 +786,20 @@
         const newPlayer = {
             id: Date.now(), name, gender: document.getElementById('pGender').value,
             pref: document.getElementById('pPref').value, vetos: Array.from(document.querySelectorAll('.veto-cb:checked')).map(cb => cb.value), 
-            biNoPen: document.getElementById('bi-no-pen').checked, stars: finalStars
+            biNoPen: document.getElementById('bi-no-pen').checked, stars: finalStars,
+            uid: user?.uid || null
         };
         state.players.push(newPlayer);
         nameInput.value = ""; document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = false);
         renderLobby(); toggleBiOption(); saveLocal();
         try {
-            await updateCloud();
+            if (!state.roomCode) {
+                saveLocal();
+            } else if (!isHost && user) {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'participants', user.uid), newPlayer);
+            } else {
+                await updateCloud();
+            }
         } catch (e) {
             state.players = state.players.filter(p => p.id !== newPlayer.id);
             renderLobby();
@@ -779,7 +807,15 @@
         }
     };
 
-    window.removePlayer = (id) => { if (!isHost) return; state.players = state.players.filter(p => p.id !== id); renderLobby(); updateCloud(); saveLocal(); };
+    window.removePlayer = (id) => {
+        if (!isHost) return;
+        const player = state.players.find(p => p.id === id);
+        state.players = state.players.filter(p => p.id !== id);
+        renderLobby(); updateCloud(); saveLocal();
+        if (player?.uid && player.uid !== user?.uid && state.roomCode) {
+            deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'participants', player.uid)).catch(() => {});
+        }
+    };
     
     window.editPlayer = (id) => {
         if (!isHost) return;
