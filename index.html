@@ -679,6 +679,7 @@
             timerEndsAt: null,
             cardsSinceLevelUp: 0,
             isPlaying: false,
+            gamePaused: false,
             roomCode: null,
             hostUid: null
         };
@@ -1012,6 +1013,7 @@
             state.isPlaying = false;
             state.timer = null;
             state.timerEndsAt = null;
+            state.gamePaused = false;
             listenToRoomDirectory(code);
             saveLocal(); applyStateToUI();
         } catch (e) {
@@ -1086,7 +1088,7 @@
         if (state.selectedLevels.length === 0) { showLobbyWarning("Du måste välja minst en nivåfil för att kunna starta."); return; }
         if (state.players.length < 2) { showLobbyWarning("Det krävs minst två spelare för att kunna börja."); return; }
         maybeShowLevel4Notice(state.selectedLevels);
-        state.isPlaying = true; state.activeLevelIdx = 0; state.currentPlayerIdx = 0; state.cardsSinceLevelUp = 0; updateCloud(); saveLocal(); applyStateToUI();
+        state.isPlaying = true; state.gamePaused = false; state.activeLevelIdx = 0; state.currentPlayerIdx = 0; state.cardsSinceLevelUp = 0; updateCloud(); saveLocal(); applyStateToUI();
     };
 
     function isSexualDare(dare) {
