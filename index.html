@@ -1116,6 +1116,51 @@
         return orientationAllows(actor, target) && orientationAllows(target, actor);
     }
 
+    function textHas(text, pattern) {
+        return pattern.test(String(text || '').toLowerCase());
+    }
+
+    // Kort med sperma måste alltid ha en manlig spelare i rollen som källa.
+    function semenRolesArePossible(dare, active, target, partner) {
+        if (!dare.tags?.includes('semen') && !textHas(dare.text, /sperma|säd/)) return true;
+        const text = String(dare.text || '').toLowerCase();
+        if (textHas(text, /från\s+\[target\]|av\s+\[target\]/)) return target?.gender === 'man';
+        if (textHas(text, /\[partner\].*(sperma|säd)|(sperma|säd).*\[partner\]/)) return partner?.gender === 'man';
+        if (textHas(text, /\[active\].*(sperma|säd)|(sperma|säd).*\[active\]/)) return active?.gender === 'man';
+        return [active, target, partner].some(player => player?.gender === 'man');
+    }
+
+    // Penetration med dildo, leksak eller fingrar fungerar oavsett kön.
+    // Formuleringar som "knulla", "ta" eller "penetrera" utan ett sådant redskap
+    // kräver däremot en man i den aktiva penetrerande rollen.
+    function penetrationRolesArePossible(dare, active, target, partner) {
+        if (!dare.tags?.includes('penetration')) return true;
+        const text = String(dare.text || '').toLowerCase();
+        const usesNonPenileTool = textHas(text, /dildo|strap[- ]?on|leksak|fingrar|vibrator|redskap/);
+        if (usesNonPenileTool) return true;
+        const needsPenileActor = textHas(text, /knulla|penetrera|penetrerar|penetration|ta\s+\[|ta\s+dig|trycka\s+sig\s+in|rida|rid\s+\[hen\]|tar\s+dig/);
+        if (!needsPenileActor) return true;
+        if (textHas(text, /\[partner\].*(knulla|penetrera|ta\s+|rida)|(knulla|penetrera|ta\s+|rida).*\[partner\]/)) {
+            return partner?.gender === 'man';
+        }
+        return active?.gender === 'man';
+    }
+
+    function dareIsAllowed(dare, active, target, partner) {
+        const involved = [active, target, partner].filter(Boolean);
+        if (dare.tags?.some(tag => involved.some(player => player.vetos?.includes(tag)))) return false;
+        const sexual = isSexualDare(dare);
+        if (sexual && !pairIsAllowed(active, target)) return false;
+        if (sexual && dare.text.includes('[PARTNER]') && (!partner || !pairIsAllowed(partner, target))) return false;
+        if (!semenRolesArePossible(dare, active, target, partner)) return false;
+        if (!penetrationRolesArePossible(dare, active, target, partner)) return false;
+        if (dare.tags?.includes('penetration') && target.biNoPen) {
+            if ((active.gender === target.gender && active.pref === 'bi') ||
+                (partner && dare.text.includes('[PARTNER]') && partner.gender === target.gender && partner.pref === 'bi')) return false;
+        }
+        return true;
+    }
+
     window.generateTurn = (fromRoomAction = false) => {
         if (!isHost && state.roomCode && !fromRoomAction) {
             const activePlayer = state.players[state.currentPlayerIdx];
@@ -1126,36 +1171,24 @@
         }
         if (state.timer) stopTimer();
         const active = state.players[state.currentPlayerIdx];
-        const validTargets = state.players.filter(p => p.id !== active.id);
-        if (validTargets.length === 0) return;
-        const target = validTargets[Math.floor(Math.random() * validTargets.length)];
-        const partnerCandidates = state.players.filter(p => p.id !== active.id && p.id !== target.id);
-        const partner = partnerCandidates.length > 0
-            ? partnerCandidates[Math.floor(Math.random() * partnerCandidates.length)]
-            : null;
         const curLvlId = state.selectedLevels[state.activeLevelIdx];
-        let pool = [];
-        pool = (allDares[curLvlId]?.dares || []);
-
-        const filteredPool = pool.filter(d => {
-            if (d.tags && d.tags.some(tag => target.vetos.includes(tag) || active.vetos.includes(tag))) return false;
-            const sexual = isSexualDare(d);
-            if (sexual && !pairIsAllowed(active, target)) return false;
-            if (sexual && d.text.includes('[PARTNER]') && (!partner || !pairIsAllowed(partner, target))) return false;
-            if (d.tags?.includes('penetration') && target.biNoPen) {
-                if ((active.gender === target.gender && active.pref === 'bi') ||
-                    (partner && d.text.includes('[PARTNER]') && partner.gender === target.gender && partner.pref === 'bi')) return false;
+        const pool = allDares[curLvlId]?.dares || [];
+        const validTargets = state.players.filter(p => p.id !== active.id);
+        const possibleTurns = [];
+        for (const dare of pool) {
+            for (const target of validTargets) {
+                const partnerCandidates = state.players.filter(p => p.id !== active.id && p.id !== target.id);
+                const partners = dare.text.includes('[PARTNER]') ? partnerCandidates : [null];
+                for (const partner of partners) {
+                    if (/\[(?:ACTIVE|PARTNER)\]/.test(dare.text) && !partner && dare.text.includes('[PARTNER]')) continue;
+                    if (dareIsAllowed(dare, active, target, partner)) possibleTurns.push({ dare, target, partner });
+                }
             }
-            return true;
-        });
+        }
 
-        const availablePool = partnerCandidates.length > 0
-            ? filteredPool
-            : filteredPool.filter(d => !/\[(?:ACTIVE|PARTNER)\]/.test(d.text));
-
-        if (availablePool.length === 0) state.currentTask = "INGA MATCHANDE KORT HITTADES.";
+        if (possibleTurns.length === 0) state.currentTask = "INGA MATCHANDE KORT HITTADES.";
         else {
-            const dare = availablePool[Math.floor(Math.random() * availablePool.length)];
+            const { dare, target, partner } = possibleTurns[Math.floor(Math.random() * possibleTurns.length)];
             const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
             const pronomen = target.gender === 'man' ? 'honom' : 'henne';
             const pronomenSubject = target.gender === 'man' ? 'han' : 'hon';
