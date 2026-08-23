@@ -859,6 +859,14 @@
             isHost = false; state.isHost = false; state.modeSelected = true; state.roomCode = code;
             participantPlayers = []; lastStarCounts = {};
             state.hostUid = directorySnap.data().hostUid || null;
+            state.players = [];
+            state.selectedLevels = [];
+            state.activeLevelIdx = 0;
+            state.currentPlayerIdx = 0;
+            state.currentTask = 'TRYCK FÖR KORT';
+            state.isPlaying = false;
+            state.timer = null;
+            state.timerEndsAt = null;
             saveLocal(); applyStateToUI();
         } catch (e) {
             console.error('Kunde inte ansluta till Firebase-rum.', e);
