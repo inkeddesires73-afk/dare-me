@@ -62,6 +62,8 @@
         .output-tools { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 20px; }
         .card-count { color: #ffb3d1; font-size: 13px; font-weight: 700; }
         .btn-remove-last { padding: 8px 12px; background: #5d1831; color: #fff; border: 1px solid #a83b63; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+        .remove-card-row { display: flex; gap: 10px; margin-top: 10px; }
+        .remove-card-row select { flex: 1; min-width: 0; padding: 8px; background: #222; color: #fff; border: 1px solid #555; border-radius: 6px; }
         .deck-settings { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin: 0 0 15px; }
         .deck-settings input, .deck-settings select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; box-sizing: border-box; font-size: 15px; }
         .file-input { display: none; }
@@ -79,6 +81,7 @@
             .import-export { flex-direction: column; }
             .output-tools { align-items: stretch; flex-direction: column; }
             .btn-remove-last { width: 100%; }
+            .remove-card-row { flex-direction: column; }
             h2 { font-size: 1.25rem; letter-spacing: 2px; }
             .header-img { max-width: min(220px, 70vw); }
         }
@@ -280,6 +283,12 @@
         <span id="cardCount" class="card-count">0 kort i listan</span>
         <button class="btn-remove-last" type="button" onclick="removeLastCard()">TA BORT SENASTE KORT ↶</button>
     </div>
+    <div class="remove-card-row">
+        <select id="removeCardSelect" aria-label="Välj kort att ta bort">
+            <option value="">Välj ett kort att ta bort...</option>
+        </select>
+        <button class="btn-remove-last" type="button" onclick="removeSelectedCard()">TA BORT VALT KORT</button>
+    </div>
     <textarea id="output" readonly placeholder="JSON-rader visas här..."></textarea>
 </div>
 
@@ -401,10 +410,7 @@
         checkboxes.forEach((item) => { if (item.checked) selectedTags.push(item.value); });
         const obj = { text: text, tags: selectedTags };
         deckDares.push(obj);
-        const jsonLine = "    " + JSON.stringify(obj) + ",";
-        const output = document.getElementById('output');
-        output.value += jsonLine + "\n";
-        document.getElementById('cardCount').textContent = `${deckDares.length} kort i listan`;
+        renderOutput();
         textInput.value = "";
         checkboxes.forEach(c => c.checked = false);
         saveDraft();
@@ -439,11 +445,28 @@
     function renderOutput() {
         document.getElementById('output').value = deckDares.map(card => '    ' + JSON.stringify(card) + ',').join('\n') + (deckDares.length ? '\n' : '');
         document.getElementById('cardCount').textContent = `${deckDares.length} kort i listan`;
+        const select = document.getElementById('removeCardSelect');
+        select.innerHTML = '<option value="">Välj ett kort att ta bort...</option>';
+        deckDares.forEach((card, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `${index + 1}. ${card.text}`;
+            select.appendChild(option);
+        });
     }
 
     function removeLastCard() {
         if (!deckDares.length) return;
         deckDares.pop();
+        renderOutput();
+        saveDraft();
+    }
+
+    function removeSelectedCard() {
+        const select = document.getElementById('removeCardSelect');
+        const index = Number(select.value);
+        if (!Number.isInteger(index) || index < 0 || index >= deckDares.length) return;
+        deckDares.splice(index, 1);
         renderOutput();
         saveDraft();
     }
