@@ -464,6 +464,7 @@
 
     function removeSelectedCard() {
         const select = document.getElementById('removeCardSelect');
+        if (select.value === '') return;
         const index = Number(select.value);
         if (!Number.isInteger(index) || index < 0 || index >= deckDares.length) return;
         deckDares.splice(index, 1);
