@@ -392,6 +392,8 @@
         const textInput = document.getElementById('dareText');
         const text = textInput.value.trim();
         if (!text) return;
+        const duplicate = deckDares.some(card => card.text.trim().toLowerCase() === text.toLowerCase());
+        if (duplicate && !confirm('Det här kortet finns redan i listan. Vill du lägga till det ändå?')) return;
         const checkboxes = document.querySelectorAll('.tag-check');
         let selectedTags = [];
         checkboxes.forEach((item) => { if (item.checked) selectedTags.push(item.value); });
