@@ -1,8 +1,9 @@
-const CACHE_NAME = 'dare-me-pwa-v3';
+const CACHE_NAME = 'dare-me-pwa-v4';
 const APP_SHELL = [
   './',
   './index.html',
   './rules.html',
+  './architect.html',
   './manifest.webmanifest',
   './dareme.png',
   './icon-192.jpg?v=2',
@@ -53,12 +54,14 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  const isHtml = url.pathname.endsWith('.html') || url.pathname.endsWith('/');
   event.respondWith(
-    caches.match(request).then(cached => cached || fetch(request).then(response => {
+    (isHtml ? fetch(request).catch(() => caches.match(request)) : caches.match(request).then(cached => cached || fetch(request))).then(response => {
+      if (!response) return response;
       const copy = response.clone();
       caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
       return response;
-    }))
+    })
   );
 });
 
