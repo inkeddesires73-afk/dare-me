@@ -65,9 +65,10 @@
         .deck-settings { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin: 0 0 15px; }
         .deck-settings input, .deck-settings select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; box-sizing: border-box; font-size: 15px; }
         .file-input { display: none; }
-        .btn-import, .btn-export { flex: 1; padding: 14px; border: 0; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; }
+        .btn-import, .btn-export, .btn-copy-json { flex: 1; padding: 14px; border: 0; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; }
         .btn-import { background: #6a1b9a; }
         .btn-export { background: #ad1457; }
+        .btn-copy-json { background: #00695c; }
         .import-export { display: flex; gap: 10px; margin-top: 10px; }
         @media (max-width: 700px) {
             .tags-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -271,6 +272,7 @@
     <div class="import-export">
         <button class="btn-import" type="button" onclick="document.getElementById('importFile').click()">IMPORTERA JSON 📥</button>
         <button class="btn-export" type="button" onclick="exportDeck()">EXPORTERA KORTLEK 📤</button>
+        <button class="btn-copy-json" type="button" onclick="copyDeckJson()">KOPIERA GILTIG JSON 📋</button>
     </div>
     <input id="importFile" class="file-input" type="file" accept="application/json,.json" onchange="importDeck(event)">
 
@@ -459,6 +461,34 @@
         link.download = (deck.name.replace(/[^a-z0-9åäö_-]+/gi, '-').replace(/^-+|-+$/g, '') || 'dare-me-kortlek') + '.json';
         link.click();
         URL.revokeObjectURL(link.href);
+    }
+
+    function copyDeckJson() {
+        if (!deckDares.length) { alert('Lägg till minst ett kort först.'); return; }
+        const deck = {
+            name: document.getElementById('deckName').value.trim() || 'Min egen kortlek',
+            difficulty: document.getElementById('deckDifficulty').value,
+            dares: deckDares
+        };
+        const json = JSON.stringify(deck, null, 2);
+        const finish = () => alert('Hela kortleken kopierades som giltig JSON! 💋');
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(json).then(finish).catch(() => fallbackCopy(json, finish));
+        } else {
+            fallbackCopy(json, finish);
+        }
+    }
+
+    function fallbackCopy(text, finish) {
+        const helper = document.createElement('textarea');
+        helper.value = text;
+        helper.style.position = 'fixed';
+        helper.style.opacity = '0';
+        document.body.appendChild(helper);
+        helper.select();
+        document.execCommand('copy');
+        helper.remove();
+        finish();
     }
 
     function importDeck(event) {
