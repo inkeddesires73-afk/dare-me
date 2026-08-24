@@ -223,6 +223,7 @@
         .btn-add { background: #1a1a1a; color: var(--gold); border: 1px solid var(--border); margin-top: 35px; }
         .btn-start { background: var(--gold); color: #000; font-size: 1.25rem; margin-top: 25px; }
         .btn-rules { background: transparent; color: var(--gold); border: 1px solid var(--gold); font-size: 0.95rem; padding: 16px; margin-top: 5px; }
+        .btn-install { background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); font-size: 0.82rem; padding: 12px 16px; margin-top: 8px; }
         .btn-next { background: var(--gold); color: #000; font-size: 1.4rem; box-shadow: 0 5px 20px rgba(212, 175, 55, 0.28); }
         .btn-back { background: #222; color: #eee; border: 1px solid #444; font-size: 1rem; margin-top: 15px; }
         .btn-lvl-up { background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); font-size: 0.8rem; padding: 10px; margin-top: 10px; }
@@ -309,6 +310,7 @@
             <button class="btn btn-add" id="show-join-room-btn" onclick="showJoinRoomInput()">GÅ MED I RUM</button>
             <input type="text" id="join-code-input" placeholder="ANGE RUMSKOD" maxlength="5" autocomplete="off" style="display:none; text-align: center; margin-top: 10px;">
             <button class="btn btn-start" id="join-room-submit" onclick="initJoinRoom()" style="display:none;">ANSLUT TILL RUM</button>
+            <button class="btn btn-install" id="install-pwa-btn" onclick="installPwa()" style="display:none;">INSTALLERA PÅ HEMSKÄRM</button>
         </div>
     </div>
 
@@ -517,6 +519,7 @@
     };
 
     let isHost = false, lastStarCounts = {}, participantPlayers = [], db, auth, unsubscribe, unsubscribeDirectory, unsubscribeParticipants, unsubscribeActions, user;
+    let deferredInstallPrompt = null;
     let preserveScrollY = null;
     let lastLevel4NoticeKey = '';
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'dare-me-dynamic';
@@ -999,6 +1002,28 @@
     };
     window.toggleManualStars = () => { state.allowManualStars = document.getElementById('setting-manual-stars').checked; updateCloud(); saveLocal(); };
     window.enterGame = () => { state.introSeen = true; applyStateToUI(); saveLocal(); };
+
+    function isStandaloneMode() {
+        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
+
+    function updateInstallButton() {
+        const button = document.getElementById('install-pwa-btn');
+        if (!button || isStandaloneMode()) return;
+        button.style.display = 'block';
+        button.innerText = deferredInstallPrompt ? 'INSTALLERA PÅ HEMSKÄRM' : 'LÄGG PÅ HEMSKÄRM';
+    }
+
+    window.installPwa = async () => {
+        if (deferredInstallPrompt) {
+            deferredInstallPrompt.prompt();
+            await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            updateInstallButton();
+            return;
+        }
+        showLobbyWarning('Öppna webbläsarens meny och välj “Lägg till på hemskärmen”. Då skapas en genväg utan att någon APK installeras.');
+    };
 
     window.showJoinRoomInput = () => {
         document.getElementById('show-join-room-btn').style.display = 'none';
@@ -1569,6 +1594,17 @@
     };
 
     window.addEventListener('load', () => { 
+        window.addEventListener('beforeinstallprompt', event => {
+            event.preventDefault();
+            deferredInstallPrompt = event;
+            updateInstallButton();
+        });
+        window.addEventListener('appinstalled', () => {
+            deferredInstallPrompt = null;
+            const button = document.getElementById('install-pwa-btn');
+            if (button) button.style.display = 'none';
+        });
+        updateInstallButton();
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js')
                 .catch(error => console.warn('PWA-cache kunde inte startas.', error));
