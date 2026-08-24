@@ -176,12 +176,13 @@
         .star-power-active { border-color: var(--gold) !important; box-shadow: 0 0 50px rgba(212,175,55,0.4) !important; }
         .task-text { font-size: clamp(1.35rem, 3vw, 2.6rem); font-weight: bold; line-height: 1.4; color: #fff; max-width: 100%; overflow-wrap: anywhere; }
         .task-text.card-deal { animation: cardDeal 0.32s ease both; }
-        .card-tools { width: 100%; display: flex; justify-content: center; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
-        .card-tool-btn { width: auto; min-width: 150px; padding: 10px 14px; margin: 0; font-size: 0.78rem; }
+        .card-tools { width: 100%; display: flex; justify-content: center; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+        .card-tool-btn { width: auto; min-width: 0; padding: 8px 12px; margin: 0; font-size: 0.7rem; letter-spacing: 0.04em; }
         .card-tool-btn.saved { color: #000; background: var(--gold); border-color: var(--gold); }
         .saved-card-list { max-height: 55vh; overflow-y: auto; text-align: left; }
         .saved-card-item { border: 1px solid #3a3320; border-radius: 10px; padding: 12px; margin: 8px 0; color: #eee; line-height: 1.4; }
         .saved-card-item small { display: block; color: var(--gold); margin-bottom: 5px; text-transform: uppercase; }
+        .saved-card-delete { float: right; background: transparent; border: 0; color: #c88; cursor: pointer; font-size: 0.7rem; }
         @keyframes cardDeal { from { opacity: 0; transform: translateY(8px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .gold-name { color: var(--gold); text-shadow: 0 0 15px rgba(212,175,55,0.5); }
         
@@ -427,7 +428,7 @@
             <div class="guest-only" style="margin-top: 30px; color: #666; font-style: italic;">Väntar på att värden ska starta...</div>
             
             <a href="rules.html" onclick="saveLocal()" class="btn btn-rules" style="text-decoration:none; display:block; margin-top:20px;">VISA REGLER</a>
-            <button class="btn btn-rules" onclick="showSavedCards()">★ FAVORITER & HISTORIK</button>
+            <button class="btn btn-rules card-tool-btn" onclick="showSavedCards()">★ LISTA</button>
             
             <button class="btn btn-reset-danger" onclick="requestReset()">Nollställ allt / Byt roll</button>
         </div>
@@ -445,8 +446,8 @@
             <div id="timer-display">3:00</div>
             <button id="btn-finish-timer" class="btn btn-lvl-up" style="display:none;" onclick="finishTimerEarly()">KLART, NÄSTA KORT</button>
             <div class="card-tools">
-                <button id="btn-save-card" class="btn btn-rules card-tool-btn" onclick="toggleFavoriteCard()" disabled>☆ SPARA KORT</button>
-                <button class="btn btn-rules card-tool-btn" onclick="showSavedCards()">★ FAVORITER & HISTORIK</button>
+                <button id="btn-save-card" class="btn btn-rules card-tool-btn" onclick="toggleFavoriteCard()" disabled>☆ SPARA</button>
+                <button class="btn btn-rules card-tool-btn" onclick="showSavedCards()">★ LISTA</button>
             </div>
         </div>
         <div class="game-controls">
@@ -1492,8 +1493,17 @@
         button.disabled = !available;
         const saved = available && currentCardIsFavorite();
         button.classList.toggle('saved', saved);
-        button.innerText = saved ? '★ SPARAT KORT' : '☆ SPARA KORT';
+        button.innerText = saved ? '★ SPARAT' : '☆ SPARA';
     }
+
+    window.removeFavoriteCard = (index) => {
+        const cards = getSavedCards();
+        if (!Number.isInteger(index) || index < 0 || index >= cards.length) return;
+        cards.splice(index, 1);
+        setSavedCards(cards);
+        showSavedCards();
+        updateFavoriteButton();
+    };
 
     window.showSavedCards = () => {
         const favorites = getSavedCards();
@@ -1502,7 +1512,7 @@
         document.getElementById('modal-msg-text').innerHTML = `
             <div class="saved-card-list">
                 <h4 style="color:var(--gold); margin:0 0 8px;">★ Mina favoriter (${favorites.length})</h4>
-                ${favorites.length ? favorites.map(card => `<div class="saved-card-item"><small>Nivå ${escapeHtml(card.level)}</small>${sanitizeTaskHtml(card.text)}</div>`).join('') : '<p>Inga sparade favoriter ännu.</p>'}
+                ${favorites.length ? favorites.map((card, index) => `<div class="saved-card-item"><small>Nivå ${escapeHtml(card.level)} <button class="saved-card-delete" type="button" onclick="removeFavoriteCard(${index})">× TA BORT</button></small>${sanitizeTaskHtml(card.text)}</div>`).join('') : '<p>Inga sparade favoriter ännu.</p>'}
                 <h4 style="color:var(--gold); margin:18px 0 8px;">Senast spelade kort</h4>
                 ${history.length ? history.slice(0, 20).map(card => `<div class="saved-card-item"><small>Nivå ${escapeHtml(card.level)}</small>${sanitizeTaskHtml(card.text)}</div>`).join('') : '<p>Ingen korthistorik ännu.</p>'}
             </div>`;
