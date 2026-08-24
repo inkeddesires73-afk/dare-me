@@ -113,7 +113,7 @@
     </div>
 
     <div class="composer">
-        <textarea id="dareText" oninput="handleTextInput(this)" placeholder="Klicka på orden ovan eller skriv fritt här..."></textarea>
+        <textarea id="dareText" inputmode="text" enterkeyhint="done" oninput="handleTextInput(this)" placeholder="Klicka på orden ovan eller skriv fritt här..."></textarea>
         <button id="keyboardToggle" class="keyboard-toggle" type="button" onclick="toggleKeyboard()">⌨️ VISA TANGENTBORD</button>
     </div>
 
@@ -359,11 +359,21 @@
         const button = document.getElementById('keyboardToggle');
         const isShown = button.dataset.keyboard === 'shown';
         if (isShown) {
+            if (navigator.virtualKeyboard && typeof navigator.virtualKeyboard.hide === 'function') {
+                navigator.virtualKeyboard.hide();
+            }
+            txtArea.setAttribute('readonly', 'readonly');
             txtArea.blur();
+            if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
+            setTimeout(() => txtArea.removeAttribute('readonly'), 120);
             button.dataset.keyboard = 'hidden';
             button.textContent = '⌨️ VISA TANGENTBORD';
         } else {
             txtArea.focus({ preventScroll: true });
+            txtArea.click();
+            if (navigator.virtualKeyboard && typeof navigator.virtualKeyboard.show === 'function') {
+                navigator.virtualKeyboard.show();
+            }
             button.dataset.keyboard = 'shown';
             button.textContent = '⌨️ DÖLJ TANGENTBORD';
         }
