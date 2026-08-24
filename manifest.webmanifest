@@ -1,6 +1,7 @@
 {
   "name": "Dare Me",
   "short_name": "Dare Me",
+  "id": "./",
   "description": "Dare Me – ett synkat spel för flera spelare.",
   "lang": "sv-SE",
   "start_url": "./",
