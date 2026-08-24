@@ -81,17 +81,15 @@
             .category-box { padding: 7px; }
             .word-group { gap: 4px; margin-bottom: 7px; }
             .btn-word { padding: 7px 8px; font-size: 11px; }
-            .category-box .word-group { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-            .category-box .word-group .btn-word { width: 100%; min-width: 0; white-space: normal; }
             .placeholder-group .btn-target { padding: 7px 2px; font-size: 10px; }
-            .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+            .action-btns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
             .action-btns button { width: 100%; padding: 11px 7px; font-size: 13px; }
-            .btn-gen { grid-column: 1 / -1; }
+            .btn-gen { grid-column: auto; }
             .deck-settings { grid-template-columns: 1fr; }
             .import-export { flex-direction: column; }
-            .import-export { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+            .import-export { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
             .import-export button { padding: 11px 6px; font-size: 11px; }
-            .btn-copy-json { grid-column: 1 / -1; }
+            .btn-copy-json { grid-column: auto; }
             .output-tools { align-items: stretch; flex-direction: column; }
             .btn-remove-last { width: 100%; }
             .remove-card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
