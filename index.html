@@ -176,6 +176,12 @@
         .star-power-active { border-color: var(--gold) !important; box-shadow: 0 0 50px rgba(212,175,55,0.4) !important; }
         .task-text { font-size: clamp(1.35rem, 3vw, 2.6rem); font-weight: bold; line-height: 1.4; color: #fff; max-width: 100%; overflow-wrap: anywhere; }
         .task-text.card-deal { animation: cardDeal 0.32s ease both; }
+        .card-tools { width: 100%; display: flex; justify-content: center; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
+        .card-tool-btn { width: auto; min-width: 150px; padding: 10px 14px; margin: 0; font-size: 0.78rem; }
+        .card-tool-btn.saved { color: #000; background: var(--gold); border-color: var(--gold); }
+        .saved-card-list { max-height: 55vh; overflow-y: auto; text-align: left; }
+        .saved-card-item { border: 1px solid #3a3320; border-radius: 10px; padding: 12px; margin: 8px 0; color: #eee; line-height: 1.4; }
+        .saved-card-item small { display: block; color: var(--gold); margin-bottom: 5px; text-transform: uppercase; }
         @keyframes cardDeal { from { opacity: 0; transform: translateY(8px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .gold-name { color: var(--gold); text-shadow: 0 0 15px rgba(212,175,55,0.5); }
         
@@ -421,6 +427,7 @@
             <div class="guest-only" style="margin-top: 30px; color: #666; font-style: italic;">Väntar på att värden ska starta...</div>
             
             <a href="rules.html" onclick="saveLocal()" class="btn btn-rules" style="text-decoration:none; display:block; margin-top:20px;">VISA REGLER</a>
+            <button class="btn btn-rules" onclick="showSavedCards()">★ FAVORITER & HISTORIK</button>
             
             <button class="btn btn-reset-danger" onclick="requestReset()">Nollställ allt / Byt roll</button>
         </div>
@@ -437,6 +444,10 @@
             <div id="task-box" class="task-text">VÄNTAR på kort...</div>
             <div id="timer-display">3:00</div>
             <button id="btn-finish-timer" class="btn btn-lvl-up" style="display:none;" onclick="finishTimerEarly()">KLART, NÄSTA KORT</button>
+            <div class="card-tools">
+                <button id="btn-save-card" class="btn btn-rules card-tool-btn" onclick="toggleFavoriteCard()" disabled>☆ SPARA KORT</button>
+                <button class="btn btn-rules card-tool-btn" onclick="showSavedCards()">★ FAVORITER & HISTORIK</button>
+            </div>
         </div>
         <div class="game-controls">
             <div id="turn-help" class="turn-help" aria-live="polite"></div>
@@ -485,6 +496,7 @@
         autoLevelUpCards: 0,
         cardsSinceLevelUp: 0,
         usedDareKeys: [],
+        cardHistory: [],
         currentTask: "TRYCK FÖR KORT",
         timer: null,
         timerEndsAt: null,
@@ -900,6 +912,7 @@
             void taskBox.offsetWidth;
             taskBox.innerHTML = sanitizeTaskHtml(state.currentTask);
             taskBox.classList.add('card-deal');
+            updateFavoriteButton();
             const pausedBanner = document.getElementById('game-paused-banner');
             if (pausedBanner) pausedBanner.style.display = state.gamePaused ? 'block' : 'none';
             const pauseButton = document.getElementById('btn-pause-game');
@@ -1119,7 +1132,7 @@
         if (state.selectedLevels.length === 0) { showLobbyWarning("Du måste välja minst en nivåfil för att kunna starta."); return; }
         if (state.players.length < 2) { showLobbyWarning("Det krävs minst två spelare för att kunna börja."); return; }
         maybeShowLevel4Notice(state.selectedLevels);
-        state.isPlaying = true; state.gamePaused = false; state.activeLevelIdx = 0; state.currentPlayerIdx = 0; state.cardsSinceLevelUp = 0; state.usedDareKeys = []; updateCloud(); saveLocal(); applyStateToUI();
+        state.isPlaying = true; state.gamePaused = false; state.activeLevelIdx = 0; state.currentPlayerIdx = 0; state.cardsSinceLevelUp = 0; state.usedDareKeys = []; state.cardHistory = []; updateCloud(); saveLocal(); applyStateToUI();
     };
 
     function isSexualDare(dare) {
@@ -1260,6 +1273,7 @@
             state.currentTask = usesActivePlaceholder
                 ? renderedText
                 : `<span class="gold-name">${escapeHtml(active.name)}</span>, ${renderedText}`;
+            recordCardHistory(state.currentTask, curLvlId);
             if (Math.random() < (state.starChance/100) && active.stars < 4) { active.stars++; if (!state.roomCode) showStarNotif(active.name); }
             state.currentPlayerIdx = (state.currentPlayerIdx + 1) % state.players.length;
             state.cardsSinceLevelUp = (state.cardsSinceLevelUp || 0) + 1;
@@ -1339,7 +1353,7 @@
                 await batch.commit();
             }
             if (unsubscribe) unsubscribe();
-            localStorage.clear();
+            localStorage.removeItem('dareme_state');
             location.reload();
         } catch (e) {
             console.error('Kunde inte radera Firebase-rummet.', e);
@@ -1438,6 +1452,67 @@
     };
 
     function saveLocal() { localStorage.setItem('dareme_state', JSON.stringify(state)); }
+
+    function getSavedCards() {
+        try {
+            const saved = JSON.parse(localStorage.getItem('dareme_favorite_cards') || '[]');
+            return Array.isArray(saved) ? saved.filter(card => card && typeof card.text === 'string') : [];
+        } catch { return []; }
+    }
+
+    function setSavedCards(cards) {
+        localStorage.setItem('dareme_favorite_cards', JSON.stringify(cards.slice(0, 100)));
+    }
+
+    function recordCardHistory(text, levelId) {
+        const history = Array.isArray(state.cardHistory) ? state.cardHistory : [];
+        history.unshift({ text: sanitizeTaskHtml(text), level: levelId, time: Date.now() });
+        state.cardHistory = history.slice(0, 50);
+    }
+
+    function currentCardIsFavorite() {
+        return getSavedCards().some(card => card.text === sanitizeTaskHtml(state.currentTask));
+    }
+
+    window.toggleFavoriteCard = () => {
+        if (!state.currentTask || state.currentTask === 'TRYCK FÖR KORT') return;
+        const text = sanitizeTaskHtml(state.currentTask);
+        const cards = getSavedCards();
+        const existing = cards.findIndex(card => card.text === text);
+        if (existing >= 0) cards.splice(existing, 1);
+        else cards.unshift({ text, level: state.selectedLevels[state.activeLevelIdx] || '', time: Date.now() });
+        setSavedCards(cards);
+        updateFavoriteButton();
+    };
+
+    function updateFavoriteButton() {
+        const button = document.getElementById('btn-save-card');
+        if (!button) return;
+        const available = Boolean(state.currentTask && state.currentTask !== 'TRYCK FÖR KORT' && state.currentTask !== 'INGA MATCHANDE KORT HITTADES.');
+        button.disabled = !available;
+        const saved = available && currentCardIsFavorite();
+        button.classList.toggle('saved', saved);
+        button.innerText = saved ? '★ SPARAT KORT' : '☆ SPARA KORT';
+    }
+
+    window.showSavedCards = () => {
+        const favorites = getSavedCards();
+        const history = Array.isArray(state.cardHistory) ? state.cardHistory : [];
+        document.getElementById('modal-player-name').innerText = 'FAVORITER & HISTORIK';
+        document.getElementById('modal-msg-text').innerHTML = `
+            <div class="saved-card-list">
+                <h4 style="color:var(--gold); margin:0 0 8px;">★ Mina favoriter (${favorites.length})</h4>
+                ${favorites.length ? favorites.map(card => `<div class="saved-card-item"><small>Nivå ${escapeHtml(card.level)}</small>${sanitizeTaskHtml(card.text)}</div>`).join('') : '<p>Inga sparade favoriter ännu.</p>'}
+                <h4 style="color:var(--gold); margin:18px 0 8px;">Senast spelade kort</h4>
+                ${history.length ? history.slice(0, 20).map(card => `<div class="saved-card-item"><small>Nivå ${escapeHtml(card.level)}</small>${sanitizeTaskHtml(card.text)}</div>`).join('') : '<p>Ingen korthistorik ännu.</p>'}
+            </div>`;
+        document.getElementById('modal-star-count').innerText = '';
+        document.getElementById('btn-use-star').style.display = 'none';
+        document.getElementById('manual-star-btn').style.display = 'none';
+        document.getElementById('btn-confirm-yes').style.display = 'none';
+        document.getElementById('btn-modal-close').innerText = 'STÄNG';
+        document.getElementById('modal-overlay').style.display = 'flex';
+    };
     window.goToLobby = () => {
         if (!isHost && state.roomCode) {
             // En gäst lämnar bara sin egen klient och får inte skriva över värdens spelstatus.
@@ -1463,6 +1538,7 @@
                     .filter(p => p && typeof p.name === 'string' && Number.isFinite(Number(p.id)))
                     .map(p => ({ ...p, id: Number(p.id), name: p.name.slice(0, 40), stars: Math.max(0, Math.min(4, Number(p.stars) || 0)), vetos: Array.isArray(p.vetos) ? p.vetos.filter(v => typeof v === 'string') : [] })) : [];
                 state = { ...state, ...parsed, players, selectedLevels: Array.isArray(parsed.selectedLevels) ? parsed.selectedLevels.filter(Number.isInteger) : [] };
+                state.cardHistory = Array.isArray(state.cardHistory) ? state.cardHistory : [];
             } catch (e) {
                 localStorage.removeItem('dareme_state');
                 console.warn('Sparad speldata kunde inte läsas och ignorerades.', e);
