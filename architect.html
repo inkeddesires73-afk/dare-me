@@ -288,6 +288,7 @@
         <select id="removeCardSelect" aria-label="Välj kort att ta bort" onchange="updateRemoveButton()">
             <option value="">Välj ett kort att ta bort...</option>
         </select>
+        <button id="editSelectedButton" class="btn-remove-last" type="button" onclick="editSelectedCard()" disabled>REDIGERA VALT KORT</button>
         <button id="removeSelectedButton" class="btn-remove-last" type="button" onclick="removeSelectedCard()" disabled>TA BORT VALT KORT</button>
     </div>
     <textarea id="output" readonly placeholder="JSON-rader visas här..."></textarea>
@@ -295,6 +296,7 @@
 
 <script>
     let deckDares = [];
+    let editingIndex = null;
     function toggleExamples() {
         const content = document.getElementById('examples-content');
         const button = document.getElementById('examples-toggle');
@@ -404,14 +406,20 @@
         const textInput = document.getElementById('dareText');
         const text = textInput.value.trim();
         if (!text) return;
-        const duplicate = deckDares.some(card => card.text.trim().toLowerCase() === text.toLowerCase());
+        const duplicate = deckDares.some((card, index) => index !== editingIndex && card.text.trim().toLowerCase() === text.toLowerCase());
         if (duplicate && !confirm('Det här kortet finns redan i listan. Vill du lägga till det ändå?')) return;
         const checkboxes = document.querySelectorAll('.tag-check');
         let selectedTags = [];
         checkboxes.forEach((item) => { if (item.checked) selectedTags.push(item.value); });
         const obj = { text: text, tags: selectedTags };
-        deckDares.push(obj);
+        if (editingIndex !== null && deckDares[editingIndex]) {
+            deckDares[editingIndex] = obj;
+        } else {
+            deckDares.push(obj);
+        }
+        editingIndex = null;
         renderOutput();
+        document.querySelector('.btn-gen').textContent = 'LÄGG TILL I LISTAN ➕';
         textInput.value = "";
         checkboxes.forEach(c => c.checked = false);
         saveDraft();
@@ -430,6 +438,8 @@
             deckDares = [];
             document.getElementById('dareText').value = "";
             document.querySelectorAll('.tag-check').forEach(c => c.checked = false);
+            editingIndex = null;
+            document.querySelector('.btn-gen').textContent = 'LÄGG TILL I LISTAN ➕';
             saveDraft();
             renderOutput();
         }
@@ -456,11 +466,13 @@
         });
         select.value = '';
         document.getElementById('removeSelectedButton').disabled = true;
+        document.getElementById('editSelectedButton').disabled = true;
     }
 
     function removeLastCard() {
         if (!deckDares.length) return;
         deckDares.pop();
+        editingIndex = null;
         renderOutput();
         saveDraft();
     }
@@ -471,13 +483,30 @@
         const index = Number(select.value);
         if (!Number.isInteger(index) || index < 0 || index >= deckDares.length) return;
         deckDares.splice(index, 1);
+        editingIndex = null;
         renderOutput();
         saveDraft();
     }
 
     function updateRemoveButton() {
         const select = document.getElementById('removeCardSelect');
-        document.getElementById('removeSelectedButton').disabled = !select.value || select.selectedIndex === 0;
+        const active = !!select.value && select.selectedIndex !== 0;
+        document.getElementById('removeSelectedButton').disabled = !active;
+        document.getElementById('editSelectedButton').disabled = !active;
+    }
+
+    function editSelectedCard() {
+        const select = document.getElementById('removeCardSelect');
+        if (!select.value || select.selectedIndex === 0) return;
+        editingIndex = Number(select.value);
+        const card = deckDares[editingIndex];
+        const textInput = document.getElementById('dareText');
+        textInput.value = card.text;
+        document.querySelectorAll('.tag-check').forEach(c => c.checked = card.tags.includes(c.value));
+        document.querySelector('.composer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelector('.btn-gen').textContent = 'UPPDATERA KORT ✏️';
+        select.value = '';
+        updateRemoveButton();
     }
 
     function exportDeck() {
