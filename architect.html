@@ -62,6 +62,7 @@
         .output-tools { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 20px; }
         .card-count { color: #ffb3d1; font-size: 13px; font-weight: 700; }
         .btn-remove-last { padding: 8px 12px; background: #5d1831; color: #fff; border: 1px solid #a83b63; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+        .btn-remove-last:disabled { opacity: 0.45; cursor: not-allowed; }
         .remove-card-row { display: flex; gap: 10px; margin-top: 10px; }
         .remove-card-row select { flex: 1; min-width: 0; padding: 8px; background: #222; color: #fff; border: 1px solid #555; border-radius: 6px; }
         .deck-settings { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin: 0 0 15px; }
@@ -284,10 +285,10 @@
         <button class="btn-remove-last" type="button" onclick="removeLastCard()">TA BORT SENASTE KORT ↶</button>
     </div>
     <div class="remove-card-row">
-        <select id="removeCardSelect" aria-label="Välj kort att ta bort">
+        <select id="removeCardSelect" aria-label="Välj kort att ta bort" onchange="updateRemoveButton()">
             <option value="">Välj ett kort att ta bort...</option>
         </select>
-        <button class="btn-remove-last" type="button" onclick="removeSelectedCard()">TA BORT VALT KORT</button>
+        <button id="removeSelectedButton" class="btn-remove-last" type="button" onclick="removeSelectedCard()" disabled>TA BORT VALT KORT</button>
     </div>
     <textarea id="output" readonly placeholder="JSON-rader visas här..."></textarea>
 </div>
@@ -453,6 +454,8 @@
             option.textContent = `${index + 1}. ${card.text}`;
             select.appendChild(option);
         });
+        select.value = '';
+        document.getElementById('removeSelectedButton').disabled = true;
     }
 
     function removeLastCard() {
@@ -464,12 +467,17 @@
 
     function removeSelectedCard() {
         const select = document.getElementById('removeCardSelect');
-        if (select.value === '') return;
+        if (!select.value || select.selectedIndex === 0) return;
         const index = Number(select.value);
         if (!Number.isInteger(index) || index < 0 || index >= deckDares.length) return;
         deckDares.splice(index, 1);
         renderOutput();
         saveDraft();
+    }
+
+    function updateRemoveButton() {
+        const select = document.getElementById('removeCardSelect');
+        document.getElementById('removeSelectedButton').disabled = !select.value || select.selectedIndex === 0;
     }
 
     function exportDeck() {
