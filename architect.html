@@ -113,6 +113,11 @@
         </div>
     </div>
 
+    <div class="composer">
+        <textarea id="dareText" oninput="handleTextInput(this)" placeholder="Klicka på orden ovan eller skriv fritt här..."></textarea>
+        <button id="keyboardToggle" class="keyboard-toggle" type="button" onclick="toggleKeyboard()">⌨️ VISA TANGENTBORD</button>
+    </div>
+
     <div class="word-bank">
         <div class="word-group placeholder-group">
             <button class="btn-word btn-target" onclick="addWord('[TARGET]')">[TARGET]</button>
@@ -215,11 +220,6 @@
             <button class="btn-undo" onclick="undoLast()">ÅNGRA ↶</button>
         </div></div>
         </div>
-    </div>
-
-    <div class="composer">
-        <textarea id="dareText" oninput="handleTextInput(this)" placeholder="Klicka på orden ovan eller skriv fritt här..."></textarea>
-        <button id="keyboardToggle" class="keyboard-toggle" type="button" onclick="toggleKeyboard()">⌨️ VISA TANGENTBORD</button>
     </div>
 
     <div class="tags-container">
