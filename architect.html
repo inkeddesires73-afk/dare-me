@@ -76,13 +76,25 @@
         @media (max-width: 700px) {
             .tags-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
             .tag-item { min-height: 34px; font-size: 13px; }
-            .action-btns { flex-direction: column; gap: 8px; }
-            .action-btns button { width: 100%; }
+            .word-bank { padding: 8px; }
+            .category-grid { gap: 7px; }
+            .category-box { padding: 7px; }
+            .word-group { gap: 4px; margin-bottom: 7px; }
+            .btn-word { padding: 7px 8px; font-size: 11px; }
+            .placeholder-group .btn-target { padding: 7px 2px; font-size: 10px; }
+            .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+            .action-btns button { width: 100%; padding: 11px 7px; font-size: 13px; }
+            .btn-gen { grid-column: 1 / -1; }
             .deck-settings { grid-template-columns: 1fr; }
             .import-export { flex-direction: column; }
+            .import-export { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+            .import-export button { padding: 11px 6px; font-size: 11px; }
+            .btn-copy-json { grid-column: 1 / -1; }
             .output-tools { align-items: stretch; flex-direction: column; }
             .btn-remove-last { width: 100%; }
-            .remove-card-row { flex-direction: column; }
+            .remove-card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+            .remove-card-row select { grid-column: 1 / -1; }
+            .remove-card-row .btn-remove-last { width: 100%; padding: 10px 5px; font-size: 11px; }
             h2 { font-size: 1.25rem; letter-spacing: 2px; }
             .header-img { max-width: min(220px, 70vw); }
         }
