@@ -1,10 +1,12 @@
-const CACHE_NAME = 'dare-me-pwa-v2';
+const CACHE_NAME = 'dare-me-pwa-v3';
 const APP_SHELL = [
   './',
   './index.html',
   './rules.html',
   './manifest.webmanifest',
   './dareme.png',
+  './icon-192.jpg',
+  './icon-512.jpg',
   './level1.json',
   './level2.json',
   './level3.json',
