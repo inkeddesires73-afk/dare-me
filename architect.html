@@ -67,6 +67,9 @@
         .remove-card-row select { flex: 1; min-width: 0; padding: 8px; background: #222; color: #fff; border: 1px solid #555; border-radius: 6px; }
         .deck-settings { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin: 0 0 15px; }
         .deck-settings input, .deck-settings select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; box-sizing: border-box; font-size: 15px; }
+        .saved-decks-row { display: flex; gap: 8px; margin: -5px 0 15px; }
+        .saved-decks-row select { flex: 1; min-width: 0; padding: 10px; background: #222; color: #fff; border: 1px solid #555; border-radius: 7px; }
+        .saved-decks-row button { padding: 10px 12px; background: #333; color: #ffb3d1; border: 1px solid #70364e; border-radius: 7px; font-size: 11px; font-weight: 700; cursor: pointer; }
         .file-input { display: none; }
         .btn-import, .btn-export, .btn-copy-json { flex: 1; padding: 14px; border: 0; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; }
         .btn-import { background: #6a1b9a; }
@@ -79,6 +82,9 @@
             .action-btns { flex-direction: column; gap: 8px; }
             .action-btns button { width: 100%; }
             .deck-settings { grid-template-columns: 1fr; }
+            .saved-decks-row { flex-wrap: wrap; }
+            .saved-decks-row select { flex-basis: 100%; }
+            .saved-decks-row button { flex: 1; }
             .import-export { flex-direction: column; }
             .output-tools { align-items: stretch; flex-direction: column; }
             .btn-remove-last { width: 100%; }
@@ -103,6 +109,14 @@
             <option value="🌶️🌶️🌶️">🌶️🌶️🌶️ Nivå 3</option>
             <option value="🌶️🌶️🌶️🌶️">🌶️🌶️🌶️🌶️ Nivå 4</option>
         </select>
+    </div>
+    <div class="saved-decks-row">
+        <select id="savedDecks" aria-label="Sparade kortlekar">
+            <option value="">Sparade kortlekar...</option>
+        </select>
+        <button type="button" onclick="saveNamedDeck()">SPARA LOKALT</button>
+        <button type="button" onclick="loadNamedDeck()">LADDA</button>
+        <button type="button" onclick="deleteNamedDeck()">RADERA</button>
     </div>
     
     <div class="examples-panel">
@@ -453,6 +467,66 @@
         }));
     }
 
+    function getSavedDecks() {
+        try { return JSON.parse(localStorage.getItem('dareme_architect_decks') || '{}'); }
+        catch { return {}; }
+    }
+
+    function refreshSavedDecks() {
+        const select = document.getElementById('savedDecks');
+        const current = select.value;
+        const decks = getSavedDecks();
+        select.innerHTML = '<option value="">Sparade kortlekar...</option>';
+        Object.keys(decks).sort((a, b) => a.localeCompare(b, 'sv')).forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            select.appendChild(option);
+        });
+        if (decks[current]) select.value = current;
+    }
+
+    function saveNamedDeck() {
+        if (!deckDares.length) { alert('Lägg till minst ett kort först.'); return; }
+        const name = document.getElementById('deckName').value.trim();
+        if (!name) { alert('Skriv ett namn på kortleken först.'); return; }
+        const decks = getSavedDecks();
+        if (decks[name] && !confirm('Det finns redan en sparad kortlek med det namnet. Ersätta den?')) return;
+        decks[name] = {
+            name,
+            difficulty: document.getElementById('deckDifficulty').value,
+            dares: deckDares
+        };
+        localStorage.setItem('dareme_architect_decks', JSON.stringify(decks));
+        refreshSavedDecks();
+        document.getElementById('savedDecks').value = name;
+        alert('Kortleken sparades lokalt! 💋');
+    }
+
+    function loadNamedDeck() {
+        const name = document.getElementById('savedDecks').value;
+        const deck = getSavedDecks()[name];
+        if (!deck) return;
+        deckDares = deck.dares.map(card => ({ text: card.text, tags: Array.isArray(card.tags) ? card.tags : [] }));
+        document.getElementById('deckName').value = deck.name || name;
+        document.getElementById('deckDifficulty').value = deck.difficulty || '🌶️';
+        editingIndex = null;
+        document.querySelector('.btn-gen').textContent = 'LÄGG TILL I LISTAN ➕';
+        renderOutput();
+        saveDraft();
+    }
+
+    function deleteNamedDeck() {
+        const select = document.getElementById('savedDecks');
+        const name = select.value;
+        if (!name) return;
+        if (!confirm(`Radera den sparade kortleken "${name}"?`)) return;
+        const decks = getSavedDecks();
+        delete decks[name];
+        localStorage.setItem('dareme_architect_decks', JSON.stringify(decks));
+        refreshSavedDecks();
+    }
+
     function renderOutput() {
         document.getElementById('output').value = deckDares.map(card => '    ' + JSON.stringify(card) + ',').join('\n') + (deckDares.length ? '\n' : '');
         document.getElementById('cardCount').textContent = `${deckDares.length} kort i listan`;
@@ -581,6 +655,7 @@
         });
         document.getElementById('deckName').addEventListener('input', saveDraft);
         document.getElementById('deckDifficulty').addEventListener('change', saveDraft);
+        refreshSavedDecks();
         try {
             const draft = JSON.parse(localStorage.getItem('dareme_architect_draft') || 'null');
             if (draft && Array.isArray(draft.dares)) {
