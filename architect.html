@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Dare Me - Architect 💋</title>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #e0e0e0; padding: clamp(8px, 3vw, 20px); display: flex; justify-content: center; margin: 0; }
+        .container { width: 100%; max-width: 950px; background: #161616; padding: clamp(12px, 3vw, 25px); border-radius: 15px; border: 1px solid #333; box-shadow: 0 10px 50px rgba(0,0,0,0.9); text-align: center; box-sizing: border-box; }
+        
+        /* Bilden högst upp - Laddar lokalt från samma mapp */
+        .header-img { max-width: 300px; height: auto; margin-bottom: 10px; border-radius: 5px; }
+        
+        h2 { color: #ff2c7d; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 20px; font-weight: 800; }
+        
+        .word-bank { background: #1f1f1f; padding: 12px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #2a2a2a; text-align: left; }
+        .word-group { margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
+        .category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        .category-box { background: #181818; border: 1px solid #333; border-radius: 8px; padding: 10px; }
+        .category-title { color: #aaa; font-size: 10px; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; }
+        .examples-panel { background: #1b1519; border: 1px solid #493044; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; text-align: left; }
+        .examples-toggle { background: transparent; color: #ff2c7d; border: 1px solid #ff2c7d; border-radius: 5px; padding: 5px 9px; font-size: 11px; font-weight: 700; cursor: pointer; }
+        .examples-content { color: #aaa; font-size: 12px; line-height: 1.6; margin-top: 9px; }
+        .examples-content strong { color: #ff2c7d; }
+        .placeholder-group { padding: 8px; margin-bottom: 12px; border: 1px solid #493044; border-radius: 8px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+        .placeholder-group::before { content: 'PLATSHÅLLARE'; grid-column: 1 / -1; width: 100%; color: #ff2c7d; font-size: 11px; font-weight: 700; letter-spacing: 1px; margin-bottom: 1px; }
+        .placeholder-group .btn-target { min-width: 0; padding: 8px 2px; font-size: 11px; white-space: nowrap; }
+        
+        .btn-word { background: #333; color: #eee; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+        .btn-word:hover { background: #444; color: #ff2c7d; }
+        .btn-target { background: #ff2c7d; color: white; font-weight: bold; }
+        .btn-undo { background: #444; color: #ffeb3b; font-weight: bold; }
+        .btn-punct { background: #555; color: #fff; font-weight: bold; }
+
+        textarea#dareText { position: sticky; top: 10px; z-index: 20; width: 100%; height: 120px; background: #222; color: #fff; border: 2px solid #ff2c7d; padding: 15px; border-radius: 8px; font-size: 18px; margin-bottom: 15px; resize: none; box-sizing: border-box; line-height: 1.5; box-shadow: 0 8px 24px rgba(0,0,0,0.65); }
+
+        @media (max-width: 700px) {
+            .category-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 600px) {
+            .placeholder-group { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            textarea#dareText { height: 105px; font-size: 16px; }
+        }
+        
+        .tags-container { background: #1f1f1f; padding: 18px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #2a2a2a; text-align: left; }
+        .section-title { font-size: 11px; color: #ff2c7d; margin-bottom: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .tags-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+        .tag-item { display: flex; align-items: center; font-size: 12px; color: #aaa; cursor: pointer; }
+        .tag-item input { margin-right: 6px; accent-color: #ff2c7d; }
+
+        .action-btns { display: flex; gap: 12px; }
+        .btn-gen { flex: 2; padding: 16px; background: #2e7d32; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .btn-copy { flex: 1; padding: 16px; background: #1565c0; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-clear { flex: 1; padding: 16px; background: #8e0000; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        #output { width: 100%; height: 220px; background: #000; color: #00ff41; font-family: 'Courier New', monospace; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-top: 20px; box-sizing: border-box; font-size: 13px; text-align: left; }
+        .deck-settings { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin: 0 0 15px; }
+        .deck-settings input, .deck-settings select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; box-sizing: border-box; font-size: 15px; }
+        .file-input { display: none; }
+        .btn-import, .btn-export { flex: 1; padding: 14px; border: 0; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; }
+        .btn-import { background: #6a1b9a; }
+        .btn-export { background: #ad1457; }
+        .import-export { display: flex; gap: 10px; margin-top: 10px; }
+        @media (max-width: 700px) {
+            .tags-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+            .tag-item { min-height: 34px; font-size: 13px; }
+            .action-btns { flex-direction: column; gap: 8px; }
+            .action-btns button { width: 100%; }
+            .deck-settings { grid-template-columns: 1fr; }
+            .import-export { flex-direction: column; }
+            h2 { font-size: 1.25rem; letter-spacing: 2px; }
+            .header-img { max-width: min(220px, 70vw); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <img src="dareme.png" alt="Dare Me Logo" class="header-img" onerror="this.style.display='none'">
+    
+    <h2>DARE ME - ARCHITECT 💋</h2>
+
+    <div class="deck-settings">
+        <input id="deckName" type="text" placeholder="Namn på kortleken" value="Min egen kortlek">
+        <select id="deckDifficulty" aria-label="Kortlekens nivå">
+            <option value="🌶️">🌶️ Nivå 1</option>
+            <option value="🌶️🌶️">🌶️🌶️ Nivå 2</option>
+            <option value="🌶️🌶️🌶️">🌶️🌶️🌶️ Nivå 3</option>
+            <option value="🌶️🌶️🌶️🌶️">🌶️🌶️🌶️🌶️ Nivå 4</option>
+        </select>
+    </div>
+    
+    <div class="examples-panel">
+        <button id="examples-toggle" class="examples-toggle" type="button" onclick="toggleExamples()">VISA EXEMPEL</button>
+        <div id="examples-content" class="examples-content" style="display:none;">
+            <strong>Platshållare:</strong>
+            [TARGET] = personens namn · [TARGETS] = personens namn i ägarform ·
+            [HEN] = honom/henne · [HENS] = hans/hennes · [SUBJECT] = han/hon ·
+            [ACTIVE] = den aktiva spelaren · [PARTNER] = en andra medverkande spelare
+            <br><br>
+            <strong>Exempel:</strong>
+            <em>smiska [TARGETS] kön hårt med handen tills [SUBJECT] ber om nåd.</em>
+            <br><span style="color:#777;">Blir till exempel: “Mia, smiska Lisas kön hårt med handen tills hon ber om nåd.”</span>
+            <br><strong>Tre personer:</strong>
+            <em>[ACTIVE] och [PARTNER] hjälps åt att suga [TARGET].</em>
+            <br><span style="color:#777;">Blir till exempel: “Mia och Sara hjälps åt att suga Peter.” Kräver minst tre spelare.</span>
+        </div>
+    </div>
+
+    <div class="word-bank">
+        <div class="word-group placeholder-group">
+            <button class="btn-word btn-target" onclick="addWord('[TARGET]')">[TARGET]</button>
+            <button class="btn-word btn-target" onclick="addWord('[TARGETS]')">[TARGETS]</button>
+            <button class="btn-word btn-target" onclick="addWord('[HEN]')">[HEN]</button>
+            <button class="btn-word btn-target" onclick="addWord('[HENS]')">[HENS]</button>
+            <button class="btn-word btn-target" onclick="addWord('[SUBJECT]')">[SUBJECT]</button>
+            <button class="btn-word btn-target" onclick="addWord('[ACTIVE]')">[ACTIVE]</button>
+            <button class="btn-word btn-target" onclick="addWord('[PARTNER]')">[PARTNER]</button>
+        </div>
+        <div class="category-grid">
+        <div class="category-box"><div class="category-title">VERB</div><div class="word-group">
+            <button class="btn-word" onclick="addWord('sug')">sug</button>
+            <button class="btn-word" onclick="addWord('slicka')">slicka</button>
+            <button class="btn-word" onclick="addWord('knulla')">knulla</button>
+            <button class="btn-word" onclick="addWord('runka')">runka</button>
+            <button class="btn-word" onclick="addWord('pulla')">pulla</button>
+            <button class="btn-word" onclick="addWord('smek')">smek</button>
+            <button class="btn-word" onclick="addWord('smiska')">smiska</button>
+            <button class="btn-word" onclick="addWord('piska')">piska</button>
+            <button class="btn-word" onclick="addWord('bind')">bind</button>
+            <button class="btn-word" onclick="addWord('bind fast')">bind fast</button>
+            <button class="btn-word" onclick="addWord('bitas')">bitas</button>
+            <button class="btn-word" onclick="addWord('kissa')">kissa</button>
+            <button class="btn-word" onclick="addWord('spruta')">spruta</button>
+            <button class="btn-word" onclick="addWord('svälj')">svälj</button>
+            <button class="btn-word" onclick="addWord('stryp')">stryp</button>
+            <button class="btn-word" onclick="addWord('stearin')">stearin</button>
+            <button class="btn-word" onclick="addWord('onani')">onani</button>
+            <button class="btn-word" onclick="addWord('ge')">ge</button>
+            <button class="btn-word" onclick="addWord('låt')">låt</button>
+            <button class="btn-word" onclick="addWord('använd')">använd</button>
+            <button class="btn-word" onclick="addWord('ta av dig')">ta av dig</button>
+            <button class="btn-word" onclick="addWord('lägg')">lägg</button>
+            <button class="btn-word" onclick="addWord('bind fast')">bind fast</button>
+            <button class="btn-word" onclick="addWord('kyss')">kyss</button>
+            <button class="btn-word" onclick="addWord('penetrera')">penetrera</button>
+        </div></div>
+        <div class="category-box"><div class="category-title">KROPPSDELAR</div><div class="word-group">
+            <button class="btn-word" onclick="addWord('kön')">kön</button>
+            <button class="btn-word" onclick="addWord('rumpa')">rumpa</button>
+            <button class="btn-word" onclick="addWord('bröst')">bröst</button>
+            <button class="btn-word" onclick="addWord('lår')">lår</button>
+            <button class="btn-word" onclick="addWord('bröstvårtor')">bröstvårtor</button>
+            <button class="btn-word" onclick="addWord('navel')">navel</button>
+            <button class="btn-word" onclick="addWord('rygg')">rygg</button>
+            <button class="btn-word" onclick="addWord('hals')">hals</button>
+            <button class="btn-word" onclick="addWord('mun')">mun</button>
+            <button class="btn-word" onclick="addWord('ansikte')">ansikte</button>
+            <button class="btn-word" onclick="addWord('hår')">hår</button>
+            <button class="btn-word" onclick="addWord('underkläder')">underkläder</button>
+            <button class="btn-word" onclick="addWord('kläder')">kläder</button>
+        </div></div>
+        <div class="category-box"><div class="category-title">BESKRIVNINGAR</div><div class="word-group">
+            <button class="btn-word" onclick="addWord('naken')">naken</button>
+            <button class="btn-word" onclick="addWord('alla fyra')">alla fyra</button>
+            <button class="btn-word" onclick="addWord('hårt')">hårt</button>
+            <button class="btn-word" onclick="addWord('mjukt')">mjukt</button>
+            <button class="btn-word" onclick="addWord('försiktigt')">försiktigt</button>
+            <button class="btn-word" onclick="addWord('långsamt')">långsamt</button>
+            <button class="btn-word" onclick="addWord('intensivt')">intensivt</button>
+            <button class="btn-word" onclick="addWord('5 gånger')">5 gånger</button>
+            <button class="btn-word" onclick="addWord('10 gånger')">10 gånger</button>
+            <button class="btn-word" onclick="addWord('20 gånger')">20 gånger</button>
+            <button class="btn-word" onclick="addWord('hela rundan')">hela rundan</button>
+            <button class="btn-word" onclick="addWord('tills det är din tur igen')">tills det är din tur igen</button>
+        </div></div>
+        <div class="category-box"><div class="category-title">KOPPLINGAR</div><div class="word-group">
+            <button class="btn-word" onclick="addWord('med')">med</button>
+            <button class="btn-word" onclick="addWord('på')">på</button>
+            <button class="btn-word" onclick="addWord('över')">över</button>
+            <button class="btn-word" onclick="addWord('under')">under</button>
+            <button class="btn-word" onclick="addWord('framför')">framför</button>
+            <button class="btn-word" onclick="addWord('bakom')">bakom</button>
+            <button class="btn-word" onclick="addWord('medan')">medan</button>
+            <button class="btn-word" onclick="addWord('utan att')">utan att</button>
+            <button class="btn-word" onclick="addWord('och')">och</button>
+            <button class="btn-word" onclick="addWord('eller')">eller</button>
+            <button class="btn-word" onclick="addWord('du')">du</button>
+            <button class="btn-word" onclick="addWord('står')">står</button>
+            <button class="btn-word" onclick="addWord('sitter')">sitter</button>
+            <button class="btn-word" onclick="addWord('ligger')">ligger</button>
+            <button class="btn-word" onclick="addWord('så')">så</button>
+            <button class="btn-word" onclick="addWord('att')">att</button>
+            <button class="btn-word" onclick="addWord('tills')">tills</button>
+        </div></div>
+        <div class="category-box"><div class="category-title">FÄRDIGA FRASER</div><div class="word-group">
+            <button class="btn-word" onclick="addWord('med handen')">med handen</button>
+            <button class="btn-word" onclick="addWord('med munnen')">med munnen</button>
+            <button class="btn-word" onclick="addWord('med tungan')">med tungan</button>
+            <button class="btn-word" onclick="addWord('framför de andra')">framför de andra</button>
+            <button class="btn-word" onclick="addWord('tills [SUBJECT] ber om nåd')">tills [SUBJECT] ber om nåd</button>
+            <button class="btn-word" onclick="addWord('tills [SUBJECT] är nöjd')">tills [SUBJECT] är nöjd</button>
+            <button class="btn-word" onclick="addWord('och avsluta med en kyss')">och avsluta med en kyss</button>
+            <button class="btn-word" onclick="addWord('[ACTIVE] och [PARTNER] hjälps åt att suga [TARGET]')">[ACTIVE] + [PARTNER] suger [TARGET]</button>
+        </div></div>
+        <div class="category-box"><div class="category-title">SKILJETECKEN & ÅNGRA</div><div class="word-group">
+            <button class="btn-word btn-punct" onclick="addPunct(',')">,</button>
+            <button class="btn-word btn-punct" onclick="addPunct('.')">.</button>
+            <button class="btn-undo" onclick="undoLast()">ÅNGRA ↶</button>
+        </div></div>
+        </div>
+    </div>
+
+    <textarea id="dareText" oninput="handleTextInput(this)" placeholder="Klicka på orden ovan eller skriv fritt här..."></textarea>
+
+    <div class="tags-container">
+        <div class="section-title">Veto-tags (Dessa filtreras bort av användaren)</div>
+        <div style="color:#777; font-size:12px; line-height:1.5; margin:-4px 0 14px;">
+            Markera sådant som spelaren inte vill få på sina kort. Ett kort med en markerad tagg väljs aldrig för den spelaren.
+        </div>
+        <div class="tags-grid">
+            <div class="tag-item"><input type="checkbox" value="smisk" class="tag-check"> smisk</div>
+            <div class="tag-item"><input type="checkbox" value="oral" class="tag-check"> oral</div>
+            <div class="tag-item"><input type="checkbox" value="penetration" class="tag-check"> penetr.</div>
+            <div class="tag-item"><input type="checkbox" value="bindning" class="tag-check"> bindn.</div>
+            <div class="tag-item"><input type="checkbox" value="leksaker" class="tag-check"> leksak</div>
+            <div class="tag-item"><input type="checkbox" value="publik" class="tag-check"> publik</div>
+            <div class="tag-item"><input type="checkbox" value="impact" class="tag-check"> impact</div>
+            <div class="tag-item"><input type="checkbox" value="analt" class="tag-check"> analt</div>
+            <div class="tag-item"><input type="checkbox" value="dominans" class="tag-check"> domin.</div>
+            <div class="tag-item"><input type="checkbox" value="underkastelse" class="tag-check"> underk.</div>
+            <div class="tag-item"><input type="checkbox" value="fornedring" class="tag-check"> förnedr.</div>
+            <div class="tag-item"><input type="checkbox" value="ogonbindel" class="tag-check"> blindf.</div>
+            <div class="tag-item"><input type="checkbox" value="fotter" class="tag-check"> fötter</div>
+            <div class="tag-item"><input type="checkbox" value="semen" class="tag-check"> sperma</div>
+            <div class="tag-item"><input type="checkbox" value="blood" class="tag-check"> blod</div>
+            <div class="tag-item"><input type="checkbox" value="wet" class="tag-check"> wet</div>
+            <div class="tag-item"><input type="checkbox" value="wax" class="tag-check"> stearin</div>
+            <div class="tag-item"><input type="checkbox" value="rollspel" class="tag-check"> rollspel</div>
+            <div class="tag-item"><input type="checkbox" value="kon" class="tag-check"> kön</div>
+            <div class="tag-item"><input type="checkbox" value="onani" class="tag-check"> onani</div>
+            <div class="tag-item"><input type="checkbox" value="bitas" class="tag-check"> bitas</div>
+            <div class="tag-item"><input type="checkbox" value="strypning" class="tag-check"> strypning</div>
+            <div class="tag-item"><input type="checkbox" value="kissa" class="tag-check"> kissa</div>
+            <div class="tag-item"><input type="checkbox" value="spruta" class="tag-check"> spruta</div>
+            <div class="tag-item"><input type="checkbox" value="svälja" class="tag-check"> svälja</div>
+            <div class="tag-item"><input type="checkbox" value="stearin" class="tag-check"> stearin/vax</div>
+            <div class="tag-item"><input type="checkbox" value="fingrar" class="tag-check"> fingrar</div>
+            <div class="tag-item"><input type="checkbox" value="nakenhet" class="tag-check"> nakenhet</div>
+        </div>
+    </div>
+
+    <div class="action-btns">
+        <button class="btn-gen" onclick="generateJSON()">LÄGG TILL I LISTAN ➕</button>
+        <button class="btn-copy" onclick="copyToClipboard()">KOPIERA ALLT 📋</button>
+        <button class="btn-clear" onclick="clearOutput()">RENSA ALLT 🗑️</button>
+    </div>
+    <div class="import-export">
+        <button class="btn-import" type="button" onclick="document.getElementById('importFile').click()">IMPORTERA JSON 📥</button>
+        <button class="btn-export" type="button" onclick="exportDeck()">EXPORTERA KORTLEK 📤</button>
+    </div>
+    <input id="importFile" class="file-input" type="file" accept="application/json,.json" onchange="importDeck(event)">
+
+    <textarea id="output" readonly placeholder="JSON-rader visas här..."></textarea>
+</div>
+
+<script>
+    let deckDares = [];
+    function toggleExamples() {
+        const content = document.getElementById('examples-content');
+        const button = document.getElementById('examples-toggle');
+        const hidden = content.style.display === 'none';
+        content.style.display = hidden ? 'block' : 'none';
+        button.textContent = hidden ? 'DÖLJ EXEMPEL' : 'VISA EXEMPEL';
+    }
+
+    // Automatiskt liten bokstav i början
+    function fixFirstLetter(el) {
+        if (el.value.length > 0) {
+            el.value = el.value.charAt(0).toLowerCase() + el.value.slice(1);
+        }
+    }
+
+    // Lägg till ord med mellanslag
+    function addWord(word) {
+        const txtArea = document.getElementById('dareText');
+        txtArea.value += word + " ";
+        autoTagWord(word);
+        handleTextInput(txtArea);
+        txtArea.focus();
+    }
+
+    const autoTagMappings = [
+        { words: ['smiska', 'piska'], tags: ['smisk'] },
+        { words: ['sug', 'suga', 'slicka'], tags: ['oral'] },
+        { words: ['knulla', 'penetrera'], tags: ['penetration'] },
+        { words: ['runka', 'onani'], tags: ['onani'] },
+        { words: ['bind', 'bind fast'], tags: ['bindning'] },
+        { words: ['bitas'], tags: ['bitas'] },
+        { words: ['kissa'], tags: ['kissa', 'wet'] },
+        { words: ['stearin'], tags: ['stearin', 'wax'] },
+        { words: ['naken', 'kläder', 'underkläder'], tags: ['nakenhet'] }
+    ];
+
+    function autoTagWord(word) {
+        const value = word.toLowerCase();
+        autoTagMappings.forEach(mapping => {
+            if (!mapping.words.includes(value)) return;
+            mapping.tags.forEach(tag => {
+                const checkbox = document.querySelector(`.tag-check[value="${tag}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+        });
+    }
+
+    function handleTextInput(el) {
+        fixFirstLetter(el);
+        const text = el.value.trim().toLowerCase();
+        if (!text) {
+            document.querySelectorAll('.tag-check').forEach(c => c.checked = false);
+            return;
+        }
+
+        autoTagMappings.forEach(mapping => {
+            const stillUsed = mapping.words.some(word => text.includes(word));
+            if (stillUsed) return;
+            mapping.tags.forEach(tag => {
+                const checkbox = document.querySelector(`.tag-check[value="${tag}"]`);
+                if (checkbox) checkbox.checked = false;
+            });
+        });
+    }
+
+    // Lägg till skiljetecken (utan mellanslag före, men med efter)
+    function addPunct(p) {
+        const txtArea = document.getElementById('dareText');
+        txtArea.value = txtArea.value.trim() + p + " ";
+        handleTextInput(txtArea);
+        txtArea.focus();
+    }
+
+    // Ångra sista ordet
+    function undoLast() {
+        const txtArea = document.getElementById('dareText');
+        const words = txtArea.value.trim().split(" ");
+        words.pop();
+        txtArea.value = words.join(" ") + (words.length > 0 ? " " : "");
+        handleTextInput(txtArea);
+        txtArea.focus();
+    }
+
+    function generateJSON() {
+        const textInput = document.getElementById('dareText');
+        const text = textInput.value.trim();
+        if (!text) return;
+        const checkboxes = document.querySelectorAll('.tag-check');
+        let selectedTags = [];
+        checkboxes.forEach((item) => { if (item.checked) selectedTags.push(item.value); });
+        const obj = { text: text, tags: selectedTags };
+        deckDares.push(obj);
+        const jsonLine = "    " + JSON.stringify(obj) + ",";
+        const output = document.getElementById('output');
+        output.value += jsonLine + "\n";
+        textInput.value = "";
+        textInput.focus();
+        checkboxes.forEach(c => c.checked = false);
+        saveDraft();
+    }
+
+    function copyToClipboard() {
+        const output = document.getElementById('output');
+        output.select();
+        document.execCommand('copy');
+        alert("Kopierat till urklipp! 💋");
+    }
+
+    function clearOutput() {
+        if (confirm("Vill du rensa listan helt?")) {
+            document.getElementById('output').value = "";
+            deckDares = [];
+            document.getElementById('dareText').value = "";
+            document.querySelectorAll('.tag-check').forEach(c => c.checked = false);
+            saveDraft();
+            document.getElementById('dareText').focus();
+        }
+    }
+
+    function saveDraft() {
+        localStorage.setItem('dareme_architect_draft', JSON.stringify({
+            name: document.getElementById('deckName').value,
+            difficulty: document.getElementById('deckDifficulty').value,
+            dares: deckDares
+        }));
+    }
+
+    function renderOutput() {
+        document.getElementById('output').value = deckDares.map(card => '    ' + JSON.stringify(card) + ',').join('\n') + (deckDares.length ? '\n' : '');
+    }
+
+    function exportDeck() {
+        if (!deckDares.length) { alert('Lägg till minst ett kort först.'); return; }
+        const deck = {
+            name: document.getElementById('deckName').value.trim() || 'Min egen kortlek',
+            difficulty: document.getElementById('deckDifficulty').value,
+            dares: deckDares
+        };
+        const blob = new Blob([JSON.stringify(deck, null, 2)], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = (deck.name.replace(/[^a-z0-9åäö_-]+/gi, '-').replace(/^-+|-+$/g, '') || 'dare-me-kortlek') + '.json';
+        link.click();
+        URL.revokeObjectURL(link.href);
+    }
+
+    function importDeck(event) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            try {
+                const deck = JSON.parse(reader.result);
+                if (!deck || !Array.isArray(deck.dares) || deck.dares.some(card => !card || typeof card.text !== 'string')) throw new Error('Ogiltig kortlek');
+                deckDares = deck.dares.map(card => ({ text: card.text.trim(), tags: Array.isArray(card.tags) ? card.tags.filter(tag => typeof tag === 'string') : [] }));
+                document.getElementById('deckName').value = deck.name || 'Min egen kortlek';
+                if (deck.difficulty) document.getElementById('deckDifficulty').value = deck.difficulty;
+                renderOutput();
+                saveDraft();
+                alert('Kortleken importerades! 💋');
+            } catch { alert('Kunde inte importera filen. Kontrollera att det är en giltig Dare Me-JSON.'); }
+            event.target.value = '';
+        };
+        reader.readAsText(file);
+    }
+
+    window.addEventListener('load', () => {
+        document.getElementById('deckName').addEventListener('input', saveDraft);
+        document.getElementById('deckDifficulty').addEventListener('change', saveDraft);
+        try {
+            const draft = JSON.parse(localStorage.getItem('dareme_architect_draft') || 'null');
+            if (draft && Array.isArray(draft.dares)) {
+                deckDares = draft.dares;
+                document.getElementById('deckName').value = draft.name || 'Min egen kortlek';
+                document.getElementById('deckDifficulty').value = draft.difficulty || '🌶️';
+                renderOutput();
+            }
+        } catch {}
+    });
+</script>
+
+</body>
+</html>
+
