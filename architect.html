@@ -59,6 +59,9 @@
         .btn-clear { flex: 1; padding: 16px; background: #8e0000; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
         #output { width: 100%; height: 220px; background: #000; color: #00ff41; font-family: 'Courier New', monospace; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-top: 20px; box-sizing: border-box; font-size: 13px; text-align: left; }
+        .output-tools { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 20px; }
+        .card-count { color: #ffb3d1; font-size: 13px; font-weight: 700; }
+        .btn-remove-last { padding: 8px 12px; background: #5d1831; color: #fff; border: 1px solid #a83b63; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
         .deck-settings { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin: 0 0 15px; }
         .deck-settings input, .deck-settings select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; box-sizing: border-box; font-size: 15px; }
         .file-input { display: none; }
@@ -73,6 +76,8 @@
             .action-btns button { width: 100%; }
             .deck-settings { grid-template-columns: 1fr; }
             .import-export { flex-direction: column; }
+            .output-tools { align-items: stretch; flex-direction: column; }
+            .btn-remove-last { width: 100%; }
             h2 { font-size: 1.25rem; letter-spacing: 2px; }
             .header-img { max-width: min(220px, 70vw); }
         }
@@ -269,6 +274,10 @@
     </div>
     <input id="importFile" class="file-input" type="file" accept="application/json,.json" onchange="importDeck(event)">
 
+    <div class="output-tools">
+        <span id="cardCount" class="card-count">0 kort i listan</span>
+        <button class="btn-remove-last" type="button" onclick="removeLastCard()">TA BORT SENASTE KORT ↶</button>
+    </div>
     <textarea id="output" readonly placeholder="JSON-rader visas här..."></textarea>
 </div>
 
@@ -391,6 +400,7 @@
         const jsonLine = "    " + JSON.stringify(obj) + ",";
         const output = document.getElementById('output');
         output.value += jsonLine + "\n";
+        document.getElementById('cardCount').textContent = `${deckDares.length} kort i listan`;
         textInput.value = "";
         checkboxes.forEach(c => c.checked = false);
         saveDraft();
@@ -410,7 +420,7 @@
             document.getElementById('dareText').value = "";
             document.querySelectorAll('.tag-check').forEach(c => c.checked = false);
             saveDraft();
-            document.getElementById('dareText').focus();
+            renderOutput();
         }
     }
 
@@ -424,6 +434,14 @@
 
     function renderOutput() {
         document.getElementById('output').value = deckDares.map(card => '    ' + JSON.stringify(card) + ',').join('\n') + (deckDares.length ? '\n' : '');
+        document.getElementById('cardCount').textContent = `${deckDares.length} kort i listan`;
+    }
+
+    function removeLastCard() {
+        if (!deckDares.length) return;
+        deckDares.pop();
+        renderOutput();
+        saveDraft();
     }
 
     function exportDeck() {
