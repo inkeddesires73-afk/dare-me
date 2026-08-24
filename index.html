@@ -182,7 +182,10 @@
         .saved-card-list { max-height: 55vh; overflow-y: auto; text-align: left; }
         .saved-card-item { border: 1px solid #3a3320; border-radius: 10px; padding: 12px; margin: 8px 0; color: #eee; line-height: 1.4; }
         .saved-card-item small { display: block; color: var(--gold); margin-bottom: 5px; text-transform: uppercase; }
-        .saved-card-delete { float: right; background: transparent; border: 0; color: #c88; cursor: pointer; font-size: 0.7rem; }
+        .saved-card-actions { float: right; display: flex; gap: 6px; }
+        .saved-card-actions button { background: transparent; border: 0; cursor: pointer; font-size: 0.7rem; }
+        .saved-card-copy { color: var(--gold); }
+        .saved-card-delete { color: #c88; }
         @keyframes cardDeal { from { opacity: 0; transform: translateY(8px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .gold-name { color: var(--gold); text-shadow: 0 0 15px rgba(212,175,55,0.5); }
         
@@ -503,6 +506,7 @@
         cardsSinceLevelUp: 0,
         usedDareKeys: [],
         cardHistory: [],
+        currentCardTemplate: "",
         currentTask: "TRYCK FÖR KORT",
         timer: null,
         timerEndsAt: null,
@@ -654,7 +658,9 @@
 
     async function updateCloud() {
         if (!state.roomCode || !db || !user) throw new Error('Firebase är inte redo.');
-        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode), state);
+        const cloudState = { ...state };
+        delete cloudState.cardHistory;
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode), cloudState);
     }
 
     function showStarNotif(name) {
@@ -754,7 +760,8 @@
                 // den lokala klientens roll som värd eller gäst.
                 const localHostRole = isHost;
                 const roomPlayers = Array.isArray(cloudData.players) ? cloudData.players : [];
-                state = { ...state, ...cloudData, isHost: localHostRole };
+                const localHistory = Array.isArray(state.cardHistory) ? state.cardHistory : [];
+                state = { ...state, ...cloudData, isHost: localHostRole, cardHistory: localHistory };
                 mergeSyncedPlayers(roomPlayers, cloudData.hostUid);
                 applyStateToUI();
                 if (!isHost) maybeShowLevel4Notice(state.selectedLevels);
@@ -1276,6 +1283,7 @@
                 .replace(/\[SUBJECT\]/g, pronomenSubject)
                 .replace(/\[HEN\]/g, pronomen)
                 .replace(/\[HENS\]/g, pronomenPossessiv);
+            state.currentCardTemplate = usesActivePlaceholder ? dare.text : `[ACTIVE], ${dare.text}`;
             state.currentTask = usesActivePlaceholder
                 ? renderedText
                 : `<span class="gold-name">${escapeHtml(active.name)}</span>, ${renderedText}`;
@@ -1477,16 +1485,18 @@
     }
 
     function currentCardIsFavorite() {
-        return getSavedCards().some(card => card.text === sanitizeTaskHtml(state.currentTask));
+        const key = state.currentCardTemplate || sanitizeTaskHtml(state.currentTask);
+        return getSavedCards().some(card => (card.template || card.text) === key);
     }
 
     window.toggleFavoriteCard = () => {
         if (!state.currentTask || state.currentTask === 'TRYCK FÖR KORT') return;
         const text = sanitizeTaskHtml(state.currentTask);
+        const template = state.currentCardTemplate || text;
         const cards = getSavedCards();
-        const existing = cards.findIndex(card => card.text === text);
+        const existing = cards.findIndex(card => (card.template || card.text) === template);
         if (existing >= 0) cards.splice(existing, 1);
-        else cards.unshift({ text, level: state.selectedLevels[state.activeLevelIdx] || '', time: Date.now() });
+        else cards.unshift({ text, template, level: state.selectedLevels[state.activeLevelIdx] || '', time: Date.now() });
         setSavedCards(cards);
         updateFavoriteButton();
     };
@@ -1510,6 +1520,24 @@
         updateFavoriteButton();
     };
 
+    window.copyFavoriteCard = async (index) => {
+        const card = getSavedCards()[index];
+        if (!card) return;
+        const text = card.template || card.text;
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch {
+            const helper = document.createElement('textarea');
+            helper.value = text;
+            document.body.appendChild(helper);
+            helper.select();
+            document.execCommand('copy');
+            helper.remove();
+        }
+        const button = document.querySelector(`[data-copy-index="${index}"]`);
+        if (button) { button.innerText = '✓ KOPIERAD'; setTimeout(() => { button.innerText = 'KOPIERA'; }, 1400); }
+    };
+
     window.showSavedCards = () => {
         const favorites = getSavedCards();
         const history = Array.isArray(state.cardHistory) ? state.cardHistory : [];
@@ -1517,7 +1545,7 @@
         document.getElementById('modal-msg-text').innerHTML = `
             <div class="saved-card-list">
                 <h4 style="color:var(--gold); margin:0 0 8px;">★ Mina favoriter (${favorites.length})</h4>
-                ${favorites.length ? favorites.map((card, index) => `<div class="saved-card-item"><small>Nivå ${escapeHtml(card.level)} <button class="saved-card-delete" type="button" onclick="removeFavoriteCard(${index})">× TA BORT</button></small>${sanitizeTaskHtml(card.text)}</div>`).join('') : '<p>Inga sparade favoriter ännu.</p>'}
+                ${favorites.length ? favorites.map((card, index) => `<div class="saved-card-item"><small>Nivå ${escapeHtml(card.level)} <span class="saved-card-actions"><button class="saved-card-copy" type="button" data-copy-index="${index}" onclick="copyFavoriteCard(${index})">KOPIERA</button><button class="saved-card-delete" type="button" onclick="removeFavoriteCard(${index})">× TA BORT</button></span></small>${sanitizeTaskHtml(card.text)}</div>`).join('') : '<p>Inga sparade favoriter ännu.</p>'}
                 <h4 style="color:var(--gold); margin:18px 0 8px;">Senast spelade kort</h4>
                 ${history.length ? history.slice(0, 20).map(card => `<div class="saved-card-item"><small>Nivå ${escapeHtml(card.level)}</small>${sanitizeTaskHtml(card.text)}</div>`).join('') : '<p>Ingen korthistorik ännu.</p>'}
             </div>`;
