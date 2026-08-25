@@ -231,6 +231,7 @@
         .btn-start { background: var(--gold); color: #000; font-size: 1.25rem; margin-top: 25px; }
         .btn-rules { background: transparent; color: var(--gold); border: 1px solid var(--gold); font-size: 0.95rem; padding: 16px; margin-top: 5px; }
         .btn-install { background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); font-size: 0.82rem; padding: 12px 16px; margin-top: 8px; }
+        .btn-architect { background: #17130a; color: var(--gold); border: 1px solid #8f7622; font-size: 0.82rem; padding: 12px 16px; margin-top: 8px; }
         .btn-next { background: var(--gold); color: #000; font-size: 1.4rem; box-shadow: 0 5px 20px rgba(212, 175, 55, 0.28); }
         .btn-back { background: #222; color: #eee; border: 1px solid #444; font-size: 1rem; margin-top: 15px; }
         .btn-lvl-up { background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); font-size: 0.8rem; padding: 10px; margin-top: 10px; }
@@ -315,6 +316,7 @@
             <div style="margin: 20px 0; color: #444;">— ELLER SYNKAT LÄGE —</div>
             <button class="btn btn-add" onclick="initCreateRoom()">SKAPA RUM (HOST)</button>
             <button class="btn btn-add" id="show-join-room-btn" onclick="showJoinRoomInput()">GÅ MED I RUM</button>
+            <a class="btn btn-architect" href="./architect.html" target="_blank" rel="noopener">ÖPPNA KORTLEKSARKITEKTEN</a>
             <input type="text" id="join-code-input" placeholder="ANGE RUMSKOD" maxlength="5" autocomplete="off" style="display:none; text-align: center; margin-top: 10px;">
             <button class="btn btn-start" id="join-room-submit" onclick="initJoinRoom()" style="display:none;">ANSLUT TILL RUM</button>
             <button class="btn btn-install" id="install-pwa-btn" onclick="installPwa()" style="display:none;">INSTALLERA PÅ HEMSKÄRM</button>
