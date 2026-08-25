@@ -683,7 +683,7 @@
             await scanForLevels();
             saveLocal();
             if (state.roomCode) await updateCloud();
-            showLobbyWarning(`${imported.length} egen ${imported.length === 1 ? 'kortlek lades' : 'kortlekar lades'} till.`);
+            showLobbyWarning(`${imported.length} egen ${imported.length === 1 ? 'kortlek lades' : 'kortlekar lades'} till.`, 'OK');
         } catch (error) {
             console.warn('Kunde inte läsa egen kortlek.', error);
             showLobbyWarning(error.message || 'Kunde inte öppna kortleken.');
@@ -1501,14 +1501,14 @@
         activateStarPowerForPlayer(selectedPlayerIndex);
     };
 
-    window.showLobbyWarning = (msg) => {
+    window.showLobbyWarning = (msg, closeLabel = 'AVBRYT') => {
         document.getElementById('modal-player-name').innerText = "OBS!";
         document.getElementById('modal-msg-text').innerText = msg;
         document.getElementById('modal-star-count').innerText = "";
         document.getElementById('btn-use-star').style.display = 'none';
         document.getElementById('manual-star-btn').style.display = 'none';
         document.getElementById('btn-confirm-yes').style.display = 'none';
-        document.getElementById('btn-modal-close').innerText = 'AVBRYT';
+        document.getElementById('btn-modal-close').innerText = closeLabel;
         document.getElementById('modal-overlay').style.display = 'flex';
     };
 
