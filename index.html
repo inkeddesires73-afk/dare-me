@@ -1288,7 +1288,7 @@
         toggleBiOption(); removePlayer(id);
     };
 
-    window.startGame = () => {
+    window.startGame = async () => {
         if (!isHost) return;
         state.selectedLevels = Array.from(document.querySelectorAll('.lvl-cb:checked'))
             .map(cb => normalizeLevelId(cb.value))
@@ -1296,7 +1296,26 @@
         if (state.selectedLevels.length === 0) { showLobbyWarning("Du måste välja minst en nivåfil för att kunna starta."); return; }
         if (state.players.length < 2) { showLobbyWarning("Det krävs minst två spelare för att kunna börja."); return; }
         maybeShowLevel4Notice(state.selectedLevels);
-        state.isPlaying = true; state.gamePaused = false; state.activeLevelIdx = 0; state.currentPlayerIdx = 0; state.cardsSinceLevelUp = 0; state.usedDareKeys = []; state.cardHistory = []; updateCloud(); saveLocal(); applyStateToUI();
+        state.isPlaying = true;
+        state.gamePaused = false;
+        state.activeLevelIdx = 0;
+        state.currentPlayerIdx = 0;
+        state.cardsSinceLevelUp = 0;
+        state.usedDareKeys = [];
+        state.cardHistory = [];
+        try {
+            // Bekräfta startläget hos Firebase innan värden lämnar lobbyn.
+            // Då får gästerna en komplett och konsekvent snapshot även med egna kortlekar.
+            await updateCloud();
+            saveLocal();
+            applyStateToUI();
+        } catch (error) {
+            state.isPlaying = false;
+            console.error('Kunde inte synkronisera spelstarten.', error);
+            saveLocal();
+            applyStateToUI();
+            showLobbyWarning('Spelet kunde inte startas för alla deltagare. Kontrollera anslutningen och försök igen.');
+        }
     };
 
     function isSexualDare(dare) {
