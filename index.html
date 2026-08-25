@@ -1743,6 +1743,12 @@
     };
 
     window.addEventListener('load', () => { 
+        document.addEventListener('pointerdown', event => {
+            const nameInput = document.getElementById('pName');
+            if (nameInput && document.activeElement === nameInput && event.target !== nameInput) {
+                nameInput.blur();
+            }
+        }, { capture: true });
         window.addEventListener('beforeinstallprompt', event => {
             event.preventDefault();
             deferredInstallPrompt = event;
