@@ -443,7 +443,7 @@
                         <label class="veto-option" id="bi-special-ui"><input type="checkbox" id="bi-no-pen"> Bi-Sex Ingen penetration</label>
                     </div>
                 </div>
-                <button class="btn btn-add" onclick="addPlayer()">LÄGG TILL MIG</button>
+                <button type="button" class="btn btn-add" onclick="addPlayer()">LÄGG TILL MIG</button>
             </div>
             <div id="displayList" style="margin-top: 20px;"></div>
             <div class="host-only">
@@ -1004,13 +1004,16 @@
         startTimerDisplayLoop();
         // Nivåval synkas i realtid. Behåll då scrollpositionen så att värden
         // kan markera flera nivåer utan att behöva rulla ner efter varje klick.
+        const keepGuestPosition = !isHost && Boolean(state.roomCode);
         const scrollY = preserveScrollY;
         preserveScrollY = null;
         const restoreScroll = () => window.scrollTo({ top: scrollY ?? 0, left: 0, behavior: 'auto' });
-        restoreScroll();
-        requestAnimationFrame(restoreScroll);
-        setTimeout(restoreScroll, 0);
-        setTimeout(restoreScroll, 150);
+        if (!keepGuestPosition) {
+            restoreScroll();
+            requestAnimationFrame(restoreScroll);
+            setTimeout(restoreScroll, 0);
+            setTimeout(restoreScroll, 150);
+        }
         isHost = state.isHost;
         const exitButton = document.getElementById('btn-exit-room');
         if (exitButton) exitButton.innerText = isHost ? 'LOBBY / REDIGERA' : 'LÄMNA RUM';
