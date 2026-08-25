@@ -633,7 +633,6 @@
             catch { showLobbyWarning('Kortleken kunde inte delas. Kontrollera anslutningen.'); }
         };
 
-       window.downloadSharedDeck = (deckId) => {
         window.downloadSharedDeck = async (deckId) => {
             const deck = normalizeCustomDecks(state.sharedDecks).find(item => item.id === deckId);
             if (!deck) return;
