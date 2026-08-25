@@ -633,14 +633,28 @@
             catch { showLobbyWarning('Kortleken kunde inte delas. Kontrollera anslutningen.'); }
         };
 
-        window.downloadSharedDeck = (deckId) => {
+       window.downloadSharedDeck = (deckId) => {
+        window.downloadSharedDeck = async (deckId) => {
             const deck = normalizeCustomDecks(state.sharedDecks).find(item => item.id === deckId);
             if (!deck) return;
-            const blob = new Blob([JSON.stringify({ name: deck.name, difficulty: deck.difficulty, dares: deck.dares }, null, 2)], { type: 'application/json' });
+            const filename = 'Dare Me - ' + (deck.name.replace(/[\\/:*?"<>|]/g, '').trim() || 'Egen kortlek') + '.json';
+            const data = JSON.stringify({ name: deck.name, difficulty: deck.difficulty, dares: deck.dares }, null, 2);
+            if (window.showSaveFilePicker) {
+                try {
+                    const handle = await window.showSaveFilePicker({ suggestedName: filename, types: [{ description: 'Dare Me-kortlek', accept: { 'application/json': ['.json'] } }] });
+                    const writable = await handle.createWritable();
+                    await writable.write(data);
+                    await writable.close();
+                    return;
+                } catch (error) {
+                    if (error?.name === 'AbortError') return;
+                }
+            }
+            const blob = new Blob([data], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = 'Dare Me - ' + (deck.name.replace(/[\\/:*?"<>|]/g, '').trim() || 'Egen kortlek') + '.json';
+            link.download = filename;
             document.body.appendChild(link);
             link.click();
             link.remove();
