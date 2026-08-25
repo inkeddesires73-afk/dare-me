@@ -144,6 +144,8 @@
         .custom-deck-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 10px; border: 1px solid #393019; border-radius: 8px; background: #151515; font-size: 0.75rem; color: #ddd; }
         .custom-deck-item small { color: #999; }
         .custom-deck-remove { border: 1px solid #7b3030; background: #351515; color: #ffd0d0; border-radius: 6px; padding: 6px 8px; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
+        .custom-deck-share { border: 1px solid #8f7622; background: #211b0b; color: var(--gold); border-radius: 6px; padding: 6px 8px; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
+        .custom-deck-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
         .custom-deck-empty { color: #777; font-size: 0.7rem; margin-top: 10px; }
         .veto-title { font-size: 0.7rem; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; display: block; letter-spacing: 1px; }
         .veto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -397,10 +399,16 @@
                         </div>
                         <div class="custom-deck-controls">
                             <input id="custom-deck-file" type="file" accept="application/json,.json" multiple style="display:none;" onchange="importCustomDecks(event)">
-                            <button class="btn btn-add" type="button" onclick="document.getElementById('custom-deck-file').click()">LÄGG TILL EGEN KORTLEK</button>
+                           <button class="btn btn-add" type="button" onclick="document.getElementById('custom-deck-file').click()">LÄGG TILL EGEN KORTLEK</button>
+                            <button class="btn btn-architect" type="button" onclick="shareAllCustomDecks()">DELA MED GÄSTER</button>
                         </div>
                         <div id="custom-deck-list" class="custom-deck-list"></div>
                     </div>
+                </div>
+
+                <div class="guest-only veto-container" style="text-align:left;">
+                    <span class="veto-title">Delade kortlekar</span>
+                    <div id="shared-deck-list" class="custom-deck-list"><div class="custom-deck-empty">Värden har inte delat någon kortlek ännu.</div></div>
                 </div>
 
                 <div class="guest-only" style="text-align: left; font-size: 0.65rem; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">
@@ -514,6 +522,7 @@
         players: [],
         selectedLevels: [],
         customDecks: [],
+        sharedDecks: [],
         activeLevelIdx: 0,
         currentPlayerIdx: 0,
         allowManualStars: false,
@@ -615,7 +624,41 @@
     }
 
     async function scanForLevels() {
+        window.shareCustomDeck = async (deckId) => {
+            if (!isHost) return;
+            const deck = state.customDecks.find(item => item.id === deckId);
+            if (!deck) return;
+            state.sharedDecks = normalizeCustomDecks([...(state.sharedDecks || []), deck]);
+            try { await updateCloud(); showLobbyWarning('Kortleken delas med gästerna.', 'OK'); }
+            catch { showLobbyWarning('Kortleken kunde inte delas. Kontrollera anslutningen.'); }
+        };
+
+        window.downloadSharedDeck = (deckId) => {
+            const deck = normalizeCustomDecks(state.sharedDecks).find(item => item.id === deckId);
+            if (!deck) return;
+            const blob = new Blob([JSON.stringify({ name: deck.name, difficulty: deck.difficulty, dares: deck.dares }, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'Dare Me - ' + (deck.name.replace(/[\\/:*?"<>|]/g, '').trim() || 'Egen kortlek') + '.json';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        };
         const grid = document.getElementById('level-selection-grid');
+        window.shareAllCustomDecks = async () => {
+            if (!isHost || !state.customDecks.length) return showLobbyWarning('Lägg till en egen kortlek först.');
+            state.sharedDecks = normalizeCustomDecks(state.customDecks);
+            try { await updateCloud(); showLobbyWarning('Kortlekarna delas med gästerna.', 'OK'); }
+            catch { showLobbyWarning('Kortlekarna kunde inte delas. Kontrollera anslutningen.'); }
+        };
+        window.renderSharedDecks = () => {
+            const list = document.getElementById('shared-deck-list');
+            if (!list) return;
+            const decks = normalizeCustomDecks(state.sharedDecks);
+            list.innerHTML = decks.length ? decks.map(deck => '<div class="custom-deck-item"><span>' + escapeHtml(deck.name) + ' <small>(' + deck.dares.length + ' kort)</small></span><button class="custom-deck-share" type="button" onclick="downloadSharedDeck(\'' + escapeHtml(deck.id) + '\')">SPARA</button></div>').join('') : '<div class="custom-deck-empty">Värden har inte delat någon kortlek ännu.</div>';
+        };
         const statusText = document.getElementById('lvl-scanner-status');
         if (!grid) return;
         
@@ -828,8 +871,9 @@
             isHost: false,
             players: [],
             selectedLevels: [],
-            customDecks: [],
-            activeLevelIdx: 0,
+           customDecks: [],
+            sharedDecks: [],
+           activeLevelIdx: 0,
             currentPlayerIdx: 0,
             currentTask: 'TRYCK FÖR KORT',
             timer: null,
@@ -891,8 +935,9 @@
                 const localHistory = Array.isArray(state.cardHistory) ? state.cardHistory : [];
                 state = { ...state, ...cloudData, selectedLevels: remoteLevels, customDecks: remoteCustomDecks, isHost: localHostRole, cardHistory: localHistory };
                 mergeSyncedPlayers(roomPlayers, cloudData.hostUid);
-                applyStateToUI();
-                if (!isHost) maybeShowLevel4Notice(state.selectedLevels);
+               applyStateToUI();
+                if (window.renderSharedDecks) window.renderSharedDecks();
+               if (!isHost) maybeShowLevel4Notice(state.selectedLevels);
             }
         }, (err) => {
             console.error("Snapshot error:", err);
