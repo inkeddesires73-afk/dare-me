@@ -293,7 +293,9 @@
         <button class="btn-import" type="button" onclick="document.getElementById('importFile').click()">ÖPPNA SPARAD KORTLEK 📂</button>
         <button class="btn-export" type="button" onclick="exportDeck()">SPARA KORTLEK TILL ENHETEN 💾</button>
         <button class="btn-copy-json" type="button" onclick="copyDeckJson()">KOPIERA GILTIG JSON 📋</button>
+        <button class="btn-copy-json" type="button" onclick="submitArchitectDeck()">SKICKA UPP TILL SPELSKAPAREN ☁️</button>
     </div>
+    <p style="color:#888;font-size:.8rem;text-align:center;margin:10px 0 0;">Är du nöjd med din kortlek kan du skicka upp den till spelskaparen. Bra kortlekar kan senare hjälpa till att utveckla de befintliga kortlekarna.</p>
     <input id="importFile" class="file-input" type="file" accept="application/json,.json" onchange="importDeck(event)">
 
     <div class="output-tools">
@@ -584,6 +586,12 @@
         reader.readAsText(file);
     }
 
+    window.getArchitectDeck = () => ({
+        name: document.getElementById('deckName').value.trim() || 'Min egen kortlek',
+        difficulty: document.getElementById('deckDifficulty').value,
+        dares: deckDares
+    });
+
     window.addEventListener('load', () => {
         const txtArea = document.getElementById('dareText');
         const keyboardButton = document.getElementById('keyboardToggle');
@@ -595,6 +603,26 @@
     });
 </script>
 
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+const app = initializeApp({apiKey:'AIzaSyADzIduNhKHBKIMWMGIwwPtiqKkZk8xZK4',authDomain:'dare-me-1c264.firebaseapp.com',projectId:'dare-me-1c264',storageBucket:'dare-me-1c264.firebasestorage.app',messagingSenderId:'1002052194460',appId:'1:1002052194460:web:9f55d47fbc82745a17dd59'});
+const auth = getAuth(app), db = getFirestore(app);
+window.submitArchitectDeck = async () => {
+  const deck = window.getArchitectDeck?.();
+  if (!deck?.dares?.length) { alert('Lägg till minst ett kort först.'); return; }
+  if (!confirm('Skicka upp denna kortlek till spelskaparen för granskning?')) return;
+  try {
+    const user = auth.currentUser || (await signInAnonymously(auth)).user;
+    await addDoc(collection(db, 'guestDeckSubmissions'), { deck, fileName: deck.name + '.json', senderUid: user.uid, submittedAt: Date.now() });
+    alert('Kortleken skickades upp! Tack.');
+  } catch (error) {
+    console.error(error);
+    alert('Kortleken kunde inte skickas upp. Kontrollera anslutningen.');
+  }
+};
+</script>
 </body>
 </html>
 
