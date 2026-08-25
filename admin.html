@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dare Me – Gästkortlekar</title>
+  <style>
+    body{margin:0;background:#0a0a0a;color:#eee;font-family:Segoe UI,Arial;padding:24px}
+    main{max-width:900px;margin:auto} h1,h2{color:#d4af37}
+    button{background:#17130a;color:#d4af37;border:1px solid #8f7622;border-radius:8px;padding:10px 14px;margin:4px;cursor:pointer}
+    .card{border:1px solid #3a3320;border-radius:12px;padding:16px;margin:14px 0;background:#151515}
+    pre{white-space:pre-wrap;max-height:320px;overflow:auto;background:#090909;padding:12px;border-radius:8px}
+    #status{color:#aaa;margin:14px 0}
+  </style>
+</head>
+<body>
+<main>
+  <h1>Gästkortlekar</h1>
+  <button id="login">LOGGA IN SOM SPELSKAPARE</button>
+  <button id="refresh" style="display:none">UPPDATERA</button>
+  <div id="status">Logga in för att läsa inskickade kortlekar.</div>
+  <section id="list"></section>
+</main>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getFirestore, collection, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  const app=initializeApp({apiKey:"AIzaSyADzIduNhKHBKIMWMGIwwPtiqKkZk8xZK4",authDomain:"dare-me-1c264.firebaseapp.com",projectId:"dare-me-1c264",storageBucket:"dare-me-1c264.firebasestorage.app",messagingSenderId:"1002052194460",appId:"1:1002052194460:web:9f55d47fbc82745a17dd59"});
+  const auth=getAuth(app), db=getFirestore(app), status=document.getElementById('status'), list=document.getElementById('list');
+  const provider=new GoogleAuthProvider();
+  document.getElementById('login').onclick=()=>signInWithPopup(auth,provider).catch(e=>status.innerText='Inloggningen misslyckades: '+e.message);
+  document.getElementById('refresh').onclick=load;
+  onAuthStateChanged(auth,user=>{ if(user){document.getElementById('login').style.display='none';document.getElementById('refresh').style.display='inline-block';load();} });
+  async function load(){
+    status.innerText='Läser inskickade kortlekar...'; list.innerHTML='';
+    try{
+      const snap=await getDocs(collection(db,'guestDeckSubmissions'));
+      if(snap.empty){status.innerText='Inga inskickade kortlekar.';return;}
+      status.innerText=snap.size+' inskickade kortlek(ar).';
+      snap.forEach(item=>{
+        const data=item.data(), deck=data.deck||{}, card=document.createElement('article');
+        card.className='card';
+        card.innerHTML='<h2></h2><div></div><pre></pre><button class="copy">KOPIERA JSON</button><button class="download">LADDA NER</button><button class="mark">MARKERA GRANSKAD</button><button class="delete">RADERA</button>';
+        card.querySelector('h2').innerText=deck.name||'Namnlös kortlek';
+        card.querySelector('div').innerText=(data.fileName||'')+' • '+new Date(data.submittedAt||Date.now()).toLocaleString('sv-SE')+(data.reviewed?' • GRANSKAD':'');
+        const json=JSON.stringify(deck,null,2);
+        const readable=(deck.dares||[]).map(card=>JSON.stringify({text:card.text,tags:Array.isArray(card.tags)?card.tags:[]})+',').join('\n');
+        card.querySelector('pre').innerText=readable;
+        card.querySelector('.copy').onclick=async()=>{await navigator.clipboard.writeText(json);status.innerText='JSON kopierad.'};
+        card.querySelector('.download').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));a.download='Dare Me - '+(deck.name||'Egen kortlek')+'.json';a.click();};
+        card.querySelector('.mark').onclick=async()=>{await updateDoc(doc(db,'guestDeckSubmissions',item.id),{reviewed:true});load();};
+        card.querySelector('.delete').onclick=async()=>{if(confirm('Radera kortleken?')){await deleteDoc(doc(db,'guestDeckSubmissions',item.id));load();}};
+        list.appendChild(card);
+      });
+    }catch(e){status.innerText='Kunde inte läsa listan. Kontrollera admininloggningen och Firebase-reglerna.';console.error(e);}
+  }
+</script>
+</body>
+</html>
+
