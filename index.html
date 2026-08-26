@@ -27,15 +27,23 @@
     </script>
 
     <style>
-        :root { 
-            --bg: #0a0a0a; 
-            --gold: #d4af37; 
+        :root {
+            --bg: #0a0a0a;
+            --gold: #d4af37;
             --red: #b30000; 
             --text: #eee; 
             --panel: #111;
             --border: #333;
             --gold-soft: #e2bd4f;
             --panel-raised: #151515;
+            --surface: #101010;
+            --surface-raised: #181818;
+            --surface-soft: #202020;
+            --muted: #aaa39a;
+            --danger: #9f3535;
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
         }
 
         * { box-sizing: border-box; }
@@ -153,6 +161,7 @@
         .veto-option input[type="checkbox"] { appearance: none; -webkit-appearance: none; flex: 0 0 20px; width: 20px; height: 20px; margin: 0; border: 2px solid #a9a9a9; border-radius: 4px; background: #262626; cursor: pointer; opacity: 1; }
         .veto-option input[type="checkbox"]:checked { background: var(--gold); border-color: #f4d36a; box-shadow: inset 0 0 0 3px #262014; }
         .veto-container .veto-option:hover { color: #fff; }
+        .environment-actions .btn { width: auto; margin: 0; padding: 7px 12px; font-size: 0.7rem; }
 
         #bi-special-ui { display: none; grid-column: span 2; padding-top: 12px; border-top: 1px solid #222; margin-top: 5px; color: var(--red); font-weight: bold; }
 
@@ -259,7 +268,7 @@
         .guest-only { display: none; }
         .is-guest .guest-only { display: block; }
 
-        .btn-reset-danger { 
+        .btn-reset-danger {
             background: #1a1111; 
             color: #666; 
             border: 1px solid #300; 
@@ -273,6 +282,194 @@
             border-radius: 10px;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        /* VISUELL HELHET */
+        body {
+            background:
+                radial-gradient(circle at 50% -12%, rgba(212,175,55,0.11), transparent 34rem),
+                linear-gradient(180deg, #090909 0%, #050505 100%);
+        }
+        button, input, select { font: inherit; }
+        button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+            outline: 2px solid #f2d36d;
+            outline-offset: 3px;
+        }
+        #lobby-page { max-width: 940px; }
+        #game-page { max-width: 760px; }
+        #lobby-page > h1 {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: clamp(2.1rem, 4vw, 3.2rem);
+            font-weight: 600;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            text-shadow: 0 0 28px rgba(212,175,55,.16);
+        }
+        #lobby-page .small-logo { width: 72px; height: 72px; margin-bottom: 10px; }
+        .room-tag { margin: 0 0 4px; color: #c7c1b7; }
+        .connection-status { margin: 0 0 12px; }
+        .setup-container {
+            border-color: #3d3728;
+            background: linear-gradient(160deg, rgba(20,20,20,.98), rgba(11,11,11,.98));
+            box-shadow: 0 24px 70px rgba(0,0,0,.52), inset 0 1px rgba(255,255,255,.025);
+        }
+        .profile-panel {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(150px, .8fr) minmax(170px, .9fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .profile-panel input, .profile-panel select { margin: 0; min-height: 48px; }
+        input[type="text"], select {
+            border-color: #48443b;
+            background: #080808;
+            transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+        }
+        input[type="text"]:focus, select:focus {
+            border-color: var(--gold);
+            background: #0d0d0d;
+            box-shadow: 0 0 0 3px rgba(212,175,55,.1);
+        }
+        .setup-section {
+            margin: 12px 0;
+            border: 1px solid #3c382f;
+            border-radius: var(--radius-md);
+            background: rgba(10,10,10,.76);
+            overflow: clip;
+            text-align: left;
+        }
+        .setup-section > summary {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            min-height: 54px;
+            padding: 14px 48px 14px 16px;
+            color: #f0d36f;
+            font-size: .78rem;
+            font-weight: 850;
+            letter-spacing: .11em;
+            text-transform: uppercase;
+            cursor: pointer;
+            list-style: none;
+            user-select: none;
+        }
+        .setup-section > summary::-webkit-details-marker { display:none; }
+        .setup-section > summary::after {
+            content: '';
+            position: absolute;
+            right: 18px;
+            width: 9px;
+            height: 9px;
+            border-right: 2px solid #bba65d;
+            border-bottom: 2px solid #bba65d;
+            transform: rotate(45deg) translateY(-3px);
+            transition: transform .22s ease;
+        }
+        .setup-section[open] > summary::after { transform: rotate(225deg) translate(-2px,-2px); }
+        .setup-section > summary:hover { background: rgba(255,255,255,.025); }
+        .setup-section-body { padding: 4px 16px 16px; border-top: 1px solid #292722; }
+        .setup-section .veto-title:first-child { display:none; }
+        .setup-section.veto-container { padding: 0; margin: 12px 0; }
+        .setup-section .veto-grid { padding-top: 10px; }
+        .veto-container { background: rgba(10,10,10,.75); }
+        .veto-title { color: #e2c35c; }
+        .veto-option { min-height: 32px; line-height: 1.25; }
+        .veto-option input[type="checkbox"] {
+            flex-basis: 22px;
+            width: 22px;
+            height: 22px;
+            border-color: #8f8a80;
+            background: #202020;
+        }
+        .veto-option input[type="checkbox"]:checked { box-shadow: inset 0 0 0 4px #1d190f, 0 0 0 2px rgba(212,175,55,.12); }
+        .environment-actions { padding-top: 6px; }
+        .environment-actions .btn { border-color: #625832; color: #d8c175; background: #17150f; }
+        .custom-deck-controls { align-items: stretch; }
+        .custom-deck-controls .btn { min-height: 40px; }
+        .custom-deck-item { border-color: #3f3929; background: #15130f; }
+        .lobby-actions {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: center;
+            margin-top: 14px;
+        }
+        .lobby-actions .btn, .lobby-actions a { margin: 0 !important; }
+        .lobby-actions .btn-start { grid-column: 1 / -1; }
+        .lobby-actions .waiting-copy { grid-column: 1 / -1; margin: 8px 0; }
+        .btn {
+            border-radius: 12px;
+            min-height: 48px;
+            transition: transform .15s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, background-color .2s ease;
+        }
+        .btn-add { margin-top: 16px; background: #1a1813; border-color: #5f5430; }
+        .btn-start, .btn-next {
+            background: linear-gradient(180deg, #e4c04c, #c89e22);
+            box-shadow: 0 8px 28px rgba(212,175,55,.18), inset 0 1px rgba(255,255,255,.25);
+        }
+        .btn-rules, .btn-lvl-up, .btn-architect { border-color: #5e5332; color: #dbc36d; background: #14130f; }
+        .btn-back { color: #d5d1ca; border-color: #44413b; background: #181818; }
+        .btn-reset-danger { color: #9d8f8f; border-color: #4e2929; background: #171010; }
+        .btn:hover:not(:disabled) { border-color: #b89b3c; box-shadow: 0 8px 24px rgba(0,0,0,.32); transform: translateY(-1px); }
+
+        /* SPELVY */
+        #game-page { padding-top: 10px; }
+        .status-bar {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            padding: 10px;
+            border: 1px solid #2e2b25;
+            border-radius: 16px;
+            background: rgba(8,8,8,.9);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 12px 30px rgba(0,0,0,.3);
+        }
+        .p-chip { background: #121212; border-color: #35322c; }
+        .p-chip.active-turn { background: #1c180e; border-color: #d6b43f; transform: translateY(-2px); }
+        .card-area {
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(212,175,55,.10), transparent 50%),
+                linear-gradient(150deg, #181818, #0d0d0d);
+            border-color: #433c28;
+            box-shadow: 0 24px 60px rgba(0,0,0,.54), inset 0 1px rgba(255,255,255,.035);
+        }
+        .card-area::before {
+            content:'';
+            position:absolute;
+            inset:0;
+            pointer-events:none;
+            border-radius:inherit;
+            background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,.025), transparent 65%);
+        }
+        #next-up-info { color: #efcc58 !important; font-weight: 850 !important; }
+        #active-lvl-display { color: #a9a49b !important; }
+        #current-lvl-text { color: #dfbd4b !important; }
+        .game-controls { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .game-controls > * { margin: 0 !important; }
+        .game-controls #turn-help, .game-controls #btn-next-card, .game-controls #btn-exit-room { grid-column: 1 / -1; }
+        .game-controls #btn-next-card { min-height: 58px; }
+        .game-controls .btn-lvl-up { min-height: 44px; }
+
+        @media (min-width: 760px) {
+            .veto-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px 18px; }
+            .environment-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .setup-section-body { padding: 8px 20px 20px; }
+        }
+        @media (max-width: 700px) {
+            #lobby-page > h1 { font-size: 1.9rem !important; letter-spacing: .13em; }
+            #lobby-page .small-logo { width: 58px; height: 58px; }
+            .profile-panel { grid-template-columns: 1fr; gap: 8px; }
+            .setup-section > summary { min-height: 50px; padding: 12px 44px 12px 14px; }
+            .setup-section-body { padding: 4px 12px 14px; }
+            .lobby-actions { grid-template-columns: 1fr auto; }
+            .lobby-actions .card-tool-btn { min-height: 48px; padding-inline: 16px; }
+            .game-controls { gap: 8px; }
+            .task-text { font-size: clamp(1.3rem, 6vw, 1.75rem); }
         }
 
         #btn-confirm-yes {
@@ -365,11 +562,15 @@
         <div id="connection-status" class="connection-status" data-status="local" aria-live="polite">LOKALT SPEL</div>
         <div class="setup-container">
             <div id="setup-controls">
-                <input type="text" id="pName" placeholder="DITT NAMN" autocomplete="off">
-                <select id="pGender" onchange="toggleBiOption()"><option value="kvinna">KVINNA</option><option value="man">MAN</option></select>
-                <select id="pPref" onchange="toggleBiOption()"><option value="bi" selected>BISEXUELL</option><option value="hetero">HETEROSEXUELL</option><option value="gay">HOMOSEXUELL</option></select>
-                
-                <div class="veto-container host-only">
+                <div class="profile-panel" aria-label="Spelarprofil">
+                    <input type="text" id="pName" placeholder="DITT NAMN" autocomplete="off">
+                    <select id="pGender" aria-label="Kön" onchange="toggleBiOption()"><option value="kvinna">KVINNA</option><option value="man">MAN</option></select>
+                    <select id="pPref" aria-label="Sexuell läggning" onchange="toggleBiOption()"><option value="bi" selected>BISEXUELL</option><option value="hetero">HETEROSEXUELL</option><option value="gay">HOMOSEXUELL</option></select>
+                </div>
+
+                <details class="setup-section host-only" open>
+                    <summary>Spelinställningar, nivåer & utrustning</summary>
+                    <div class="setup-section-body">
                     <span class="veto-title">Globala Inställningar (Endast Värd)</span>
                     <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
                         <label class="veto-option" style="margin: 0;"><input type="checkbox" id="setting-manual-stars" onchange="toggleManualStars()"> Manuella stjärnor</label>
@@ -397,6 +598,12 @@
                         <div id="level-selection-grid" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
                             <div id="lvl-scanner-status" style="color:#444; font-size:0.7rem;">Söker efter filer...</div>
                         </div>
+                        <div class="custom-deck-controls">
+                            <input id="custom-deck-file" type="file" accept="application/json,.json" multiple style="display:none;" onchange="importCustomDecks(event)">
+                            <button class="btn btn-add" type="button" onclick="document.getElementById('custom-deck-file').click()">LÄGG TILL EGEN KORTLEK</button>
+                            <button id="share-custom-decks-btn" class="btn btn-architect" type="button" onclick="shareAllCustomDecks()">DELA MED GÄSTER</button>
+                        </div>
+                        <div id="custom-deck-list" class="custom-deck-list"></div>
                         <div style="border-top: 1px solid #222; margin-top: 15px; padding-top: 15px;">
                             <small style="color: var(--gold); display: block; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Tillgänglig utrustning i rummet:</small>
                             <div class="veto-grid environment-grid">
@@ -425,20 +632,15 @@
                                 <label class="veto-option"><input type="checkbox" class="environment-cb" value="ankle_cuffs" onchange="updateEnvironmentItems()"> Ankelbojor</label>
                                 <label class="veto-option"><input type="checkbox" class="environment-cb" value="rope" onchange="updateEnvironmentItems()"> Rep</label>
                                 <label class="veto-option"><input type="checkbox" class="environment-cb" value="massage_oil" onchange="updateEnvironmentItems()"> Massageolja</label>
-                                <div style="grid-column: 1 / -1; display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;">
-                                    <button type="button" class="btn btn-rules" onclick="selectAllEnvironmentItems()" style="margin:0; padding:7px 12px; font-size:.7rem;">MARKERA ALLT</button>
-                                    <button type="button" class="btn btn-rules" onclick="clearEnvironmentItems()" style="margin:0; padding:7px 12px; font-size:.7rem;">RENSA VAL</button>
+                                <div class="environment-actions" style="grid-column: 1 / -1; display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;">
+                                    <button type="button" class="btn btn-rules" onclick="selectAllEnvironmentItems()">MARKERA ALLT</button>
+                                    <button type="button" class="btn btn-rules" onclick="clearEnvironmentItems()">RENSA VAL</button>
                                 </div>
                             </div>
                         </div>
-                        <div class="custom-deck-controls">
-                            <input id="custom-deck-file" type="file" accept="application/json,.json" multiple style="display:none;" onchange="importCustomDecks(event)">
-                           <button class="btn btn-add" type="button" onclick="document.getElementById('custom-deck-file').click()">LÄGG TILL EGEN KORTLEK</button>
-                            <button class="btn btn-architect" type="button" onclick="shareAllCustomDecks()">DELA MED GÄSTER</button>
-                        </div>
-                        <div id="custom-deck-list" class="custom-deck-list"></div>
                     </div>
-                </div>
+                    </div>
+                </details>
 
                 <div class="guest-only veto-container" style="text-align:left;">
                     <span class="veto-title">Delade kortlekar</span>
@@ -451,7 +653,9 @@
                     Nivåhöjning: <span id="guest-level-info" style="color: var(--gold); font-weight: bold;">Av</span>
                 </div>
 
-                <div class="veto-container">
+                <details class="setup-section veto-container" open>
+                    <summary>Mina veton</summary>
+                    <div class="setup-section-body">
                     <span class="veto-title">Vetos (Detta vill jag INTE göra)</span>
                     <div class="veto-grid">
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="spanking"> Smisk</label>
@@ -476,25 +680,23 @@
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="masturbation"> Onani</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="biting"> Bitas</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="strangulation"> Strypning</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="urination"> Kissa</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="ejaculation"> Spruta</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="swallowing"> Svälja</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="stearin"> Stearin/vax</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="fingers"> Fingrar</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="nudity"> Nakenhet</label>
                         <label class="veto-option" id="bi-special-ui"><input type="checkbox" id="bi-no-pen"> Bi-Sex Ingen penetration</label>
                     </div>
-                </div>
+                    </div>
+                </details>
                 <button type="button" class="btn btn-add" onclick="addPlayer()">LÄGG TILL MIG</button>
             </div>
             <div id="displayList" style="margin-top: 20px;"></div>
-            <div class="host-only">
-                <button class="btn btn-start" id="start-game-btn" onclick="startGame()">STARTA SPELET</button>
+            <div class="lobby-actions">
+                <button class="btn btn-start host-only" id="start-game-btn" onclick="startGame()">STARTA SPELET</button>
+                <div class="guest-only waiting-copy" style="color:#8e8980; font-style:italic;">Väntar på att värden ska starta...</div>
+                <a href="rules.html" onclick="saveLocal()" class="btn btn-rules" style="text-decoration:none; display:block;">VISA REGLER</a>
+                <button class="btn btn-rules card-tool-btn" onclick="showSavedCards()">★ LISTA</button>
             </div>
-            <div class="guest-only" style="margin-top: 30px; color: #666; font-style: italic;">Väntar på att värden ska starta...</div>
-            
-            <a href="rules.html" onclick="saveLocal()" class="btn btn-rules" style="text-decoration:none; display:block; margin-top:20px;">VISA REGLER</a>
-            <button class="btn btn-rules card-tool-btn" onclick="showSavedCards()">★ LISTA</button>
             
             <button class="btn btn-reset-danger" onclick="requestReset()">Nollställ allt / Byt roll</button>
         </div>
@@ -1129,6 +1331,8 @@
         isHost = state.isHost;
         const exitButton = document.getElementById('btn-exit-room');
         if (exitButton) exitButton.innerText = isHost ? 'LOBBY / REDIGERA' : 'LÄMNA RUM';
+        const shareDecksButton = document.getElementById('share-custom-decks-btn');
+        if (shareDecksButton) shareDecksButton.style.display = state.roomCode ? '' : 'none';
         const pages = ['intro-page', 'start-page', 'lobby-page', 'game-page'];
         pages.forEach(p => {
             const el = document.getElementById(p);
@@ -1246,6 +1450,13 @@
         document.querySelectorAll('.environment-cb').forEach(cb => cb.checked = false);
         updateEnvironmentItems();
     };
+    function sortCheckboxLabels() {
+        document.querySelectorAll('.veto-grid').forEach(grid => {
+            const labels = Array.from(grid.querySelectorAll(':scope > label'));
+            labels.sort((a, b) => a.textContent.trim().localeCompare(b.textContent.trim(), 'sv'));
+            labels.forEach(label => grid.appendChild(label));
+        });
+    }
     window.togglePause = () => {
         if (!isHost) return;
         state.gamePaused = !state.gamePaused;
@@ -1929,8 +2140,9 @@
                 console.warn('Sparad speldata kunde inte läsas och ignorerades.', e);
             }
         }
-        initFirebase().then(async () => { 
-            await scanForLevels(); 
+        initFirebase().then(async () => {
+            sortCheckboxLabels();
+            await scanForLevels();
             hideLoading(); 
             toggleBiOption(); 
             applyStateToUI();
@@ -1941,4 +2153,3 @@
 </script>
 </body>
 </html>
-

@@ -163,12 +163,90 @@
             margin: 20px 0 0 0;
             font-size: 0.92rem;
         }
+
+        body {
+            min-height: 100dvh;
+            background:
+                radial-gradient(circle at 50% -10%, rgba(212,175,55,.12), transparent 34rem),
+                linear-gradient(180deg,#090909,#050505);
+        }
+        .container {
+            max-width: 760px;
+            background: linear-gradient(160deg,rgba(20,20,20,.98),rgba(10,10,10,.98));
+            border-color:#3d3728;
+            border-radius:24px;
+            box-shadow:0 28px 80px rgba(0,0,0,.58), inset 0 1px rgba(255,255,255,.025);
+        }
+        h1 {
+            margin:0 0 24px;
+            font-family:Georgia,'Times New Roman',serif;
+            font-weight:600;
+            font-size:clamp(2rem,5vw,3rem);
+            letter-spacing:.14em;
+            text-transform:uppercase;
+        }
+        h2 { scroll-margin-top:88px; color:#e0c25e; }
+        p, li { color:#ddd9d2; }
+        .rules-nav {
+            position:sticky;
+            top:10px;
+            z-index:20;
+            display:flex;
+            gap:7px;
+            padding:8px;
+            margin:0 0 22px;
+            overflow-x:auto;
+            scrollbar-width:none;
+            border:1px solid #3d382d;
+            border-radius:14px;
+            background:rgba(12,12,12,.91);
+            backdrop-filter:blur(14px);
+            box-shadow:0 12px 28px rgba(0,0,0,.32);
+        }
+        .rules-nav::-webkit-scrollbar { display:none; }
+        .rules-nav a {
+            flex:0 0 auto;
+            padding:8px 11px;
+            border:1px solid #4b4535;
+            border-radius:9px;
+            color:#ddc66f;
+            background:#17150f;
+            text-decoration:none;
+            font-size:.72rem;
+            font-weight:800;
+            letter-spacing:.04em;
+            text-transform:uppercase;
+        }
+        .quick-safety, .level-guide, .warning-box { box-shadow:inset 0 1px rgba(255,255,255,.025); }
+        .level-card { padding:16px 0; }
+        .btn-back {
+            background:linear-gradient(180deg,#e4c04c,#c89e22);
+            box-shadow:0 8px 28px rgba(212,175,55,.18), inset 0 1px rgba(255,255,255,.25);
+        }
+        a:focus-visible { outline:2px solid #f0d36f; outline-offset:3px; }
+        @media (max-width:700px) {
+            body { padding:10px; }
+            .container { padding:22px 16px 34px; border-radius:18px; }
+            h1 { font-size:1.75rem; letter-spacing:.11em; }
+            .rules-nav { margin-inline:-5px; }
+            h2 { font-size:1.05rem; margin-top:30px; }
+            p, li { font-size:.96rem; }
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <h1>Spelregler</h1>
+
+        <nav class="rules-nav" aria-label="Genvägar i reglerna">
+            <a href="#nivåer">Nivåer</a>
+            <a href="#spelflöde">Så spelar ni</a>
+            <a href="#veto">Veto</a>
+            <a href="#samtycke">Samtycke</a>
+            <a href="#stjärnan">Guldstjärnan</a>
+            <a href="#säkerhet">Säkerhet</a>
+        </nav>
 
         <div class="quick-safety">
             <span class="quick-safety-title">⚠️ Innan ni börjar</span>
@@ -180,7 +258,7 @@
             </ul>
         </div>
 
-        <div class="level-guide">
+        <div class="level-guide" id="nivåer">
             <h2>🌶️ NIVÅERNA – FRÅN VANILJ TILL EXTREME</h2>
 
             <div class="level-card">
@@ -206,7 +284,7 @@
             <p class="level-guide-note">Värden väljer vilka nivåer som är aktiva. Börja gärna på en lägre nivå och höj stämningen när alla känner sig redo. Veto-listan gäller alltid, oavsett nivå.</p>
         </div>
 
-        <h2>🔁 SÅ HÄR GÅR DET TILL</h2>
+        <h2 id="spelflöde">🔁 SÅ HÄR GÅR DET TILL</h2>
         <p><strong>Välj hur ni vill spela:</strong></p>
         <ul>
             <li><strong>På samma enhet:</strong> Alla spelar tillsammans på samma dator, surfplatta, TV-skärm eller liknande.</li>
@@ -222,7 +300,7 @@
         <p><strong>Automatisk nivåhöjning:</strong> Värden kan välja att nivån höjs automatiskt efter 1–10 kort per spelare. Det räknas hela varv, och inställningen kan stängas av. Värden kan fortfarande alltid använda <strong>HÖJ STÄMNINGEN</strong> manuellt.</p>
         <p><strong>Ändra inställningar:</strong> Gå tillbaka till lobbyn om ni vill ändra nivåer, stjärninställningar, veton eller andra spelaruppgifter.</p>
 
-        <h2>🛡️ DIN TRYGGHET – VETO-SYSTEMET</h2>
+        <h2 id="veto">🛡️ DIN TRYGGHET – VETO-SYSTEMET</h2>
         <p>Veto-systemet är byggt för att automatiskt filtrera bort uppdrag som rör ämnen du eller din motspelare valt att undvika. Det är ett kraftfullt verktyg för att skapa en trygg miljö, men säkerheten är ett samspel mellan tekniken och er spelare.</p>
         <ul>
             <li><strong>Filtrering:</strong> Innan spelet börjar väljer varje spelare sina personliga gränser. Appen strävar efter att endast visa kort som matchar allas inställningar.</li>
@@ -230,13 +308,13 @@
             <li><strong>Säkerhetsventilen (Viktigt):</strong> Skulle ett uppdrag mot förmodan dyka upp som känns fel eller som borde ha filtrerats bort (t.ex. på grund av mänskliga fel vid taggning), använd <strong>"BYT KORT" 🔄</strong> knappen omedelbart. Inga frågor ställs, och turen stannar kvar hos den aktiva spelaren.</li>
         </ul>
 
-        <h2>🤝 SAMTYCKE & RESPEKT</h2>
+        <h2 id="samtycke">🤝 SAMTYCKE & RESPEKT</h2>
         <div class="highlight-box">
             "Ett nej är alltid ett nej. Ingen ska någonsin känna sig tvingad att göra något man inte vill."
         </div>
         <p>Även om spelet utmanar er, så bygger allt på frivillighet och gemensam njutning. Spelet är till för att utforska lust, inte för att skapa obehag. Om en situation känns fel – avbryt direkt. Gränser är till för att respekteras, även i stundens hetta.</p>
 
-        <h2>⭐ GULDSTJÄRNAN</h2>
+        <h2 id="stjärnan">⭐ GULDSTJÄRNAN</h2>
         <p>Ibland vinner en spelare en Guldstjärna! Det ger dig total kontroll över rummet under en begränsad tid där du bestämmer vad de andra ska göra – med varandra eller med dig.</p>
         <ul>
             <li><strong>Spara din makt:</strong> Du behöver aldrig använda stjärnan direkt. Dina intjänade stjärnor visas vid ditt namn i statusraden högst upp.</li>
@@ -251,7 +329,7 @@
         </ul>
 
         <!-- SÄKERHETSAVSNITTET LÄNGST NER -->
-        <div class="warning-box">
+        <div class="warning-box" id="säkerhet">
             <span class="warning-title">⚠️ Ansvar & Säkerhet (Viktigt)</span>
             <p>Spelet <em>Dare Me</em> är endast avsett som ett inspirationsverktyg för samtyckande vuxna. Allt deltagande och utförande av spelets utmaningar sker helt på egen risk.</p>
             <p><strong>Spelutvecklaren frånsäger sig allt ansvar</strong> för eventuella fysiska skador, psykiskt obehag, juridiska konsekvenser eller skador på personliga relationer som kan uppstå vid användning av denna app. Genom att använda spelet bekräftar ni att:</p>
@@ -269,4 +347,3 @@
 
 </body>
 </html>
-
