@@ -23,7 +23,7 @@
 </main>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
   import { getFirestore, collection, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
   const app=initializeApp({apiKey:"AIzaSyADzIduNhKHBKIMWMGIwwPtiqKkZk8xZK4",authDomain:"dare-me-1c264.firebaseapp.com",projectId:"dare-me-1c264",storageBucket:"dare-me-1c264.firebasestorage.app",messagingSenderId:"1002052194460",appId:"1:1002052194460:web:9f55d47fbc82745a17dd59"});
   const auth=getAuth(app), db=getFirestore(app), status=document.getElementById('status'), list=document.getElementById('list');
@@ -31,18 +31,29 @@
   document.getElementById('login').onclick=async()=>{
     status.innerText='Öppnar Google-inloggning...';
     try {
+      if (auth.currentUser && !auth.currentUser.email) await signOut(auth);
       await signInWithPopup(auth,provider);
     } catch (e) {
       if (['auth/popup-blocked','auth/popup-closed-by-user','auth/cancelled-popup-request'].includes(e.code) || /mobile|android|iphone|ipad/i.test(navigator.userAgent)) {
         status.innerText='Byter till mobilinloggning...';
         await signInWithRedirect(auth,provider);
       } else {
-        status.innerText='Inloggningen misslyckades: '+e.message;
+        status.innerText='Inloggningen misslyckades: '+(e.code||e.message);
       }
     }
   };
   document.getElementById('refresh').onclick=load;
-  onAuthStateChanged(auth,user=>{ if(user){document.getElementById('login').style.display='none';document.getElementById('refresh').style.display='inline-block';load();} });
+  onAuthStateChanged(auth,user=>{
+    if(user && user.email==='wolfsphoto.tk@gmail.com'){
+      document.getElementById('login').style.display='none';
+      document.getElementById('refresh').style.display='inline-block';
+      load();
+    } else if(user){
+      document.getElementById('login').style.display='inline-block';
+      document.getElementById('refresh').style.display='none';
+      status.innerText='Logga in med wolfsphoto.tk@gmail.com för att läsa listan.';
+    }
+  });
   async function load(){
     status.innerText='Läser inskickade kortlekar...'; list.innerHTML='';
     try{
@@ -64,7 +75,7 @@
         card.querySelector('.delete').onclick=async()=>{if(confirm('Radera kortleken?')){await deleteDoc(doc(db,'guestDeckSubmissions',item.id));load();}};
         list.appendChild(card);
       });
-    }catch(e){status.innerText='Kunde inte läsa listan. Kontrollera admininloggningen och Firebase-reglerna.';console.error(e);}
+    }catch(e){status.innerText='Kunde inte läsa listan: '+(e.code||e.message);console.error(e);}
   }
 </script>
 </body>
