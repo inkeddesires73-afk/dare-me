@@ -397,6 +397,40 @@
                         <div id="level-selection-grid" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
                             <div id="lvl-scanner-status" style="color:#444; font-size:0.7rem;">Söker efter filer...</div>
                         </div>
+                        <div style="border-top: 1px solid #222; margin-top: 15px; padding-top: 15px;">
+                            <small style="color: var(--gold); display: block; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Tillgänglig utrustning i rummet:</small>
+                            <div class="veto-grid environment-grid">
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="dildo" onchange="updateEnvironmentItems()"> Dildo</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="strapon" onchange="updateEnvironmentItems()"> Strap-on</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="double_dildo" onchange="updateEnvironmentItems()"> Dubbel dildo</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="glass_dildo" onchange="updateEnvironmentItems()"> Glasdildo</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="metal_dildo" onchange="updateEnvironmentItems()"> Metalldildo</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="vibrator" onchange="updateEnvironmentItems()"> Vibrator</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="bullet" onchange="updateEnvironmentItems()"> Bullet</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="wand" onchange="updateEnvironmentItems()"> Wand</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="air_pressure_vibrator" onchange="updateEnvironmentItems()"> Lufttrycksvibrator</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="remote_vibrator" onchange="updateEnvironmentItems()"> Fjärrstyrd vibrator</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="anal_plug" onchange="updateEnvironmentItems()"> Analplugg</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="expanding_plug" onchange="updateEnvironmentItems()"> Expanderande plugg</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="anal_beads" onchange="updateEnvironmentItems()"> Analkulor</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="anal_probe" onchange="updateEnvironmentItems()"> Analprob</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="paddle" onchange="updateEnvironmentItems()"> Paddel</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="riding_crop" onchange="updateEnvironmentItems()"> Ridspö</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="flogger" onchange="updateEnvironmentItems()"> Flogger</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="belt" onchange="updateEnvironmentItems()"> Bälte</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="nipple_clamps" onchange="updateEnvironmentItems()"> Klämmor</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="hairbrush" onchange="updateEnvironmentItems()"> Hårborste</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="blindfold" onchange="updateEnvironmentItems()"> Ögonbindel</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="handcuffs" onchange="updateEnvironmentItems()"> Handbojor</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="ankle_cuffs" onchange="updateEnvironmentItems()"> Ankelbojor</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="rope" onchange="updateEnvironmentItems()"> Rep</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="massage_oil" onchange="updateEnvironmentItems()"> Massageolja</label>
+                                <div style="grid-column: 1 / -1; display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;">
+                                    <button type="button" class="btn btn-rules" onclick="selectAllEnvironmentItems()" style="margin:0; padding:7px 12px; font-size:.7rem;">MARKERA ALLT</button>
+                                    <button type="button" class="btn btn-rules" onclick="clearEnvironmentItems()" style="margin:0; padding:7px 12px; font-size:.7rem;">RENSA VAL</button>
+                                </div>
+                            </div>
+                        </div>
                         <div class="custom-deck-controls">
                             <input id="custom-deck-file" type="file" accept="application/json,.json" multiple style="display:none;" onchange="importCustomDecks(event)">
                            <button class="btn btn-add" type="button" onclick="document.getElementById('custom-deck-file').click()">LÄGG TILL EGEN KORTLEK</button>
@@ -420,34 +454,34 @@
                 <div class="veto-container">
                     <span class="veto-title">Vetos (Detta vill jag INTE göra)</span>
                     <div class="veto-grid">
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="smisk"> Smisk</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="spanking"> Smisk</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="oral"> Oralt</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="penetration"> Penetration</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="bindning"> Bindning/BDSM</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="leksaker"> Sexleksaker</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="publik"> Publik/Utomhus</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="impact"> Impact play</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="analt"> Analt</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="dominans"> Dominans</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="underkastelse"> Underkastelse</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="fornedring"> Förnedring</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="ogonbindel"> Ögonbindel/Blindfold</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="fotter"> Fötter</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="bondage"> Bindning/BDSM</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="sex_toys"> Sexleksaker</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="public"> Publik/Utomhus</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="impact_play"> Impact play</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="anal"> Analt</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="dominance"> Dominans</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="submission"> Underkastelse</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="humiliation"> Förnedring</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="blindfold"> Ögonbindel/Blindfold</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="feet"> Fötter</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="semen"> Sperma</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="blood"> Blod</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="wet"> Wet (Kissa)</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="wax"> Stearin</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="rollspel"> Rollspel</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="kon"> Kön</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="onani"> Onani</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="bitas"> Bitas</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="strypning"> Strypning</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="kissa"> Kissa</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="spruta"> Spruta</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="svälja"> Svälja</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="stearin"> Stearin</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="roleplay"> Rollspel</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="genitals"> Kön</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="masturbation"> Onani</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="biting"> Bitas</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="strangulation"> Strypning</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="urination"> Kissa</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="ejaculation"> Spruta</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="swallowing"> Svälja</label>
                         <label class="veto-option"><input type="checkbox" class="veto-cb" value="stearin"> Stearin/vax</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="fingrar"> Fingrar</label>
-                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="nakenhet"> Nakenhet</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="fingers"> Fingrar</label>
+                        <label class="veto-option"><input type="checkbox" class="veto-cb" value="nudity"> Nakenhet</label>
                         <label class="veto-option" id="bi-special-ui"><input type="checkbox" id="bi-no-pen"> Bi-Sex Ingen penetration</label>
                     </div>
                 </div>
@@ -523,6 +557,7 @@
         selectedLevels: [],
         customDecks: [],
         sharedDecks: [],
+        availableItems: [],
         activeLevelIdx: 0,
         currentPlayerIdx: 0,
         allowManualStars: false,
@@ -541,6 +576,7 @@
         roomCode: null,
         hostUid: null
     };
+    const DEFAULT_AVAILABLE_ITEMS = [...state.availableItems];
 
     let isHost = false, lastStarCounts = {}, participantPlayers = [], db, auth, unsubscribe, unsubscribeDirectory, unsubscribeParticipants, unsubscribeActions, user;
     let deferredInstallPrompt = null;
@@ -1109,6 +1145,9 @@
             if (chanceSel) chanceSel.value = state.starChance || 3;
             const autoLevelSel = document.getElementById('auto-level-setting');
             if (autoLevelSel) autoLevelSel.value = state.autoLevelUpCards || 0;
+            document.querySelectorAll('.environment-cb').forEach(cb => {
+                cb.checked = (state.availableItems || []).includes(cb.value);
+            });
         }
 
         const guestLevelInfo = document.getElementById('guest-level-info');
@@ -1194,6 +1233,19 @@
     window.updateStarTimerSetting = () => { state.starPowerDuration = parseInt(document.getElementById('star-timer-setting').value); updateCloud(); saveLocal(); };
     window.updateStarChanceSetting = () => { state.starChance = parseInt(document.getElementById('star-chance-setting').value); updateCloud(); saveLocal(); };
     window.updateAutoLevelSetting = () => { state.autoLevelUpCards = parseInt(document.getElementById('auto-level-setting').value) || 0; state.cardsSinceLevelUp = 0; updateCloud(); saveLocal(); };
+    window.updateEnvironmentItems = () => {
+        state.availableItems = Array.from(document.querySelectorAll('.environment-cb:checked')).map(cb => cb.value);
+        if (state.roomCode) updateCloud().catch(err => console.warn('Kunde inte synka utrustningsvalen.', err));
+        saveLocal();
+    };
+    window.selectAllEnvironmentItems = () => {
+        document.querySelectorAll('.environment-cb').forEach(cb => cb.checked = true);
+        updateEnvironmentItems();
+    };
+    window.clearEnvironmentItems = () => {
+        document.querySelectorAll('.environment-cb').forEach(cb => cb.checked = false);
+        updateEnvironmentItems();
+    };
     window.togglePause = () => {
         if (!isHost) return;
         state.gamePaused = !state.gamePaused;
@@ -1461,6 +1513,17 @@
 
     function dareIsAllowed(dare, active, target, partner) {
         if (!playerCountIsEnough(dare)) return false;
+        const environmentTags = new Set(dare.tags || []);
+        const environmentAliases = {
+            sex_toys: ['dildo', 'strapon', 'double_dildo', 'glass_dildo', 'metal_dildo', 'vibrator', 'bullet', 'wand', 'air_pressure_vibrator', 'remote_vibrator', 'anal_plug', 'expanding_plug', 'anal_beads', 'anal_probe'],
+            bondage_gear: ['handcuffs', 'ankle_cuffs', 'rope'],
+            impact_tool: ['paddle', 'riding_crop', 'flogger', 'belt', 'nipple_clamps', 'hairbrush']
+        };
+        for (const [group, items] of Object.entries(environmentAliases)) {
+            if (environmentTags.has(group) && !items.some(item => state.availableItems.includes(item))) return false;
+        }
+        const exactEquipment = ['dildo', 'strapon', 'double_dildo', 'glass_dildo', 'metal_dildo', 'vibrator', 'bullet', 'wand', 'air_pressure_vibrator', 'remote_vibrator', 'anal_plug', 'expanding_plug', 'anal_beads', 'anal_probe', 'paddle', 'riding_crop', 'flogger', 'belt', 'nipple_clamps', 'hairbrush', 'blindfold', 'handcuffs', 'ankle_cuffs', 'rope', 'massage_oil'];
+        if (exactEquipment.some(item => environmentTags.has(item) && !state.availableItems.includes(item))) return false;
         const involved = [active, target, partner].filter(Boolean);
         if (dare.tags?.some(tag => involved.some(player => player.vetos?.includes(tag)))) return false;
         const sexual = isSexualDare(dare);
@@ -1854,6 +1917,11 @@
                     selectedLevels: Array.isArray(parsed.selectedLevels) ? parsed.selectedLevels.map(normalizeLevelId) : [],
                     customDecks: normalizeCustomDecks(parsed.customDecks)
                 };
+                const oldEnvironmentState = Array.isArray(parsed.availableItems) && parsed.availableItems.some(item => ['leksaker', 'impact'].includes(item));
+                if (oldEnvironmentState || !Array.isArray(state.availableItems)) {
+                    state.availableItems = [...DEFAULT_AVAILABLE_ITEMS];
+                }
+                state.availableItems = state.availableItems.filter(item => !['wet', 'stearin'].includes(item));
                 hydrateCustomDares();
                 state.cardHistory = Array.isArray(state.cardHistory) ? state.cardHistory : [];
             } catch (e) {
