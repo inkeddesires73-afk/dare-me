@@ -795,6 +795,7 @@
     let lastLevel4NoticeKey = '';
     let editingPlayerId = null;
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'dare-me-dynamic';
+    const MAX_CARD_HISTORY = 15;
 
     function hideLoading() { document.getElementById('loading-screen').style.display = 'none'; }
 
@@ -2057,7 +2058,7 @@
     function recordCardHistory(text, levelId) {
         const history = Array.isArray(state.cardHistory) ? state.cardHistory : [];
         history.unshift({ text: sanitizeTaskHtml(text), level: levelId, time: Date.now() });
-        state.cardHistory = history.slice(0, 50);
+        state.cardHistory = history.slice(0, MAX_CARD_HISTORY);
     }
 
     function currentCardIsFavorite() {
@@ -2123,7 +2124,7 @@
                 <h4 style="color:var(--gold); margin:0 0 8px;">★ Mina favoriter (${favorites.length})</h4>
                 ${favorites.length ? favorites.map((card, index) => `<div class="saved-card-item"><small>Nivå ${escapeHtml(card.level)} <span class="saved-card-actions"><button class="saved-card-copy" type="button" data-copy-index="${index}" onclick="copyFavoriteCard(${index})">KOPIERA</button><button class="saved-card-delete" type="button" onclick="removeFavoriteCard(${index})">× TA BORT</button></span></small>${sanitizeTaskHtml(card.text)}</div>`).join('') : '<p>Inga sparade favoriter ännu.</p>'}
                 <h4 style="color:var(--gold); margin:18px 0 8px;">Senast spelade kort</h4>
-                ${history.length ? history.slice(0, 20).map(card => `<div class="saved-card-item"><small>Nivå ${escapeHtml(card.level)}</small>${sanitizeTaskHtml(card.text)}</div>`).join('') : '<p>Ingen korthistorik ännu.</p>'}
+                ${history.length ? history.slice(0, MAX_CARD_HISTORY).map(card => `<div class="saved-card-item"><small>Nivå ${escapeHtml(card.level)}</small>${sanitizeTaskHtml(card.text)}</div>`).join('') : '<p>Ingen korthistorik ännu.</p>'}
             </div>`;
         document.getElementById('modal-star-count').innerText = '';
         document.getElementById('btn-use-star').style.display = 'none';
@@ -2186,7 +2187,7 @@
                 }
                 state.availableItems = state.availableItems.filter(item => !['wet', 'stearin'].includes(item));
                 hydrateCustomDares();
-                state.cardHistory = Array.isArray(state.cardHistory) ? state.cardHistory : [];
+                state.cardHistory = Array.isArray(state.cardHistory) ? state.cardHistory.slice(0, MAX_CARD_HISTORY) : [];
             } catch (e) {
                 localStorage.removeItem('dareme_state');
                 console.warn('Sparad speldata kunde inte läsas och ignorerades.', e);
