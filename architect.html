@@ -667,74 +667,100 @@
     function addWord(word) {
         const txtArea = document.getElementById('dareText');
         txtArea.value += word + " ";
-        autoTagWord(word);
         handleTextInput(txtArea);
     }
 
     const autoTagMappings = [
-        { words: ['smiska', 'piska'], tags: ['spanking'] },
-        { words: ['sug', 'suga', 'slicka'], tags: ['oral'] },
-        { words: ['knulla', 'penetrera'], tags: ['penetration'] },
-        { words: ['runka', 'onani'], tags: ['masturbation'] },
-        { words: ['bind', 'bind fast'], tags: ['bondage'] },
-        { words: ['bitas'], tags: ['biting'] },
-        { words: ['kissa'], tags: ['wet'] },
+        { words: ['smiska'], tags: ['spanking'] },
+        { words: ['piska'], tags: ['spanking', 'impact_play'] },
+        { words: ['sug', 'suga', 'slicka', 'oralsex'], tags: ['oral'] },
+        { words: ['knulla', 'penetrera', 'penetration'], tags: ['penetration'] },
+        { words: ['runka', 'onani', 'onanera'], tags: ['masturbation'] },
+        { words: ['pulla', 'fingra', 'fingrar', 'fingrarna'], tags: ['masturbation', 'fingers'] },
+        { words: ['bind', 'bind fast', 'bindning', 'bondage'], tags: ['bondage'] },
+        { words: ['bitas', 'bita', 'nafsa'], tags: ['biting'] },
+        { words: ['kissa', 'pissa'], tags: ['wet'] },
         { words: ['stearin'], tags: ['stearin'] },
         { words: ['naken', 'kläder', 'underkläder'], tags: ['nudity'] },
-        { words: ['dildo'], tags: ['dildo', 'sex_toys'], excludeWords: ['dubbel dildo', 'glasdildo', 'metalldildo'] },
-        { words: ['strap-on', 'strapon'], tags: ['strapon', 'sex_toys'] },
-        { words: ['dubbel dildo'], tags: ['double_dildo', 'sex_toys'] },
-        { words: ['glasdildo'], tags: ['glass_dildo', 'sex_toys'] },
-        { words: ['metalldildo'], tags: ['metal_dildo', 'sex_toys'] },
+        { words: ['dildo'], tags: ['dildo', 'sex_toys', 'penetration'], excludeWords: ['dubbel dildo', 'glasdildo', 'metalldildo'] },
+        { words: ['strap-on', 'strapon'], tags: ['strapon', 'sex_toys', 'penetration'] },
+        { words: ['dubbel dildo'], tags: ['double_dildo', 'sex_toys', 'penetration'] },
+        { words: ['glasdildo'], tags: ['glass_dildo', 'sex_toys', 'penetration'] },
+        { words: ['metalldildo'], tags: ['metal_dildo', 'sex_toys', 'penetration'] },
         { words: ['vibrator'], tags: ['vibrator', 'sex_toys'] },
         { words: ['bullet'], tags: ['bullet', 'sex_toys'] },
         { words: ['wand'], tags: ['wand', 'sex_toys'] },
         { words: ['lufttrycksvibrator'], tags: ['air_pressure_vibrator', 'sex_toys'] },
         { words: ['fjärrstyrd vibrator', 'fjärrstyrd'], tags: ['remote_vibrator', 'sex_toys'] },
-        { words: ['analplugg', 'buttplugg', 'butt plug'], tags: ['anal_plug', 'sex_toys'] },
-        { words: ['expanderande plugg'], tags: ['expanding_plug', 'sex_toys'] },
-        { words: ['analkulor'], tags: ['anal_beads', 'sex_toys'] },
-        { words: ['analprob'], tags: ['anal_probe', 'sex_toys'] },
-        { words: ['paddel'], tags: ['paddle', 'impact_tool', 'impact_play'] },
-        { words: ['ridspö', 'ridpiska'], tags: ['riding_crop', 'impact_tool', 'impact_play'] },
-        { words: ['flogger'], tags: ['flogger', 'impact_tool', 'impact_play'] },
-        { words: ['klämma', 'klämmor', 'klädnypa'], tags: ['nipple_clamps', 'impact_tool', 'impact_play'] },
-        { words: ['handbojor'], tags: ['handcuffs'] },
-        { words: ['ankelbojor'], tags: ['ankle_cuffs'] },
-        { words: ['rep'], tags: ['rope'] },
-        { words: ['bälte', 'läderrem'], tags: ['belt', 'impact_tool', 'impact_play'] },
-        { words: ['hårborste'], tags: ['hairbrush', 'impact_tool', 'impact_play'] },
+        { words: ['analplugg', 'buttplugg', 'butt plug'], tags: ['anal_plug', 'sex_toys', 'anal', 'penetration'] },
+        { words: ['expanderande plugg'], tags: ['expanding_plug', 'sex_toys', 'anal', 'penetration'] },
+        { words: ['analkulor'], tags: ['anal_beads', 'sex_toys', 'anal', 'penetration'] },
+        { words: ['analprob'], tags: ['anal_probe', 'sex_toys', 'anal', 'penetration'] },
+        { words: ['analt', 'anal stimulans'], tags: ['anal'] },
+        { words: ['paddel'], tags: ['paddle', 'impact_play'] },
+        { words: ['ridspö', 'ridpiska'], tags: ['riding_crop', 'impact_play'] },
+        { words: ['flogger'], tags: ['flogger', 'impact_play'] },
+        { words: ['klämma', 'klämmor', 'klädnypa'], tags: ['nipple_clamps', 'impact_play'] },
+        { words: ['handbojor'], tags: ['handcuffs', 'bondage'] },
+        { words: ['ankelbojor'], tags: ['ankle_cuffs', 'bondage'] },
+        { words: ['rep'], tags: ['rope', 'bondage'] },
+        { words: ['bälte', 'läderrem'], tags: ['belt', 'impact_play'] },
+        { words: ['hårborste'], tags: ['hairbrush', 'impact_play'] },
         { words: ['massageolja'], tags: ['massage_oil'] },
-        { words: ['ögonbindel', 'ogonbindel'], tags: ['blindfold'] }
+        { words: ['ögonbindel', 'ogonbindel'], tags: ['blindfold'] },
+        { words: ['stryp', 'strypning'], tags: ['strangulation'] },
+        { words: ['spruta'], tags: ['ejaculation'] },
+        { words: ['svälj', 'svälja'], tags: ['swallowing'] },
+        { words: ['kön', 'könet'], tags: ['genitals'] },
+        { words: ['sperma'], tags: ['semen'] },
+        { words: ['blod'], tags: ['blood'] },
+        { words: ['fötter'], tags: ['feet'] },
+        { words: ['rollspel'], tags: ['roleplay'] },
+        { words: ['gruppen', 'publik', 'framför de andra'], tags: ['public'] },
+        { words: ['dominera', 'beordra', 'kräv'], tags: ['dominance'] },
+        { words: ['underkastelse'], tags: ['submission'] },
+        { words: ['förnedra', 'förnedring'], tags: ['humiliation'] }
     ];
 
-    function autoTagWord(word) {
-        const value = word.toLowerCase();
-        autoTagMappings.forEach(mapping => {
-            if (!mapping.words.includes(value)) return;
-            mapping.tags.forEach(tag => {
-                const checkbox = document.querySelector(`.tag-check[value="${tag}"]`);
-                if (checkbox) checkbox.checked = true;
-            });
+    let automaticallyCheckedTags = new Set();
+
+    function textContainsTerm(text, term) {
+        const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(`(^|[^\\p{L}\\p{N}_])${escaped}(?=$|[^\\p{L}\\p{N}_])`, 'u').test(text);
+    }
+
+    function mappingMatchesText(mapping, text) {
+        return mapping.words.some(word => textContainsTerm(text, word)) &&
+            !(mapping.excludeWords || []).some(word => textContainsTerm(text, word));
+    }
+
+    function clearTagSelections() {
+        document.querySelectorAll('.tag-check').forEach(checkbox => {
+            checkbox.checked = false;
+            delete checkbox.dataset.manual;
         });
+        automaticallyCheckedTags.clear();
     }
 
     function handleTextInput(el) {
         fixFirstLetter(el);
         const text = el.value.trim().toLowerCase();
         if (!text) {
-            document.querySelectorAll('.tag-check').forEach(c => c.checked = false);
+            clearTagSelections();
             return;
         }
 
+        const nextAutomaticTags = new Set();
         autoTagMappings.forEach(mapping => {
-            const stillUsed = mapping.words.some(word => text.includes(word)) &&
-                !(mapping.excludeWords || []).some(word => text.includes(word));
-            mapping.tags.forEach(tag => {
-                const checkbox = document.querySelector(`.tag-check[value="${tag}"]`);
-                if (checkbox) checkbox.checked = stillUsed;
-            });
+            if (mappingMatchesText(mapping, text)) mapping.tags.forEach(tag => nextAutomaticTags.add(tag));
         });
+
+        document.querySelectorAll('.tag-check').forEach(checkbox => {
+            const value = checkbox.value;
+            if (nextAutomaticTags.has(value)) checkbox.checked = true;
+            else if (automaticallyCheckedTags.has(value) && checkbox.dataset.manual !== 'true') checkbox.checked = false;
+        });
+        automaticallyCheckedTags = nextAutomaticTags;
     }
 
     function sortTagCheckboxes() {
@@ -845,7 +871,7 @@
         renderOutput();
         document.querySelector('.btn-gen').textContent = 'LÄGG TILL I LISTAN ➕';
         textInput.value = "";
-        checkboxes.forEach(c => c.checked = false);
+        clearTagSelections();
         saveDraft();
     }
 
@@ -861,7 +887,7 @@
             document.getElementById('output').value = "";
             deckDares = [];
             document.getElementById('dareText').value = "";
-            document.querySelectorAll('.tag-check').forEach(c => c.checked = false);
+            clearTagSelections();
             editingIndex = null;
             document.querySelector('.btn-gen').textContent = 'LÄGG TILL I LISTAN ➕';
             saveDraft();
@@ -922,7 +948,11 @@
         const card = deckDares[editingIndex];
         const textInput = document.getElementById('dareText');
         textInput.value = card.text;
-        document.querySelectorAll('.tag-check').forEach(c => c.checked = card.tags.includes(c.value));
+        automaticallyCheckedTags.clear();
+        document.querySelectorAll('.tag-check').forEach(checkbox => {
+            checkbox.checked = card.tags.includes(checkbox.value);
+            checkbox.dataset.manual = checkbox.checked ? 'true' : 'false';
+        });
         document.querySelector('.composer').scrollIntoView({ behavior: 'smooth', block: 'start' });
         document.querySelector('.btn-gen').textContent = 'UPPDATERA KORT ✏️';
         select.value = '';
@@ -1002,6 +1032,13 @@
         arrangeCategoryColumns();
         sortTagCheckboxes();
         sortWordButtons();
+        document.querySelectorAll('.tag-check').forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                if (!automaticallyCheckedTags.has(checkbox.value)) {
+                    checkbox.dataset.manual = checkbox.checked ? 'true' : 'false';
+                }
+            });
+        });
         const txtArea = document.getElementById('dareText');
         const keyboardButton = document.getElementById('keyboardToggle');
         txtArea.addEventListener('focus', () => {
