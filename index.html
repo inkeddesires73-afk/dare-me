@@ -173,6 +173,10 @@
         .player-info small { color: #666; text-transform: uppercase; font-size: 0.65rem; display: block; margin-top: 2px; }
 
         .action-btns { display: flex; gap: 8px; align-items: center; }
+        .player-form-actions { display:grid; grid-template-columns:1fr auto; gap:8px; align-items:stretch; }
+        .player-form-actions .btn { margin-top:16px; margin-bottom:0; }
+        .player-form-actions #cancel-player-edit { width:auto; min-width:150px; }
+        .player-item.editing-player { border-color:#6d5b25; background:#201b10; box-shadow:0 0 0 2px rgba(212,175,55,.08); }
         .edit-btn, .delete-btn { appearance: none; -webkit-appearance: none; border: 0; background: transparent; min-width: 42px; min-height: 42px; padding: 8px; border-radius: 10px; cursor: pointer; touch-action: manipulation; line-height: 1; }
         .edit-btn { color: var(--gold); font-size: 1.3rem; }
         .delete-btn { color: #aaa; font-size: 1.7rem; }
@@ -470,6 +474,8 @@
             .lobby-actions .card-tool-btn { min-height: 48px; padding-inline: 16px; }
             .game-controls { gap: 8px; }
             .task-text { font-size: clamp(1.3rem, 6vw, 1.75rem); }
+            .player-form-actions { grid-template-columns:1fr; }
+            .player-form-actions #cancel-player-edit { width:100%; min-width:0; margin-top:0; }
         }
 
         #btn-confirm-yes {
@@ -688,7 +694,10 @@
                     </div>
                     </div>
                 </details>
-                <button type="button" class="btn btn-add" onclick="addPlayer()">LÄGG TILL MIG</button>
+                <div class="player-form-actions">
+                    <button type="button" class="btn btn-add" id="player-submit-button" onclick="addPlayer()">LÄGG TILL MIG</button>
+                    <button type="button" class="btn btn-back" id="cancel-player-edit" onclick="cancelPlayerEdit()" style="display:none;">AVBRYT REDIGERING</button>
+                </div>
             </div>
             <div id="displayList" style="margin-top: 20px;"></div>
             <div class="lobby-actions">
@@ -784,6 +793,7 @@
     let deferredInstallPrompt = null;
     let preserveScrollY = null;
     let lastLevel4NoticeKey = '';
+    let editingPlayerId = null;
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'dare-me-dynamic';
 
     function hideLoading() { document.getElementById('loading-screen').style.display = 'none'; }
@@ -1579,17 +1589,25 @@
             showLobbyWarning('Den här enheten har redan en spelare i rummet.');
             return;
         }
-        const finalStars = tempStars; tempStars = 0;
+        const editedPlayer = editingPlayerId == null ? null : state.players.find(player => player.id === editingPlayerId);
+        const finalStars = editedPlayer ? editedPlayer.stars : tempStars;
         const newPlayer = {
-            id: Date.now(), name, gender: document.getElementById('pGender').value,
+            id: editedPlayer?.id ?? Date.now(), name, gender: document.getElementById('pGender').value,
             pref: document.getElementById('pPref').value, vetos: Array.from(document.querySelectorAll('.veto-cb:checked')).map(cb => cb.value), 
             biNoPen: document.getElementById('bi-no-pen').checked, stars: finalStars,
-            uid: user?.uid || null
+            uid: editedPlayer?.uid ?? user?.uid ?? null
         };
         // På mobil ska synkningen inte kasta tillbaka gästen till sidans topp.
         if (!isHost && state.roomCode) preserveScrollY = window.scrollY;
-        state.players.push(newPlayer);
-        nameInput.value = ""; document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = false);
+        if (editedPlayer) {
+            state.players = state.players.map(player => player.id === editedPlayer.id ? newPlayer : player);
+        } else {
+            state.players.push(newPlayer);
+        }
+        const wasEditing = Boolean(editedPlayer);
+        editingPlayerId = null;
+        tempStars = 0;
+        resetPlayerEditor();
         renderLobby(); toggleBiOption(); saveLocal();
         try {
             if (!state.roomCode) {
@@ -1602,11 +1620,15 @@
                 preserveScrollY = window.scrollY;
                 listenToRoom(state.roomCode);
             } else {
+                if (wasEditing && newPlayer.uid && newPlayer.uid !== user?.uid) {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'participants', newPlayer.uid), newPlayer);
+                }
                 await updateCloud();
             }
         } catch (e) {
             if (!isHost && state.roomCode) participantPlayers = [];
-            state.players = state.players.filter(p => p.id !== newPlayer.id);
+            if (editedPlayer) state.players = state.players.map(player => player.id === editedPlayer.id ? editedPlayer : player);
+            else state.players = state.players.filter(p => p.id !== newPlayer.id);
             renderLobby();
             showLobbyWarning('Spelaren kunde inte läggas till. Kontrollera Firebase-reglerna.');
         }
@@ -1616,6 +1638,11 @@
         if (!isHost) return;
         const player = state.players.find(p => p.id === id);
         state.players = state.players.filter(p => p.id !== id);
+        if (editingPlayerId === id) {
+            editingPlayerId = null;
+            tempStars = 0;
+            resetPlayerEditor();
+        }
         renderLobby(); updateCloud(); saveLocal();
         if (player?.uid && player.uid !== user?.uid && state.roomCode) {
             deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'participants', player.uid)).catch(() => {});
@@ -1625,10 +1652,36 @@
     window.editPlayer = (id) => {
         if (!isHost) return;
         const p = state.players.find(x => x.id === id); if (!p) return;
+        editingPlayerId = id;
         tempStars = p.stars;
         document.getElementById('pName').value = p.name; document.getElementById('pGender').value = p.gender;
         document.getElementById('pPref').value = p.pref; document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = p.vetos.includes(cb.value));
-        toggleBiOption(); removePlayer(id);
+        document.getElementById('bi-no-pen').checked = Boolean(p.biNoPen);
+        const submitButton = document.getElementById('player-submit-button');
+        const cancelButton = document.getElementById('cancel-player-edit');
+        if (submitButton) submitButton.innerText = 'SPARA ÄNDRING';
+        if (cancelButton) cancelButton.style.display = '';
+        toggleBiOption(); renderLobby();
+    };
+
+    function resetPlayerEditor() {
+        const nameInput = document.getElementById('pName');
+        if (nameInput) nameInput.value = '';
+        document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = false);
+        const biNoPen = document.getElementById('bi-no-pen');
+        if (biNoPen) biNoPen.checked = false;
+        const submitButton = document.getElementById('player-submit-button');
+        const cancelButton = document.getElementById('cancel-player-edit');
+        if (submitButton) submitButton.innerText = 'LÄGG TILL MIG';
+        if (cancelButton) cancelButton.style.display = 'none';
+    }
+
+    window.cancelPlayerEdit = () => {
+        editingPlayerId = null;
+        tempStars = 0;
+        resetPlayerEditor();
+        toggleBiOption();
+        renderLobby();
     };
 
     window.startGame = async () => {
@@ -1647,9 +1700,8 @@
         state.usedDareKeys = [];
         state.cardHistory = [];
         try {
-            // Bekräfta startläget hos Firebase innan värden lämnar lobbyn.
-            // Då får gästerna en komplett och konsekvent snapshot även med egna kortlekar.
-            await updateCloud();
+            // Rum behöver synkas innan värden lämnar lobbyn. Lokalt spel ska aldrig kräva Firebase.
+            if (state.roomCode) await updateCloud();
             saveLocal();
             applyStateToUI();
         } catch (error) {
@@ -1968,7 +2020,7 @@
     
     function renderLobby() { 
         document.getElementById('displayList').innerHTML = state.players.map(p => `
-            <div class="player-item">
+            <div class="player-item ${editingPlayerId === p.id ? 'editing-player' : ''}">
                 <div class="player-info"><strong>${escapeHtml(p.name)}</strong><small>${escapeHtml(p.gender)} • ${escapeHtml(p.pref)}</small></div>
                 ${isHost ? `<div class="action-btns"><button type="button" class="edit-btn" aria-label="Redigera ${escapeHtml(p.name)}" onclick="editPlayer(${p.id})">✎</button><button type="button" class="delete-btn" aria-label="Ta bort ${escapeHtml(p.name)}" onclick="removePlayer(${p.id})">×</button></div>` : ''}
             </div>`).join(''); 
