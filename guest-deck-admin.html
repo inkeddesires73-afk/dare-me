@@ -23,12 +23,24 @@
 </main>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
   import { getFirestore, collection, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
   const app=initializeApp({apiKey:"AIzaSyADzIduNhKHBKIMWMGIwwPtiqKkZk8xZK4",authDomain:"dare-me-1c264.firebaseapp.com",projectId:"dare-me-1c264",storageBucket:"dare-me-1c264.firebasestorage.app",messagingSenderId:"1002052194460",appId:"1:1002052194460:web:9f55d47fbc82745a17dd59"});
   const auth=getAuth(app), db=getFirestore(app), status=document.getElementById('status'), list=document.getElementById('list');
   const provider=new GoogleAuthProvider();
-  document.getElementById('login').onclick=()=>signInWithPopup(auth,provider).catch(e=>status.innerText='Inloggningen misslyckades: '+e.message);
+  document.getElementById('login').onclick=async()=>{
+    status.innerText='Öppnar Google-inloggning...';
+    try {
+      await signInWithPopup(auth,provider);
+    } catch (e) {
+      if (['auth/popup-blocked','auth/popup-closed-by-user','auth/cancelled-popup-request'].includes(e.code) || /mobile|android|iphone|ipad/i.test(navigator.userAgent)) {
+        status.innerText='Byter till mobilinloggning...';
+        await signInWithRedirect(auth,provider);
+      } else {
+        status.innerText='Inloggningen misslyckades: '+e.message;
+      }
+    }
+  };
   document.getElementById('refresh').onclick=load;
   onAuthStateChanged(auth,user=>{ if(user){document.getElementById('login').style.display='none';document.getElementById('refresh').style.display='inline-block';load();} });
   async function load(){
