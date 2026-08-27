@@ -485,6 +485,10 @@
             display: none;
         }
     </style>
+    <style>
+        /* Kompaktare snabbknappar i lobby */
+        .environment-actions .btn { padding: 6px 10px; font-size: 0.68rem; }
+    </style>
 </head>
 <body class="is-host">
 
@@ -1120,6 +1124,7 @@
     }
 
     function leaveGuestRoom(message = '') {
+        const localCustomDecks = normalizeCustomDecks(state.customDecks);
         if (!isHost && state.roomCode && user && db) {
             deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'participants', user.uid)).catch(() => {});
         }
@@ -1153,7 +1158,7 @@
             isHost: false,
             players: [],
             selectedLevels: [],
-           customDecks: [],
+            customDecks: localCustomDecks,
             sharedDecks: [],
            activeLevelIdx: 0,
             currentPlayerIdx: 0,
@@ -1757,6 +1762,12 @@
     function penetrationRolesArePossible(dare, active, target, partner) {
         if (!dare.tags?.includes('penetration')) return true;
         const text = String(dare.text || '').toLowerCase();
+        // "Ditt kön" kräver en manlig aktiv spelare endast när det används
+        // som penetrerande redskap. Kort där någon bara smeker eller slickar
+        // det egna könet ska fortfarande kunna visas för alla kön.
+        if (textHas(text, /för\s+in[^.!?]*ditt\s+kön|penetrer(?:a|ar)[^.!?]*ditt\s+kön|ditt\s+kön[^.!?]*(?:i|mot)\s+(?:[a-zåäö]+\s+)?(?:mun|anus|öppning)/)) {
+            return active?.gender === 'man';
+        }
         const usesNonPenileTool = textHas(text, /dildo|strap[- ]?on|leksak|fingrar|vibrator|redskap/);
         if (usesNonPenileTool) return true;
         const needsPenileActor = textHas(text, /knulla|penetrera|penetrerar|penetration|ta\s+\[|ta\s+dig|trycka\s+sig\s+in|rida|rid\s+\[hen\]|tar\s+dig/);
@@ -1946,7 +1957,13 @@
                 await batch.commit();
             }
             if (unsubscribe) unsubscribe();
+            // Nollställ bara den aktuella spelomgången. Egna/importerade
+            // kortlekar är sparade på enheten och ska kunna väljas igen.
+            const savedCustomDecks = normalizeCustomDecks(state.customDecks);
             localStorage.removeItem('dareme_state');
+            if (savedCustomDecks.length) {
+                localStorage.setItem('dareme_state', JSON.stringify({ customDecks: savedCustomDecks }));
+            }
             location.reload();
         } catch (e) {
             console.error('Kunde inte radera Firebase-rummet.', e);

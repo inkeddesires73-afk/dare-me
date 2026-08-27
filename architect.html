@@ -250,6 +250,20 @@
             .tag-item { font-size:11px; }
         }
     </style>
+        <style>
+            /* Kompakt åtgärdsfält, särskilt på små skärmar */
+            .composer-actions .btn-gen,
+            .composer-actions .btn-copy,
+            .composer-actions .btn-clear { padding: 10px 8px; font-size: 12px; }
+            .import-export button { padding: 9px 6px; font-size: 10px; }
+            .remove-card-row { gap: 6px; }
+            .remove-card-row .btn-remove-last { padding: 8px 6px; font-size: 10px; }
+            @media (max-width: 700px) {
+                .action-btns button { padding: 8px 5px; font-size: 11px; }
+                .import-export { gap: 5px; }
+                .import-export button { padding: 8px 4px; font-size: 10px; }
+            }
+        </style>
 </head>
 <body>
 
