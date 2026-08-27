@@ -574,8 +574,8 @@
                     <select id="pPref" aria-label="Sexuell läggning" onchange="toggleBiOption()"><option value="bi" selected>BISEXUELL</option><option value="hetero">HETEROSEXUELL</option><option value="gay">HOMOSEXUELL</option></select>
                 </div>
 
-                <details class="setup-section host-only" open>
-                    <summary>Spelinställningar, nivåer & utrustning</summary>
+                <details class="setup-section host-only">
+                    <summary>Spelinställningar & nivåer</summary>
                     <div class="setup-section-body">
                     <span class="veto-title">Globala Inställningar (Endast Värd)</span>
                     <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
@@ -610,9 +610,13 @@
                             <button id="share-custom-decks-btn" class="btn btn-architect" type="button" onclick="shareAllCustomDecks()">DELA MED GÄSTER</button>
                         </div>
                         <div id="custom-deck-list" class="custom-deck-list"></div>
-                        <div style="border-top: 1px solid #222; margin-top: 15px; padding-top: 15px;">
-                            <small style="color: var(--gold); display: block; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Tillgänglig utrustning i rummet:</small>
-                            <div class="veto-grid environment-grid">
+                    </div>
+                </details>
+
+                <details class="setup-section host-only equipment-section">
+                    <summary>Tillgänglig utrustning i rummet</summary>
+                    <div class="setup-section-body">
+                        <div class="veto-grid environment-grid">
                                 <label class="veto-option"><input type="checkbox" class="environment-cb" value="dildo" onchange="updateEnvironmentItems()"> Dildo</label>
                                 <label class="veto-option"><input type="checkbox" class="environment-cb" value="strapon" onchange="updateEnvironmentItems()"> Strap-on</label>
                                 <label class="veto-option"><input type="checkbox" class="environment-cb" value="double_dildo" onchange="updateEnvironmentItems()"> Dubbel dildo</label>
@@ -642,9 +646,7 @@
                                     <button type="button" class="btn btn-rules" onclick="selectAllEnvironmentItems()">MARKERA ALLT</button>
                                     <button type="button" class="btn btn-rules" onclick="clearEnvironmentItems()">RENSA VAL</button>
                                 </div>
-                            </div>
                         </div>
-                    </div>
                     </div>
                 </details>
 
@@ -659,7 +661,7 @@
                     Nivåhöjning: <span id="guest-level-info" style="color: var(--gold); font-weight: bold;">Av</span>
                 </div>
 
-                <details class="setup-section veto-container" open>
+                <details class="setup-section veto-container">
                     <summary>Mina veton</summary>
                     <div class="setup-section-body">
                     <span class="veto-title">Vetos (Detta vill jag INTE göra)</span>
