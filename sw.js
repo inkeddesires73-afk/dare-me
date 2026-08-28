@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dare-me-pwa-v4';
+const CACHE_NAME = 'dare-me-pwa-v5';
 const APP_SHELL = [
   './',
   './index.html',
@@ -11,7 +11,11 @@ const APP_SHELL = [
   './level1.json',
   './level2.json',
   './level3.json',
-  './level4.json'
+  './level4.json',
+  './truth1.json',
+  './truth2.json',
+  './truth3.json',
+  './truth4.json'
 ];
 
 self.addEventListener('install', event => {
@@ -64,4 +68,3 @@ self.addEventListener('fetch', event => {
     })
   );
 });
-

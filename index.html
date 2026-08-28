@@ -582,6 +582,14 @@
                     <summary>Spelinställningar & nivåer</summary>
                     <div class="setup-section-body">
                     <span class="veto-title">Globala Inställningar (Endast Värd)</span>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
+                        <label for="game-mode-setting" style="font-size:.7rem;color:var(--gold);text-transform:uppercase;letter-spacing:1px;">Spelläge:</label>
+                        <select id="game-mode-setting" onchange="updateGameModeSetting()" style="width:auto;padding:7px 10px;border-radius:8px;background:#000;color:#fff;border:1px solid #444;">
+                            <option value="dare">Dare Me</option>
+                            <option value="truth">Truth</option>
+                            <option value="truth_or_dare">Truth or Dare</option>
+                        </select>
+                    </div>
                     <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
                         <label class="veto-option" style="margin: 0;"><input type="checkbox" id="setting-manual-stars" onchange="toggleManualStars()"> Manuella stjärnor</label>
                         <div class="veto-option" style="gap: 8px; margin: 0;">
@@ -603,8 +611,8 @@
                             </select>
                         </div>
                     </div>
-                    <div style="border-top: 1px solid #222; padding-top: 15px;">
-                        <small style="color: var(--gold); display: block; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Tillgängliga Nivåer:</small>
+                    <div id="mission-level-section" style="border-top: 1px solid #222; padding-top: 15px;">
+                        <small style="color: var(--gold); display: block; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Mission- och Truth-nivåer:</small>
                         <div id="level-selection-grid" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
                             <div id="lvl-scanner-status" style="color:#444; font-size:0.7rem;">Söker efter filer...</div>
                         </div>
@@ -735,6 +743,11 @@
         </div>
         <div class="game-controls">
             <div id="turn-help" class="turn-help" aria-live="polite"></div>
+            <div id="truth-mission-controls" style="display:none;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:12px;">
+                <button class="btn btn-next" type="button" style="flex:1 1 30%;min-width:0;padding:10px 8px;font-size:.75rem;" onclick="generateTurn('truth')">TRUTH</button>
+                <button class="btn btn-next" type="button" style="flex:1 1 30%;min-width:0;padding:10px 8px;font-size:.75rem;" onclick="generateTurn('dare')">DARE</button>
+                <button class="btn btn-rules" type="button" style="flex:1 1 30%;min-width:0;padding:10px 8px;font-size:.75rem;" onclick="generateTurn('random')">SLUMPA</button>
+            </div>
             <button class="btn btn-next" id="btn-next-card" onclick="generateTurn()">NÄSTA KORT</button>
             <button class="btn btn-rules" id="btn-skip-card" style="margin-bottom: 25px;" onclick="skipCard()">BYT KORT 🔄</button>
             <button class="btn btn-lvl-up host-only" id="btn-pause-game" onclick="togglePause()">PAUSA SPELET ⏸</button>
@@ -772,6 +785,7 @@
         isHost: false,
         players: [],
         selectedLevels: [],
+        gameMode: 'mission',
         customDecks: [],
         sharedDecks: [],
         availableItems: [],
@@ -833,6 +847,10 @@
 
     function isBuiltInLevelId(value) {
         return Number.isInteger(value) || /^\d+$/.test(String(value));
+    }
+
+    function getSelectedDareLevels() {
+        return (state.selectedLevels || []).filter(level => !String(level).startsWith('truth'));
     }
 
     function normalizeCustomDeck(deck) {
@@ -933,6 +951,16 @@
             }
         };
         const grid = document.getElementById('level-selection-grid');
+        try {
+            const truthResponse = await fetch(`truth1.json?t=${Date.now()}`);
+            if (truthResponse.ok) allDares.truth = await truthResponse.json();
+            const truth2Response = await fetch(`truth2.json?t=${Date.now()}`);
+            if (truth2Response.ok) allDares.truth2 = await truth2Response.json();
+            const truth3Response = await fetch(`truth3.json?t=${Date.now()}`);
+            if (truth3Response.ok) allDares.truth3 = await truth3Response.json();
+            const truth4Response = await fetch(`truth4.json?t=${Date.now()}`);
+            if (truth4Response.ok) allDares.truth4 = await truth4Response.json();
+        } catch (e) { console.warn('Kunde inte läsa truth.json.', e); }
         window.shareAllCustomDecks = async () => {
             if (!isHost || !state.customDecks.length) return showLobbyWarning('Lägg till en egen kortlek först.');
             state.sharedDecks = normalizeCustomDecks(state.customDecks);
@@ -950,6 +978,26 @@
         
         let foundCount = 0;
         let htmlBuffer = "";
+        if (allDares.truth) {
+            const truthChecked = state.selectedLevels.includes('truth') ? 'checked' : '';
+            htmlBuffer += `<label class="veto-option truth-level-option"><input type="checkbox" class="lvl-cb" value="truth" ${truthChecked} onchange="toggleLevelSelection()"> 💬 Truth – Sanning</label>`;
+            foundCount++;
+        }
+        if (allDares.truth2) {
+            const truth2Checked = state.selectedLevels.includes('truth2') ? 'checked' : '';
+            htmlBuffer += `<label class="veto-option truth-level-option"><input type="checkbox" class="lvl-cb" value="truth2" ${truth2Checked} onchange="toggleLevelSelection()"> 💬💬 Truth – Nivå 2: Warm</label>`;
+            foundCount++;
+        }
+        if (allDares.truth3) {
+            const checked = state.selectedLevels.includes('truth3') ? 'checked' : '';
+            htmlBuffer += `<label class="veto-option truth-level-option"><input type="checkbox" class="lvl-cb" value="truth3" ${checked} onchange="toggleLevelSelection()"> 💬💬💬 Truth – Nivå 3: Hard</label>`;
+            foundCount++;
+        }
+        if (allDares.truth4) {
+            const checked = state.selectedLevels.includes('truth4') ? 'checked' : '';
+            htmlBuffer += `<label class="veto-option truth-level-option"><input type="checkbox" class="lvl-cb" value="truth4" ${checked} onchange="toggleLevelSelection()"> 💬💬💬💬 Truth – Nivå 4: Extreme</label>`;
+            foundCount++;
+        }
 
         for (let i = 1; i <= 20; i++) {
             try {
@@ -958,7 +1006,7 @@
                     const data = await res.json();
                     allDares[i] = data;
                     const isChecked = state.selectedLevels.includes(i) ? 'checked' : '';
-                    htmlBuffer += `<label class="veto-option"><input type="checkbox" class="lvl-cb" value="${i}" ${isChecked} onchange="toggleLevelSelection()"> ${escapeHtml(data.difficulty || '🌶️')} ${escapeHtml(data.name || 'Nivå ' + i)}</label>`;
+                    htmlBuffer += `<label class="veto-option dare-level-option"><input type="checkbox" class="lvl-cb" value="${i}" ${isChecked} onchange="toggleLevelSelection()"> ${escapeHtml(data.difficulty || '🌶️')} ${escapeHtml(data.name || 'Nivå ' + i)}</label>`;
                     foundCount++;
                 }
             } catch (e) { console.warn(`Kunde inte läsa in level${i}.json.`, e); }
@@ -1305,7 +1353,7 @@
         try {
             if (action.type === 'nextCard') {
                 const activePlayer = state.players[state.currentPlayerIdx];
-                if (activePlayer?.id === action.playerId && action.playerUid === action.uid) window.generateTurn(true);
+                if (activePlayer?.id === action.playerId && action.playerUid === action.uid) window.generateTurn(action.choice || true);
             } else if (action.type === 'useStar' && action.playerUid) {
                 const playerIndex = state.players.findIndex(p => p.id === action.playerId);
                 if (playerIndex >= 0) activateStarPowerForPlayer(playerIndex);
@@ -1359,6 +1407,10 @@
         document.body.className = isHost ? "is-host" : "is-guest";
         
         if (isHost) {
+        const modeSel = document.getElementById('game-mode-setting');
+        if (modeSel) modeSel.value = state.gameMode === 'mission' ? 'dare' : (state.gameMode || 'dare');
+            document.querySelectorAll('.truth-level-option').forEach(el => el.style.display = state.gameMode === 'dare' ? 'none' : '');
+            document.querySelectorAll('.dare-level-option').forEach(el => el.style.display = state.gameMode === 'truth' ? 'none' : '');
             const manStarsCb = document.getElementById('setting-manual-stars');
             if (manStarsCb) manStarsCb.checked = state.allowManualStars;
             const timerSel = document.getElementById('star-timer-setting');
@@ -1398,14 +1450,16 @@
             if (pausedBanner) pausedBanner.style.display = state.gamePaused ? 'block' : 'none';
             const pauseButton = document.getElementById('btn-pause-game');
             if (pauseButton) pauseButton.innerText = state.gamePaused ? 'FORTSÄTT SPELET ▶' : 'PAUSA SPELET ⏸';
-            const curLvlId = state.selectedLevels[state.activeLevelIdx];
+            const dareLevels = getSelectedDareLevels();
+            const curLvlId = dareLevels[state.activeLevelIdx];
             if (lastRenderedLevelId === null) lastRenderedLevelId = curLvlId;
             else {
                 if (curLvlId === 4 && lastRenderedLevelId !== 4) showLevel4Banner();
                 lastRenderedLevelId = curLvlId;
             }
-            document.getElementById('current-lvl-text').innerText = allDares[curLvlId]?.name || `Nivå ${curLvlId}`;
-            document.getElementById('lvl-up-btn').style.display = (isHost && state.activeLevelIdx < state.selectedLevels.length - 1) ? 'block' : 'none';
+            const displayedSource = state.currentSourceId || curLvlId;
+            document.getElementById('current-lvl-text').innerText = allDares[displayedSource]?.name || (state.gameMode === 'truth' ? 'Truth' : `Nivå ${curLvlId || ''}`);
+            document.getElementById('lvl-up-btn').style.display = (isHost && state.gameMode !== 'truth' && state.activeLevelIdx < dareLevels.length - 1) ? 'block' : 'none';
             const timerText = getTimerDisplayText();
             if (timerText) {
                 document.getElementById('timer-display').style.display = 'block';
@@ -1438,6 +1492,13 @@
             const button = document.getElementById(id);
             if (button) button.disabled = !guestCanAct;
         });
+        const choiceBox = document.getElementById('truth-mission-controls');
+        if (choiceBox) {
+        const choiceMode = state.gameMode === 'truth_or_dare';
+            choiceBox.style.display = choiceMode && guestCanAct ? 'flex' : 'none';
+        }
+        const nextButton = document.getElementById('btn-next-card');
+        if (nextButton && state.gameMode === 'truth_or_dare') nextButton.style.display = 'none';
         const pauseRequestButton = document.getElementById('btn-request-pause');
         if (pauseRequestButton) pauseRequestButton.disabled = Boolean(state.gamePaused || !ownPlayer);
         const turnHelp = document.getElementById('turn-help');
@@ -1697,7 +1758,20 @@
         state.selectedLevels = Array.from(document.querySelectorAll('.lvl-cb:checked'))
             .map(cb => normalizeLevelId(cb.value))
             .sort((a,b) => String(a).localeCompare(String(b), 'sv', { numeric: true }));
-        if (state.selectedLevels.length === 0) { showLobbyWarning("Du måste välja minst en nivåfil för att kunna starta."); return; }
+        if (state.gameMode === 'dare') state.selectedLevels = state.selectedLevels.filter(level => !String(level).startsWith('truth'));
+        if (state.gameMode === 'truth') state.selectedLevels = state.selectedLevels.filter(level => String(level).startsWith('truth'));
+        if (state.gameMode === 'dare' && state.selectedLevels.length === 0) {
+            state.selectedLevels = [1, 2, 3, 4].filter(level => allDares[level]);
+        }
+        if (state.gameMode === 'truth_or_dare') {
+            const hasTruth = state.selectedLevels.some(level => String(level).startsWith('truth'));
+            const hasDare = state.selectedLevels.some(level => !String(level).startsWith('truth'));
+            if (!hasTruth || !hasDare) {
+                showLobbyWarning('Välj minst en Truth-nivå och en Dare-nivå innan spelet startas.');
+                return;
+            }
+        }
+        if (state.gameMode !== 'truth' && state.selectedLevels.length === 0) { showLobbyWarning("Du måste välja minst en nivåfil för att kunna starta."); return; }
         if (state.players.length < 2) { showLobbyWarning("Det krävs minst två spelare för att kunna börja."); return; }
         maybeShowLevel4Notice(state.selectedLevels);
         state.isPlaying = true;
@@ -1719,6 +1793,15 @@
             applyStateToUI();
             showLobbyWarning('Spelet kunde inte startas för alla deltagare. Kontrollera anslutningen och försök igen.');
         }
+    };
+
+    window.updateGameModeSetting = () => {
+        const select = document.getElementById('game-mode-setting');
+        state.gameMode = select?.value || 'dare';
+        document.querySelectorAll('.truth-level-option').forEach(el => el.style.display = state.gameMode === 'dare' ? 'none' : '');
+        document.querySelectorAll('.dare-level-option').forEach(el => el.style.display = state.gameMode === 'truth' ? 'none' : '');
+        if (isHost && state.roomCode) updateCloud().catch(() => {});
+        saveLocal();
     };
 
     function isSexualDare(dare) {
@@ -1789,6 +1872,9 @@
     }
 
     function dareIsAllowed(dare, active, target, partner) {
+        if (dare.answererGender === 'woman' && active?.gender !== 'kvinna') return false;
+        if (dare.answererGender === 'man' && active?.gender !== 'man') return false;
+        if (dare.answererGender === 'woman_or_bi_man' && !(active?.gender === 'kvinna' || (active?.gender === 'man' && active?.pref === 'bi'))) return false;
         if (!playerCountIsEnough(dare)) return false;
         const environmentTags = new Set(dare.tags || []);
         const environmentAliases = {
@@ -1816,18 +1902,27 @@
         return true;
     }
 
-    window.generateTurn = (fromRoomAction = false) => {
+    window.generateTurn = (choiceOrRoomAction = false) => {
+        const selectedChoice = ['truth', 'dare', 'random'].includes(choiceOrRoomAction) ? choiceOrRoomAction : null;
+        const fromRoomAction = choiceOrRoomAction === true;
         if (!isHost && state.roomCode && !fromRoomAction) {
             const activePlayer = state.players[state.currentPlayerIdx];
             const ownPlayer = participantPlayers.find(player => player.uid === user?.uid);
             if (!ownPlayer || !activePlayer || (activePlayer.id !== ownPlayer.id && activePlayer.uid !== ownPlayer.uid)) return;
-            requestRoomAction('nextCard', { playerUid: user.uid, playerId: ownPlayer.id }).catch(() => showLobbyWarning('Kortet kunde inte begäras. Kontrollera anslutningen.'));
+            requestRoomAction('nextCard', { playerUid: user.uid, playerId: ownPlayer.id, choice: selectedChoice }).catch(() => showLobbyWarning('Kortet kunde inte begäras. Kontrollera anslutningen.'));
             return;
         }
         if (state.timer) stopTimer();
         const active = state.players[state.currentPlayerIdx];
-        const curLvlId = state.selectedLevels[state.activeLevelIdx];
-        const pool = allDares[curLvlId]?.dares || [];
+        const dareLevels = getSelectedDareLevels();
+        const curLvlId = dareLevels[state.activeLevelIdx];
+        const effectiveChoice = selectedChoice === 'random' ? (Math.random() < 0.5 ? 'truth' : 'dare') : selectedChoice;
+        const useTruth = state.gameMode === 'truth' || (state.gameMode === 'truth_or_dare' && (effectiveChoice || 'dare') === 'truth');
+        const selectedTruthLevels = state.selectedLevels.filter(level => String(level).startsWith('truth'));
+        const selectedTruth = selectedTruthLevels[Math.floor(Math.random() * selectedTruthLevels.length)] || 'truth';
+        const sourceId = useTruth ? selectedTruth : curLvlId;
+        const pool = allDares[sourceId]?.dares || [];
+        state.currentSourceId = sourceId;
         const validTargets = state.players.filter(p => p.id !== active.id);
         if (!Array.isArray(state.usedDareKeys)) state.usedDareKeys = [];
         const usedDareKeys = new Set(state.usedDareKeys);
@@ -1836,7 +1931,8 @@
             for (let dareIndex = 0; dareIndex < pool.length; dareIndex++) {
                 const dare = pool[dareIndex];
                 const dareKey = `${curLvlId}:${dareIndex}`;
-                if (!ignoreUsed && usedDareKeys.has(dareKey)) continue;
+                const effectiveKey = `${sourceId}:${dareIndex}`;
+                if (!ignoreUsed && usedDareKeys.has(effectiveKey)) continue;
                 for (const target of validTargets) {
                     const partnerCandidates = state.players.filter(p => p.id !== active.id && p.id !== target.id);
                     const partners = dare.text.includes('[PARTNER]') ? partnerCandidates : [null];
@@ -1850,7 +1946,7 @@
         };
         let possibleTurns = collectPossibleTurns();
         if (possibleTurns.length === 0 && pool.length && pool.every((_, index) => usedDareKeys.has(`${curLvlId}:${index}`))) {
-            state.usedDareKeys = state.usedDareKeys.filter(key => !key.startsWith(`${curLvlId}:`));
+            state.usedDareKeys = state.usedDareKeys.filter(key => !key.startsWith(`${sourceId}:`));
             usedDareKeys.clear();
             possibleTurns = collectPossibleTurns();
         }
@@ -1858,7 +1954,7 @@
         if (possibleTurns.length === 0) state.currentTask = "INGA MATCHANDE KORT HITTADES.";
         else {
             const { dare, dareIndex, target, partner } = possibleTurns[Math.floor(Math.random() * possibleTurns.length)];
-            const dareKey = `${curLvlId}:${dareIndex}`;
+            const dareKey = `${sourceId}:${dareIndex}`;
             if (!state.usedDareKeys.includes(dareKey)) state.usedDareKeys.push(dareKey);
             const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
             const pronomen = target.gender === 'man' ? 'honom' : 'henne';
@@ -1877,12 +1973,12 @@
             state.currentTask = usesActivePlaceholder
                 ? renderedText
                 : `<span class="gold-name">${escapeHtml(active.name)}</span>, ${renderedText}`;
-            recordCardHistory(state.currentTask, curLvlId);
+            recordCardHistory(state.currentTask, sourceId);
             if (Math.random() < (state.starChance/100) && active.stars < 4) { active.stars++; if (!state.roomCode) showStarNotif(active.name); }
             state.currentPlayerIdx = (state.currentPlayerIdx + 1) % state.players.length;
             state.cardsSinceLevelUp = (state.cardsSinceLevelUp || 0) + 1;
             const completedRound = state.currentPlayerIdx === 0;
-            const canAutoLevelUp = state.autoLevelUpCards > 0 && state.activeLevelIdx < state.selectedLevels.length - 1;
+            const canAutoLevelUp = state.autoLevelUpCards > 0 && state.activeLevelIdx < dareLevels.length - 1;
             if (completedRound && canAutoLevelUp && state.cardsSinceLevelUp >= state.players.length * state.autoLevelUpCards) {
                 state.activeLevelIdx++;
                 state.cardsSinceLevelUp = 0;
@@ -1897,7 +1993,7 @@
         window.generateTurn();
     };
 
-    window.advanceLevel = () => { if(isHost && state.activeLevelIdx < state.selectedLevels.length - 1) { state.activeLevelIdx++; state.cardsSinceLevelUp = 0; updateCloud(); saveLocal(); } };
+    window.advanceLevel = () => { const dareLevels = getSelectedDareLevels(); if(isHost && state.activeLevelIdx < dareLevels.length - 1) { state.activeLevelIdx++; state.cardsSinceLevelUp = 0; updateCloud(); saveLocal(); applyStateToUI(); } };
     
     function activateStarPowerForPlayer(playerIndex) {
         const active = state.players[playerIndex];

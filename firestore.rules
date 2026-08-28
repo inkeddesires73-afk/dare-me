@@ -2,6 +2,25 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    match /guestDeckSubmissions/{submissionId} {
+      function isAdmin() {
+        return request.auth != null
+          && request.auth.token.email == 'wolfsphoto.tk@gmail.com';
+      }
+
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['deck', 'fileName', 'senderUid', 'submittedAt'])
+        && request.resource.data.senderUid == request.auth.uid
+        && request.resource.data.fileName is string
+        && request.resource.data.fileName.size() <= 120
+        && request.resource.data.deck is map
+        && request.resource.data.deck.name is string
+        && request.resource.data.deck.name.size() <= 80
+        && request.resource.data.deck.dares is list
+        && request.resource.data.deck.dares.size() <= 200;
+      allow read, update, delete: if isAdmin();
+    }
+
     match /artifacts/{appId}/public/data/roomDirectory/{roomId} {
       allow read: if request.auth != null && resource.data.roomCode == roomId;
       allow create: if request.auth != null
@@ -83,4 +102,3 @@ service cloud.firestore {
     }
   }
 }
-
