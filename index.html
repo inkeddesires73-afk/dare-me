@@ -458,6 +458,25 @@
         .game-controls #turn-help, .game-controls #btn-next-card, .game-controls #btn-exit-room { grid-column: 1 / -1; }
         .game-controls #btn-next-card { min-height: 58px; }
         .game-controls .btn-lvl-up { min-height: 44px; }
+        #truth-mission-controls {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        #truth-mission-controls .truth-choice-btn {
+            min-width: 0;
+            min-height: 48px;
+            margin: 0;
+            padding: 9px 5px;
+            font-size: clamp(.66rem, 2.8vw, .78rem);
+            letter-spacing: .04em;
+        }
+        #truth-mission-controls .truth-choice-random {
+            color: #f0d36f;
+            border-color: #75622c;
+            background: linear-gradient(180deg, #262113, #17140d);
+            box-shadow: none;
+        }
 
         @media (min-width: 760px) {
             .veto-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px 18px; }
@@ -743,10 +762,10 @@
         </div>
         <div class="game-controls">
             <div id="turn-help" class="turn-help" aria-live="polite"></div>
-            <div id="truth-mission-controls" style="display:none;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:12px;">
-                <button class="btn btn-next" type="button" style="flex:1 1 30%;min-width:0;padding:10px 8px;font-size:.75rem;" onclick="generateTurn('truth')">TRUTH</button>
-                <button class="btn btn-next" type="button" style="flex:1 1 30%;min-width:0;padding:10px 8px;font-size:.75rem;" onclick="generateTurn('dare')">DARE</button>
-                <button class="btn btn-rules" type="button" style="flex:1 1 30%;min-width:0;padding:10px 8px;font-size:.75rem;" onclick="generateTurn('random')">SLUMPA</button>
+            <div id="truth-mission-controls" style="display:none;">
+                <button class="btn btn-next truth-choice-btn" type="button" onclick="generateTurn('truth')">TRUTH</button>
+                <button class="btn btn-next truth-choice-btn" type="button" onclick="generateTurn('dare')">DARE</button>
+                <button class="btn truth-choice-btn truth-choice-random" type="button" onclick="generateTurn('random')">SLUMPA</button>
             </div>
             <button class="btn btn-next" id="btn-next-card" onclick="generateTurn()">NÄSTA KORT</button>
             <button class="btn btn-rules" id="btn-skip-card" style="margin-bottom: 25px;" onclick="skipCard()">BYT KORT 🔄</button>
@@ -785,7 +804,7 @@
         isHost: false,
         players: [],
         selectedLevels: [],
-        gameMode: 'mission',
+        gameMode: 'dare',
         customDecks: [],
         sharedDecks: [],
         availableItems: [],
@@ -843,6 +862,10 @@
 
     function normalizeLevelId(value) {
         return /^\d+$/.test(String(value)) ? Number(value) : String(value);
+    }
+
+    function normalizeGameMode(value) {
+        return value === 'mission' ? 'dare' : (['dare', 'truth', 'truth_or_dare'].includes(value) ? value : 'dare');
     }
 
     function isBuiltInLevelId(value) {
@@ -1229,7 +1252,7 @@
         if (!db || !user) return;
         if (unsubscribe) unsubscribe();
         listenToParticipants(code);
-        listenToRoomActions(code);
+        if (isHost) listenToRoomActions(code);
         unsubscribe = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code), (snapshot) => {
             if (!snapshot.exists()) {
                 if (!isHost) {
@@ -1268,7 +1291,7 @@
                 const localHostRole = isHost;
                 const roomPlayers = Array.isArray(cloudData.players) ? cloudData.players : [];
                 const localHistory = Array.isArray(state.cardHistory) ? state.cardHistory : [];
-                state = { ...state, ...cloudData, selectedLevels: remoteLevels, customDecks: remoteCustomDecks, isHost: localHostRole, cardHistory: localHistory };
+                state = { ...state, ...cloudData, gameMode: normalizeGameMode(cloudData.gameMode), selectedLevels: remoteLevels, customDecks: remoteCustomDecks, isHost: localHostRole, cardHistory: localHistory };
                 mergeSyncedPlayers(roomPlayers, cloudData.hostUid);
                applyStateToUI();
                 if (window.renderSharedDecks) window.renderSharedDecks();
@@ -1277,7 +1300,6 @@
         }, (err) => {
             console.error("Snapshot error:", err);
             setConnectionStatus('error', 'Anslutningen bröts – försöker igen');
-            if (!isHost && state.roomCode === code) leaveGuestRoom('Anslutningen till rummet avslutades.');
         });
     }
 
@@ -1408,7 +1430,8 @@
         
         if (isHost) {
         const modeSel = document.getElementById('game-mode-setting');
-        if (modeSel) modeSel.value = state.gameMode === 'mission' ? 'dare' : (state.gameMode || 'dare');
+        state.gameMode = normalizeGameMode(state.gameMode);
+        if (modeSel) modeSel.value = state.gameMode;
             document.querySelectorAll('.truth-level-option').forEach(el => el.style.display = state.gameMode === 'dare' ? 'none' : '');
             document.querySelectorAll('.dare-level-option').forEach(el => el.style.display = state.gameMode === 'truth' ? 'none' : '');
             const manStarsCb = document.getElementById('setting-manual-stars');
@@ -1495,7 +1518,7 @@
         const choiceBox = document.getElementById('truth-mission-controls');
         if (choiceBox) {
         const choiceMode = state.gameMode === 'truth_or_dare';
-            choiceBox.style.display = choiceMode && guestCanAct ? 'flex' : 'none';
+            choiceBox.style.display = choiceMode && guestCanAct ? 'grid' : 'none';
         }
         const nextButton = document.getElementById('btn-next-card');
         if (nextButton && state.gameMode === 'truth_or_dare') nextButton.style.display = 'none';
@@ -1797,7 +1820,7 @@
 
     window.updateGameModeSetting = () => {
         const select = document.getElementById('game-mode-setting');
-        state.gameMode = select?.value || 'dare';
+        state.gameMode = normalizeGameMode(select?.value);
         document.querySelectorAll('.truth-level-option').forEach(el => el.style.display = state.gameMode === 'dare' ? 'none' : '');
         document.querySelectorAll('.dare-level-option').forEach(el => el.style.display = state.gameMode === 'truth' ? 'none' : '');
         if (isHost && state.roomCode) updateCloud().catch(() => {});
@@ -2292,6 +2315,7 @@
                 state = {
                     ...state,
                     ...parsed,
+                    gameMode: normalizeGameMode(parsed.gameMode),
                     players,
                     selectedLevels: Array.isArray(parsed.selectedLevels) ? parsed.selectedLevels.map(normalizeLevelId) : [],
                     customDecks: normalizeCustomDecks(parsed.customDecks)

@@ -90,11 +90,13 @@ service cloud.firestore {
           && get(/databases/$(database)/documents/artifacts/$(appId)/public/data/rooms/$(roomId)).data.hostUid == request.auth.uid;
         allow create: if signedIn()
           && exists(/databases/$(database)/documents/artifacts/$(appId)/public/data/rooms/$(roomId)/participants/$(request.auth.uid))
-          && request.resource.data.keys().hasOnly(['uid', 'type', 'playerUid', 'playerId'])
+          && request.resource.data.keys().hasOnly(['uid', 'type', 'playerUid', 'playerId', 'choice'])
           && request.resource.data.uid == request.auth.uid
           && request.resource.data.type in ['nextCard', 'useStar', 'pauseRequest']
           && request.resource.data.playerUid == request.auth.uid
           && request.resource.data.playerId is int
+          && (!request.resource.data.keys().hasAll(['choice'])
+            || request.resource.data.choice in ['truth', 'dare', 'random'])
           && get(/databases/$(database)/documents/artifacts/$(appId)/public/data/rooms/$(roomId)/participants/$(request.auth.uid)).data.id == request.resource.data.playerId;
         allow delete: if signedIn()
           && get(/databases/$(database)/documents/artifacts/$(appId)/public/data/rooms/$(roomId)).data.hostUid == request.auth.uid;
