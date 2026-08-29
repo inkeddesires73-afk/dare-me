@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dare-me-pwa-v9';
+const CACHE_NAME = 'dare-me-pwa-v10';
 const APP_SHELL = [
   './',
   './index.html',

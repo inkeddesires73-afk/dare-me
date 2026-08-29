@@ -516,7 +516,7 @@
         /* Kompaktare snabbknappar i lobby */
         .environment-actions .btn { padding: 6px 10px; font-size: 0.68rem; }
     </style>
-    <link rel="stylesheet" href="./design-system.css?v=4">
+    <link rel="stylesheet" href="./design-system.css?v=5">
 </head>
 <body class="app-shell is-host">
 
@@ -593,15 +593,18 @@
 
     <!-- LOBBY -->
     <div id="lobby-page" class="page">
-        <h1>Dare Me</h1>
-        <div class="small-logo">
-            <img src="dareme.png" alt="Dare Me Logo">
-        </div>
-
-        <div id="room-info" class="room-tag">LOKALT SPEL</div>
-        <div id="connection-status" class="connection-status" data-status="local" aria-live="polite">LOKALT SPEL</div>
-        <div class="setup-container">
-            <div id="setup-controls">
+        <div class="lobby-layout">
+            <aside class="lobby-brand-panel" aria-label="Dare Me">
+                <h1>Dare Me</h1>
+                <div class="small-logo">
+                    <img src="dareme.png" alt="Dare Me Logo">
+                </div>
+                <div id="room-info" class="room-tag">LOKALT SPEL</div>
+                <div id="connection-status" class="connection-status" data-status="local" aria-live="polite">LOKALT SPEL</div>
+            </aside>
+            <div class="lobby-workspace">
+                <div class="setup-container">
+                    <div id="setup-controls">
                 <div class="profile-panel" aria-label="Spelarprofil">
                     <input type="text" id="pName" placeholder="DITT NAMN" autocomplete="off">
                     <select id="pGender" aria-label="Kön" onchange="toggleBiOption()"><option value="kvinna">KVINNA</option><option value="man">MAN</option></select>
@@ -634,11 +637,10 @@
                                 <option value="1">1%</option><option value="2">2%</option><option value="3" selected>3%</option><option value="4">4%</option><option value="5">5%</option><option value="6">6%</option><option value="7">7%</option><option value="8">8%</option><option value="9">9%</option><option value="10">10%</option>
                             </select>
                         </div>
-                        <div class="veto-option" style="gap: 8px; margin: 0;">
-                            <span style="font-size: 0.65rem; color: var(--gold); text-transform: uppercase;">Nivåhöjning:</span>
-                            <select id="auto-level-setting" onchange="updateAutoLevelSetting()" style="width: auto; padding: 6px 10px; margin: 0; font-size: 0.8rem; border-radius: 8px; background: #000; color: #fff; border: 1px solid #444; outline: none;">
-                                <option value="0" selected>Av</option><option value="1">1 kort/spelare</option><option value="2">2 kort/spelare</option><option value="3">3 kort/spelare</option><option value="4">4 kort/spelare</option><option value="5">5 kort/spelare</option><option value="6">6 kort/spelare</option><option value="7">7 kort/spelare</option><option value="8">8 kort/spelare</option><option value="9">9 kort/spelare</option><option value="10">10 kort/spelare</option>
-                            </select>
+                        <div class="level-up-control">
+                            <div class="level-up-heading"><span>Nivåhöjning</span><output id="auto-level-output" for="auto-level-setting">Av</output></div>
+                            <input id="auto-level-setting" type="range" min="0" max="10" step="1" value="0" oninput="updateAutoLevelSetting()" aria-label="Nivåhöjning efter antal kort per spelare">
+                            <div class="level-up-scale"><span>Av</span><span>10 kort/spelare</span></div>
                         </div>
                     </div>
                     <div id="mission-level-section" style="border-top: 1px solid #222; padding-top: 15px;">
@@ -755,6 +757,8 @@
             </div>
             
             <button class="btn btn-reset-danger" onclick="requestReset()">Nollställ allt / Byt roll</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1459,7 +1463,10 @@
             const chanceSel = document.getElementById('star-chance-setting');
             if (chanceSel) chanceSel.value = state.starChance || 3;
             const autoLevelSel = document.getElementById('auto-level-setting');
-            if (autoLevelSel) autoLevelSel.value = state.autoLevelUpCards || 0;
+            if (autoLevelSel) {
+                autoLevelSel.value = state.autoLevelUpCards || 0;
+                updateAutoLevelLabel(autoLevelSel.value);
+            }
             document.querySelectorAll('.environment-cb').forEach(cb => {
                 cb.checked = (state.availableItems || []).includes(cb.value);
             });
@@ -1557,7 +1564,18 @@
 
     window.updateStarTimerSetting = () => { state.starPowerDuration = parseInt(document.getElementById('star-timer-setting').value); updateCloud(); saveLocal(); };
     window.updateStarChanceSetting = () => { state.starChance = parseInt(document.getElementById('star-chance-setting').value); updateCloud(); saveLocal(); };
-    window.updateAutoLevelSetting = () => { state.autoLevelUpCards = parseInt(document.getElementById('auto-level-setting').value) || 0; state.cardsSinceLevelUp = 0; updateCloud(); saveLocal(); };
+    function updateAutoLevelLabel(value) {
+        const output = document.getElementById('auto-level-output');
+        if (output) output.textContent = Number(value) ? `${value} kort/spelare` : 'Av';
+    }
+    window.updateAutoLevelSetting = () => {
+        const value = parseInt(document.getElementById('auto-level-setting').value) || 0;
+        state.autoLevelUpCards = value;
+        state.cardsSinceLevelUp = 0;
+        updateAutoLevelLabel(value);
+        updateCloud();
+        saveLocal();
+    };
     window.updateEnvironmentItems = () => {
         state.availableItems = Array.from(document.querySelectorAll('.environment-cb:checked')).map(cb => cb.value);
         if (state.roomCode) updateCloud().catch(err => console.warn('Kunde inte synka utrustningsvalen.', err));
