@@ -1,0 +1,649 @@
+/*
+ * Dare Me – gemensam premiumgrund
+ * Detta lager ligger sist och förädlar befintlig layout utan att ändra spellogik.
+ */
+
+:root {
+    color-scheme: dark;
+    --dm-ink: #070706;
+    --dm-ink-warm: #0b0a08;
+    --dm-panel: #11100e;
+    --dm-panel-raised: #181612;
+    --dm-surface: #1d1b17;
+    --dm-surface-hover: #242119;
+    --dm-gold: #d7ad2f;
+    --dm-gold-strong: #e3bd47;
+    --dm-champagne: #f3d575;
+    --dm-bronze: #846826;
+    --dm-text: #fffaf0;
+    --dm-text-soft: #e8e0d2;
+    --dm-muted: #b2aa9d;
+    --dm-muted-dark: #766f65;
+    --dm-line: #383329;
+    --dm-line-strong: #554a2e;
+    --dm-danger: #8f3f43;
+    --dm-danger-soft: #d1a0a2;
+    --dm-success: #78a77c;
+    --dm-radius-sm: 8px;
+    --dm-radius-md: 13px;
+    --dm-radius-lg: 20px;
+    --dm-shadow-sm: 0 8px 24px rgba(0, 0, 0, .28);
+    --dm-shadow-md: 0 20px 58px rgba(0, 0, 0, .48);
+    --dm-focus: 0 0 0 3px rgba(234, 217, 154, .17);
+    --dm-ease: 180ms cubic-bezier(.2, .75, .25, 1);
+    --dm-font-ui: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --dm-font-display: "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+}
+
+html {
+    background: var(--dm-ink);
+}
+
+body.app-shell,
+body.rules-page,
+body.architect-page {
+    color: var(--dm-text);
+    font-family: var(--dm-font-ui);
+    background:
+        radial-gradient(ellipse 70% 36rem at 50% -15rem, rgba(199, 166, 74, .12), transparent 72%),
+        linear-gradient(180deg, var(--dm-ink-warm), var(--dm-ink) 55%, #050504);
+}
+
+body.app-shell::before,
+body.rules-page::before,
+body.architect-page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: .23;
+    background-image: repeating-linear-gradient(115deg, rgba(255,255,255,.018) 0 1px, transparent 1px 9px);
+    mask-image: linear-gradient(to bottom, #000, transparent 72%);
+}
+
+body.app-shell button,
+body.app-shell input,
+body.app-shell select,
+body.rules-page button,
+body.rules-page input,
+body.rules-page select,
+body.architect-page button,
+body.architect-page input,
+body.architect-page select,
+body.architect-page textarea {
+    font-family: inherit;
+}
+
+body.app-shell :focus-visible,
+body.rules-page :focus-visible,
+body.architect-page :focus-visible {
+    outline: 2px solid var(--dm-champagne);
+    outline-offset: 3px;
+}
+
+/* ---------- Dare Me ---------- */
+
+body.app-shell h1,
+body.app-shell .intro-title {
+    color: var(--dm-champagne);
+    font-family: var(--dm-font-display);
+    font-weight: 500;
+    text-wrap: balance;
+}
+
+body.app-shell h1 {
+    letter-spacing: .14em;
+    text-shadow: 0 12px 34px rgba(199, 166, 74, .13);
+}
+
+body.app-shell .intro-title {
+    letter-spacing: .025em;
+}
+
+body.app-shell .intro-body {
+    color: var(--dm-muted);
+}
+
+body.app-shell .intro-highlight {
+    color: var(--dm-text-soft);
+}
+
+body.app-shell .setup-container,
+body.app-shell .modal-box {
+    border-color: var(--dm-line);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,.022), transparent 35%),
+        linear-gradient(160deg, var(--dm-panel-raised), var(--dm-panel));
+    box-shadow: var(--dm-shadow-md), inset 0 1px rgba(255,255,255,.035);
+}
+
+body.app-shell .setup-container {
+    border-radius: var(--dm-radius-lg);
+}
+
+body.app-shell input[type="text"],
+body.app-shell select {
+    color: var(--dm-text);
+    border-color: #454036;
+    border-radius: var(--dm-radius-sm);
+    background: #0a0908;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+}
+
+body.app-shell input[type="text"]::placeholder {
+    color: var(--dm-muted-dark);
+}
+
+body.app-shell input[type="text"]:focus,
+body.app-shell select:focus {
+    border-color: var(--dm-gold-strong);
+    box-shadow: var(--dm-focus);
+}
+
+body.app-shell .setup-section {
+    border-color: var(--dm-line);
+    border-radius: var(--dm-radius-md);
+    background: rgba(9, 8, 7, .67);
+}
+
+body.app-shell .setup-section > summary {
+    color: var(--dm-text-soft);
+    font-size: .76rem;
+    letter-spacing: .09em;
+}
+
+body.app-shell .section-heading {
+    min-width: 0;
+}
+
+body.app-shell .section-summary {
+    flex: 0 1 auto;
+    max-width: 46%;
+    margin-left: auto;
+    overflow: hidden;
+    color: var(--dm-muted);
+    font-size: .68rem;
+    font-weight: 650;
+    letter-spacing: .025em;
+    text-align: right;
+    text-overflow: ellipsis;
+    text-transform: none;
+    white-space: nowrap;
+}
+
+body.app-shell .setup-section[open] .section-summary {
+    color: var(--dm-gold-strong);
+}
+
+body.app-shell .setup-section > summary::after {
+    border-color: var(--dm-gold);
+}
+
+body.app-shell .setup-section > summary:hover {
+    color: var(--dm-champagne);
+    background: rgba(234,217,154,.025);
+}
+
+body.app-shell .setup-section-body {
+    border-color: #29261f;
+}
+
+body.app-shell .veto-title {
+    color: var(--dm-gold-strong);
+}
+
+body.app-shell .veto-option {
+    color: var(--dm-text-soft) !important;
+}
+
+body.app-shell .veto-option input[type="checkbox"] {
+    border-color: #8a8378;
+    background: #24211d;
+}
+
+body.app-shell .veto-option input[type="checkbox"]:checked {
+    border-color: var(--dm-champagne);
+    background: var(--dm-gold);
+    box-shadow: inset 0 0 0 4px #211c10, 0 0 0 2px rgba(199,166,74,.12);
+}
+
+body.app-shell .btn {
+    min-height: 46px;
+    border-radius: 11px;
+    letter-spacing: .075em;
+    transition:
+        transform var(--dm-ease),
+        border-color var(--dm-ease),
+        color var(--dm-ease),
+        background-color var(--dm-ease),
+        box-shadow var(--dm-ease);
+}
+
+body.app-shell .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: var(--dm-bronze);
+    box-shadow: var(--dm-shadow-sm);
+}
+
+body.app-shell .btn:active:not(:disabled) {
+    transform: translateY(0) scale(.985);
+}
+
+body.app-shell .btn-start,
+body.app-shell .btn-next {
+    color: #100e08;
+    border: 1px solid var(--dm-champagne);
+    background:
+        linear-gradient(180deg, rgba(255,255,255,.24), transparent 42%),
+        linear-gradient(180deg, #e4bd38, #bd8915);
+    box-shadow: 0 10px 32px rgba(199,166,74,.17), inset 0 1px rgba(255,255,255,.35);
+}
+
+body.app-shell .btn-start:hover:not(:disabled),
+body.app-shell .btn-next:hover:not(:disabled) {
+    border-color: var(--dm-champagne);
+    box-shadow: 0 12px 34px rgba(199,166,74,.22);
+}
+
+body.app-shell .btn-add,
+body.app-shell .btn-rules,
+body.app-shell .btn-lvl-up,
+body.app-shell .btn-architect,
+body.app-shell .btn-install {
+    color: var(--dm-champagne);
+    border: 1px solid var(--dm-line-strong);
+    background: linear-gradient(180deg, #19170f, #11100c);
+}
+
+body.app-shell .btn-back {
+    color: var(--dm-text-soft);
+    border-color: #403c35;
+    background: #171613;
+}
+
+body.app-shell .btn-reset-danger {
+    color: #9e9190;
+    border-color: #4d2d2e;
+    background: #160e0f;
+}
+
+body.app-shell .room-tag,
+body.app-shell .connection-status,
+body.app-shell .turn-help,
+body.app-shell #active-lvl-display {
+    color: var(--dm-muted) !important;
+}
+
+body.app-shell .room-code-display,
+body.app-shell .gold-name,
+body.app-shell #current-lvl-text,
+body.app-shell #next-up-info,
+body.app-shell .star-count {
+    color: var(--dm-champagne) !important;
+}
+
+body.app-shell .player-item,
+body.app-shell .p-chip {
+    border-color: var(--dm-line);
+    background: var(--dm-panel-raised);
+}
+
+body.app-shell .player-item {
+    border-left-color: var(--dm-gold);
+}
+
+body.app-shell .p-chip.active-turn {
+    border-color: var(--dm-gold-strong);
+    background: linear-gradient(180deg, #211c10, #15130e);
+    box-shadow: 0 9px 26px rgba(0,0,0,.3), 0 0 0 1px rgba(234,217,154,.07);
+}
+
+body.app-shell .status-bar {
+    border-color: var(--dm-line);
+    background: rgba(8,7,6,.9);
+    box-shadow: 0 14px 34px rgba(0,0,0,.34), inset 0 1px rgba(255,255,255,.025);
+}
+
+body.app-shell .card-area {
+    border-color: #51462b;
+    background:
+        radial-gradient(ellipse 80% 38% at 50% 0%, rgba(199,166,74,.11), transparent 72%),
+        linear-gradient(145deg, #1a1814, #0e0d0b 72%);
+    box-shadow: 0 28px 70px rgba(0,0,0,.56), inset 0 1px rgba(255,255,255,.04);
+}
+
+body.app-shell .card-area::before {
+    opacity: .7;
+    background: linear-gradient(112deg, transparent 18%, rgba(234,217,154,.035), transparent 62%);
+}
+
+body.app-shell .task-text {
+    color: var(--dm-text);
+    font-weight: 700;
+    line-height: 1.45;
+    text-wrap: balance;
+}
+
+body.app-shell #game-page {
+    isolation: isolate;
+}
+
+body.app-shell #game-page #next-up-info {
+    margin-bottom: 5px !important;
+    color: var(--dm-champagne) !important;
+    font-family: var(--dm-font-display);
+    font-size: clamp(1.15rem, 3vw, 1.42rem) !important;
+    font-weight: 600 !important;
+    letter-spacing: .055em;
+    line-height: 1.2;
+    text-wrap: balance;
+}
+
+body.app-shell #game-page #active-lvl-display {
+    margin-bottom: clamp(18px, 4vh, 30px) !important;
+    font-size: .68rem !important;
+    letter-spacing: .09em;
+}
+
+body.app-shell #game-page #task-box {
+    width: min(100%, 30ch);
+    margin-inline: auto;
+}
+
+body.app-shell .card-tools {
+    margin-top: clamp(18px, 4vh, 28px);
+}
+
+body.app-shell .card-tool-btn {
+    min-height: 38px;
+    padding: 7px 11px;
+    color: var(--dm-muted);
+    border-color: #403a2a;
+    background: rgba(15,14,11,.72);
+}
+
+body.app-shell .game-controls {
+    padding: 2px;
+}
+
+body.app-shell .game-controls #turn-help {
+    margin: 0 0 3px;
+    color: var(--dm-muted) !important;
+}
+
+body.app-shell .game-controls #btn-skip-card,
+body.app-shell .game-controls #btn-pause-game,
+body.app-shell .game-controls #btn-request-pause,
+body.app-shell .game-controls #lvl-up-btn {
+    min-height: 44px;
+}
+
+body.app-shell .game-controls #btn-exit-room {
+    margin-top: 16px !important;
+    color: var(--dm-muted);
+}
+
+body.app-shell .modal-box {
+    border-color: var(--dm-line-strong);
+}
+
+body.app-shell #level-banner {
+    color: var(--dm-champagne);
+    border-color: var(--dm-gold);
+    background: rgba(16,14,10,.96);
+    box-shadow: 0 18px 42px rgba(0,0,0,.5), 0 0 24px rgba(199,166,74,.13);
+}
+
+/* ---------- Regler ---------- */
+
+body.rules-page .container {
+    border-color: var(--dm-line);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,.018), transparent 30%),
+        linear-gradient(160deg, var(--dm-panel-raised), var(--dm-panel));
+    box-shadow: var(--dm-shadow-md), inset 0 1px rgba(255,255,255,.03);
+}
+
+body.rules-page h1,
+body.rules-page h2 {
+    color: var(--dm-champagne);
+    font-family: var(--dm-font-display);
+    font-weight: 500;
+}
+
+body.rules-page h1 {
+    letter-spacing: .12em;
+}
+
+body.rules-page h2 {
+    border-color: var(--dm-line);
+    letter-spacing: .035em;
+}
+
+body.rules-page p,
+body.rules-page li {
+    color: var(--dm-text-soft);
+}
+
+body.rules-page .rules-nav a {
+    color: var(--dm-champagne);
+    border-color: var(--dm-line-strong);
+    background: #15130e;
+}
+
+body.rules-page .quick-safety,
+body.rules-page .level-guide,
+body.rules-page .warning-box {
+    border-color: var(--dm-line-strong);
+    background: rgba(13,12,10,.72);
+}
+
+body.rules-page .btn-back {
+    color: #100e08;
+    border: 1px solid var(--dm-champagne);
+    background: linear-gradient(180deg, #e4bd38, #bd8915);
+}
+
+/* ---------- Arkitekterna ---------- */
+
+body.architect-page {
+    min-height: 100dvh;
+}
+
+body.architect-page .container {
+    border-color: var(--dm-line);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,.018), transparent 32%),
+        linear-gradient(160deg, var(--dm-panel-raised), var(--dm-panel));
+    box-shadow: var(--dm-shadow-md), inset 0 1px rgba(255,255,255,.03);
+}
+
+body.architect-page h2 {
+    color: var(--dm-champagne);
+    font-family: var(--dm-font-display);
+    font-weight: 500;
+    letter-spacing: .11em;
+    text-shadow: 0 12px 30px rgba(199,166,74,.11);
+}
+
+body.architect-page .header-img {
+    filter: drop-shadow(0 10px 24px rgba(199,166,74,.15));
+}
+
+body.architect-page .deck-settings input,
+body.architect-page .deck-settings select,
+body.architect-page .architect-toolbar input,
+body.architect-page .remove-card-row select {
+    color: var(--dm-text);
+    border-color: #454036;
+    background: #0a0908;
+}
+
+body.architect-page .deck-settings input:focus,
+body.architect-page .deck-settings select:focus,
+body.architect-page .architect-toolbar input:focus,
+body.architect-page .remove-card-row select:focus {
+    border-color: var(--dm-gold-strong);
+    box-shadow: var(--dm-focus);
+}
+
+body.architect-page .composer {
+    border-color: var(--dm-line-strong);
+    background: rgba(12,11,9,.94);
+    box-shadow: 0 15px 38px rgba(0,0,0,.42), inset 0 1px rgba(255,255,255,.025);
+}
+
+body.architect-page textarea#dareText {
+    color: var(--dm-text);
+    border-color: var(--dm-bronze);
+    background: #090806;
+}
+
+body.architect-page textarea#dareText:focus {
+    border-color: var(--dm-gold-strong);
+    box-shadow: var(--dm-focus);
+}
+
+body.architect-page .word-bank,
+body.architect-page .tags-container {
+    border-color: var(--dm-line);
+    background: rgba(12,11,9,.74);
+}
+
+body.architect-page .category-box {
+    border-color: #343128;
+    background: #151411;
+}
+
+body.architect-page .category-title,
+body.architect-page .section-title,
+body.architect-page .placeholder-group::before {
+    color: var(--dm-gold-strong);
+}
+
+body.architect-page .btn-word {
+    color: #e5e0d7;
+    border-color: #3a3731;
+    background: #292723;
+}
+
+body.architect-page .btn-word:hover {
+    color: #fff;
+    border-color: var(--dm-bronze);
+    background: var(--dm-surface-hover);
+}
+
+body.architect-page .placeholder-group {
+    border-color: var(--dm-line-strong);
+    background: #15130e;
+}
+
+body.architect-page .placeholder-group .btn-target {
+    color: #fff8f4;
+    border-color: #b94770;
+    background: linear-gradient(180deg, #d3507e, #ac2f5b);
+}
+
+body.architect-page .btn-undo {
+    color: var(--dm-champagne);
+    border-color: var(--dm-line-strong);
+    background: #211d12;
+}
+
+body.architect-page .btn-punct {
+    color: var(--dm-text-soft);
+    background: #24221e;
+}
+
+body.architect-page .tag-item {
+    color: var(--dm-text-soft);
+}
+
+body.architect-page .tag-item:hover {
+    border-color: #48402b;
+    background: #1b1913;
+}
+
+body.architect-page .tag-item input {
+    accent-color: var(--dm-gold);
+}
+
+body.architect-page .btn-gen {
+    color: #100e08;
+    border-color: var(--dm-champagne);
+    background: linear-gradient(180deg, #e4bd38, #bd8915);
+    box-shadow: 0 8px 24px rgba(199,166,74,.13), inset 0 1px rgba(255,255,255,.28);
+}
+
+body.architect-page .btn-copy,
+body.architect-page .btn-import,
+body.architect-page .btn-export,
+body.architect-page .btn-copy-json,
+body.architect-page .examples-toggle,
+body.architect-page .keyboard-toggle {
+    color: var(--dm-champagne);
+    border-color: var(--dm-line-strong);
+    background: #17150f;
+}
+
+body.architect-page .btn-clear,
+body.architect-page .btn-remove-last {
+    color: var(--dm-danger-soft);
+    border-color: #603538;
+    background: #190f10;
+}
+
+body.architect-page #output {
+    color: #d9ca8b;
+    border-color: var(--dm-line);
+    background: #070706;
+}
+
+body.architect-page .card-count {
+    color: var(--dm-champagne);
+}
+
+@media (max-width: 700px) {
+    body.app-shell .page {
+        padding-inline: 10px;
+    }
+
+    body.app-shell .setup-container {
+        border-radius: 16px;
+    }
+
+    body.app-shell .btn {
+        letter-spacing: .055em;
+    }
+
+    body.app-shell .section-summary {
+        max-width: 40%;
+        font-size: .63rem;
+    }
+
+    body.app-shell #game-page #task-box {
+        width: min(100%, 27ch);
+    }
+
+    body.app-shell #game-page .card-area {
+        min-height: clamp(245px, 40vh, 350px);
+    }
+
+    body.architect-page {
+        padding: 7px;
+    }
+
+    body.architect-page .container {
+        border-radius: 15px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
+}

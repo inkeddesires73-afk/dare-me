@@ -508,8 +508,9 @@
         /* Kompaktare snabbknappar i lobby */
         .environment-actions .btn { padding: 6px 10px; font-size: 0.68rem; }
     </style>
+    <link rel="stylesheet" href="./design-system.css?v=3">
 </head>
-<body class="is-host">
+<body class="app-shell is-host">
 
     <div id="loading-screen" class="loading-overlay">Laddar Dare Me...</div>
 
@@ -599,7 +600,7 @@
                 </div>
 
                 <details class="setup-section host-only">
-                    <summary>Spelinställningar & nivåer</summary>
+                    <summary><span class="section-heading">Spelinställningar & nivåer</span><span class="section-summary" id="settings-summary">Dare Me</span></summary>
                     <div class="setup-section-body">
                     <span class="veto-title">Globala Inställningar (Endast Värd)</span>
                     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
@@ -646,7 +647,7 @@
                 </details>
 
                 <details class="setup-section host-only equipment-section">
-                    <summary>Tillgänglig utrustning i rummet</summary>
+                    <summary><span class="section-heading">Tillgänglig utrustning i rummet</span><span class="section-summary" id="equipment-summary">0 valda</span></summary>
                     <div class="setup-section-body">
                         <div class="veto-grid environment-grid">
                                 <label class="veto-option"><input type="checkbox" class="environment-cb" value="dildo" onchange="updateEnvironmentItems()"> Dildo</label>
@@ -694,7 +695,7 @@
                 </div>
 
                 <details class="setup-section veto-container">
-                    <summary>Mina veton</summary>
+                    <summary><span class="section-heading">Mina veton</span><span class="section-summary" id="veto-summary">0 valda</span></summary>
                     <div class="setup-section-body">
                     <span class="veto-title">Vetos (Detta vill jag INTE göra)</span>
                     <div class="veto-grid">
@@ -1180,7 +1181,8 @@
     }
 
     async function updateCloud() {
-        if (!state.roomCode || !db || !user) throw new Error('Firebase är inte redo.');
+        if (!state.roomCode) return;
+        if (!db || !user) throw new Error('Firebase är inte redo.');
         const cloudState = { ...state };
         delete cloudState.cardHistory;
         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode), cloudState);
@@ -1427,7 +1429,7 @@
             const el = document.getElementById(p);
             if (el) el.classList.remove('active');
         });
-        document.body.className = isHost ? "is-host" : "is-guest";
+        document.body.className = isHost ? "app-shell is-host" : "app-shell is-guest";
         
         if (isHost) {
         const modeSel = document.getElementById('game-mode-setting');
@@ -1502,6 +1504,7 @@
             renderLobby();
         }
         updateGuestTurnControls();
+        updateSetupSummaries();
         const roomInfo = document.getElementById('room-info');
         if (roomInfo) roomInfo.innerHTML = state.roomCode ? `RUMSKOD: <span class="room-code-display">${escapeHtml(state.roomCode)}</span>` : `LOKALT SPEL`;
         hideLoading();
@@ -1544,6 +1547,7 @@
         state.availableItems = Array.from(document.querySelectorAll('.environment-cb:checked')).map(cb => cb.value);
         if (state.roomCode) updateCloud().catch(err => console.warn('Kunde inte synka utrustningsvalen.', err));
         saveLocal();
+        updateSetupSummaries();
     };
     window.selectAllEnvironmentItems = () => {
         document.querySelectorAll('.environment-cb').forEach(cb => cb.checked = true);
@@ -1560,6 +1564,28 @@
             labels.forEach(label => grid.appendChild(label));
         });
     }
+    function updateSetupSummaries() {
+        const settingsSummary = document.getElementById('settings-summary');
+        const equipmentSummary = document.getElementById('equipment-summary');
+        const vetoSummary = document.getElementById('veto-summary');
+        const modeNames = { dare: 'Dare', truth: 'Truth', truth_or_dare: 'Mix' };
+        if (settingsSummary) {
+            const selectedLevels = Array.from(document.querySelectorAll('.lvl-cb:checked'))
+                .filter(cb => cb.closest('label')?.style.display !== 'none').length;
+            settingsSummary.textContent = selectedLevels
+                ? `${modeNames[normalizeGameMode(state.gameMode)]} · ${selectedLevels}`
+                : modeNames[normalizeGameMode(state.gameMode)];
+        }
+        if (equipmentSummary) {
+            const count = document.querySelectorAll('.environment-cb:checked').length;
+            equipmentSummary.textContent = `${count} valda`;
+        }
+        if (vetoSummary) {
+            const count = document.querySelectorAll('.veto-cb:checked').length;
+            vetoSummary.textContent = `${count} valda`;
+        }
+    }
+    document.getElementById('lobby-page')?.addEventListener('change', () => requestAnimationFrame(updateSetupSummaries));
     window.togglePause = () => {
         if (!isHost) return;
         state.gamePaused = !state.gamePaused;
@@ -1754,7 +1780,7 @@
         const cancelButton = document.getElementById('cancel-player-edit');
         if (submitButton) submitButton.innerText = 'SPARA ÄNDRING';
         if (cancelButton) cancelButton.style.display = '';
-        toggleBiOption(); renderLobby();
+        toggleBiOption(); renderLobby(); updateSetupSummaries();
     };
 
     function resetPlayerEditor() {
@@ -1767,6 +1793,7 @@
         const cancelButton = document.getElementById('cancel-player-edit');
         if (submitButton) submitButton.innerText = 'LÄGG TILL MIG';
         if (cancelButton) cancelButton.style.display = 'none';
+        updateSetupSummaries();
     }
 
     window.cancelPlayerEdit = () => {

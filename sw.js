@@ -1,9 +1,11 @@
-const CACHE_NAME = 'dare-me-pwa-v5';
+const CACHE_NAME = 'dare-me-pwa-v8';
 const APP_SHELL = [
   './',
   './index.html',
   './rules.html',
   './architect.html',
+  './trutharchitect.html',
+  './design-system.css',
   './manifest.webmanifest',
   './dareme.png',
   './icon-192.jpg?v=2',
