@@ -905,17 +905,36 @@
         });
     }
 
-    // Automatiskt liten bokstav i början
+    // Håll frågorna grammatiskt konsekventa: stor bokstav i början av en ny mening,
+    // liten bokstav när en byggdel läggs till mitt i meningen.
     function fixFirstLetter(el) {
         if (el.value.length > 0) {
-            el.value = el.value.charAt(0).toLowerCase() + el.value.slice(1);
+            const first = el.value.charAt(0);
+            el.value = /^[a-zåäö]$/i.test(first)
+                ? first.toLocaleUpperCase('sv') + el.value.slice(1)
+                : el.value;
         }
     }
 
-    // Lägg till ord med mellanslag
+    function formatInsertedWord(word, currentText) {
+        const value = String(word || '').trim();
+        if (!value) return '';
+        const endsSentence = /[.!?]$/.test(currentText.trim());
+        const startsSentence = !currentText.trim() || endsSentence;
+        if (!/^[\[({\d]/.test(value) && /^[A-Za-zÅÄÖåäö]/.test(value)) {
+            return startsSentence
+                ? value.charAt(0).toLocaleUpperCase('sv') + value.slice(1)
+                : value.charAt(0).toLocaleLowerCase('sv') + value.slice(1);
+        }
+        return value;
+    }
+
+    // Lägg till ord med mellanslag och anpassa versal efter placeringen.
     function addWord(word) {
         const txtArea = document.getElementById('dareText');
-        txtArea.value += word + " ";
+        const currentText = txtArea.value;
+        const separator = currentText && !/\s$/.test(currentText) ? ' ' : '';
+        txtArea.value = currentText + separator + formatInsertedWord(word, currentText) + " ";
         handleTextInput(txtArea);
     }
 
