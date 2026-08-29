@@ -15,8 +15,8 @@
         
         .word-bank { background: #1f1f1f; padding: 12px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #2a2a2a; text-align: left; }
         .word-group { margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
-        .category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
-        .category-column { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+        .category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: start; }
+        .category-column { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
         .category-box { background: #181818; border: 1px solid #333; border-radius: 8px; padding: 10px; break-inside: avoid; margin: 0; }
         .category-title { color: #aaa; font-size: 10px; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; }
         .examples-panel { background: #1b1519; border: 1px solid #493044; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; text-align: left; }
@@ -254,6 +254,11 @@
         .truth-word-bank .category-grid { gap:8px; }
         .truth-word-bank .category-box { padding:7px; }
         .truth-word-bank .word-group { gap:3px; margin-bottom:6px; }
+        .truth-word-bank .category-grid { display:block; column-count:2; column-gap:8px; }
+        .truth-word-bank .category-grid .category-box { display:inline-block; width:100%; margin:0 0 8px; vertical-align:top; }
+        @media (max-width:700px) {
+            .truth-word-bank .category-grid { column-count:1; }
+        }
         .architect-toolbar {
             display:grid;
             grid-template-columns:minmax(0, 1fr) auto;
@@ -315,7 +320,7 @@
 
     <div class="architect-toolbar">
         <input id="wordSearch" type="search" placeholder="Sök bland ord, fraser och utrustning…" oninput="filterWordButtons(this.value)" aria-label="Sök bland ord och fraser">
-        <div class="category-box toolbar-punctuation"><div class="category-title">SKILJETECKEN & ÅNGRA</div><div class="word-group">
+        <div class="category-box toolbar-punctuation"><div class="word-group">
             <button class="btn-word btn-punct" onclick="addPunct(',')">,</button>
             <button class="btn-word btn-punct" onclick="addPunct('.')">.</button>
             <button class="btn-word btn-punct" onclick="addPunct('?')">?</button>
