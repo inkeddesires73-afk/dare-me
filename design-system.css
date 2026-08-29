@@ -220,6 +220,16 @@ body.app-shell .btn {
         box-shadow var(--dm-ease);
 }
 
+body.app-shell .lobby-actions .btn-start {
+    min-height: 44px;
+}
+
+body.app-shell .lobby-utilities .btn,
+body.app-shell .lobby-utilities a.btn {
+    min-height: 38px;
+    padding: 8px 6px;
+}
+
 body.app-shell .btn:hover:not(:disabled) {
     transform: translateY(-1px);
     border-color: var(--dm-bronze);

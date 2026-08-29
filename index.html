@@ -302,9 +302,9 @@
         #lobby-page { max-width: 940px; }
         #game-page { max-width: 760px; }
         #lobby-page > h1 {
-            font-family: Georgia, 'Times New Roman', serif;
+            font-family: var(--dm-font-display);
             font-size: clamp(2.1rem, 4vw, 3.2rem);
-            font-weight: 600;
+            font-weight: 500;
             letter-spacing: .16em;
             text-transform: uppercase;
             margin-bottom: 4px;
@@ -396,14 +396,23 @@
         .custom-deck-item { border-color: #3f3929; background: #15130f; }
         .lobby-actions {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
             gap: 10px;
-            align-items: center;
             margin-top: 14px;
         }
         .lobby-actions .btn, .lobby-actions a { margin: 0 !important; }
-        .lobby-actions .btn-start { grid-column: 1 / -1; }
-        .lobby-actions .waiting-copy { grid-column: 1 / -1; margin: 8px 0; }
+        .lobby-actions .btn-start { min-height: 44px; padding: 10px 14px; font-size: .8rem; }
+        .lobby-actions .waiting-copy { margin: 8px 0; }
+        .lobby-utilities { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+        .lobby-utilities .btn, .lobby-utilities a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 8px 6px;
+            font-size: clamp(.58rem, 2.3vw, .7rem);
+            letter-spacing: .045em;
+            white-space: nowrap;
+        }
         .btn {
             border-radius: 12px;
             min-height: 48px;
@@ -489,8 +498,7 @@
             .profile-panel { grid-template-columns: 1fr; gap: 8px; }
             .setup-section > summary { min-height: 50px; padding: 12px 44px 12px 14px; }
             .setup-section-body { padding: 4px 12px 14px; }
-            .lobby-actions { grid-template-columns: 1fr auto; }
-            .lobby-actions .card-tool-btn { min-height: 48px; padding-inline: 16px; }
+            .lobby-utilities { gap: 6px; }
             .game-controls { gap: 8px; }
             .task-text { font-size: clamp(1.3rem, 6vw, 1.75rem); }
             .player-form-actions { grid-template-columns:1fr; }
@@ -508,7 +516,7 @@
         /* Kompaktare snabbknappar i lobby */
         .environment-actions .btn { padding: 6px 10px; font-size: 0.68rem; }
     </style>
-    <link rel="stylesheet" href="./design-system.css?v=3">
+    <link rel="stylesheet" href="./design-system.css?v=4">
 </head>
 <body class="app-shell is-host">
 
@@ -739,9 +747,11 @@
             <div class="lobby-actions">
                 <button class="btn btn-start host-only" id="start-game-btn" onclick="startGame()">STARTA SPELET</button>
                 <div class="guest-only waiting-copy" style="color:#8e8980; font-style:italic;">Väntar på att värden ska starta...</div>
-                <a href="rules.html" onclick="saveLocal()" class="btn btn-rules" style="text-decoration:none; display:block;">VISA REGLER</a>
-                <button class="btn btn-rules card-tool-btn" onclick="showSavedCards()">★ LISTA</button>
-                <button class="btn btn-back" onclick="openGameChooser()">TILL SPELVALET</button>
+                <div class="lobby-utilities">
+                    <a href="rules.html" onclick="saveLocal()" class="btn btn-rules" style="text-decoration:none;">REGLER</a>
+                    <button class="btn btn-rules" onclick="showSavedCards()">★ LISTA</button>
+                    <button class="btn btn-back" onclick="openGameChooser()">SPELVAL</button>
+                </div>
             </div>
             
             <button class="btn btn-reset-danger" onclick="requestReset()">Nollställ allt / Byt roll</button>
