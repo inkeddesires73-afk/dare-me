@@ -254,6 +254,13 @@
         .truth-word-bank .category-grid { gap:8px; }
         .truth-word-bank .category-box { padding:7px; }
         .truth-word-bank .word-group { gap:3px; margin-bottom:6px; }
+        .architect-toolbar {
+            display:grid;
+            grid-template-columns:minmax(0, 1fr) auto;
+            align-items:stretch;
+        }
+        .toolbar-punctuation { margin:0; padding:7px; display:flex; align-items:center; }
+        .toolbar-punctuation .word-group { margin:0; }
     </style>
         <style>
             /* Kompakt åtgärdsfält, särskilt på små skärmar */
@@ -308,6 +315,12 @@
 
     <div class="architect-toolbar">
         <input id="wordSearch" type="search" placeholder="Sök bland ord, fraser och utrustning…" oninput="filterWordButtons(this.value)" aria-label="Sök bland ord och fraser">
+        <div class="category-box toolbar-punctuation"><div class="category-title">SKILJETECKEN & ÅNGRA</div><div class="word-group">
+            <button class="btn-word btn-punct" onclick="addPunct(',')">,</button>
+            <button class="btn-word btn-punct" onclick="addPunct('.')">.</button>
+            <button class="btn-word btn-punct" onclick="addPunct('?')">?</button>
+            <button class="btn-undo" onclick="undoLast()">ÅNGRA ↶</button>
+        </div></div>
     </div>
 
     <div class="word-bank dare-word-bank">
@@ -796,11 +809,6 @@
                 <button class="btn-word" onclick="addWord('Vem här i rummet tycker du är mest attraktiv?')">Vem är mest attraktiv?</button>
                 <button class="btn-word" onclick="addWord('Vad var ditt första intryck av [TARGET]?')">Första intrycket</button>
                 <button class="btn-word" onclick="addWord('Vilken är din hemliga fantasi?')">Hemlig fantasi</button>
-            </div></div>
-            <div class="category-box"><div class="category-title">SKILJETECKEN & ÅNGRA</div><div class="word-group">
-                <button class="btn-word btn-punct" onclick="addPunct(',')">,</button>
-                <button class="btn-word btn-punct" onclick="addPunct('?')">?</button>
-                <button class="btn-undo" onclick="undoLast()">ÅNGRA ↶</button>
             </div></div>
         </div>
     </div>
