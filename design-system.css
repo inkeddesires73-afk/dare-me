@@ -246,7 +246,7 @@ body.app-shell .lobby-brand-panel {
     display: grid;
     align-content: center;
     justify-items: center;
-    min-height: 100%;
+    min-height: 0;
     padding: clamp(24px, 4vw, 46px) clamp(18px, 3vw, 34px);
     overflow: hidden;
     border: 1px solid rgba(243,213,117,.36);
@@ -284,7 +284,7 @@ body.app-shell #lobby-page .lobby-brand-panel .small-logo {
     height: auto;
     aspect-ratio: 1;
     margin: 0 auto clamp(24px, 4vw, 42px);
-    animation: pulseGlow 5s ease-in-out infinite;
+    animation: pulseGlow 3s infinite ease-in-out;
 }
 
 body.app-shell #lobby-page .lobby-brand-panel .small-logo img {
@@ -356,6 +356,7 @@ body.app-shell .level-up-heading output {
 }
 
 body.app-shell input[type="range"]#auto-level-setting {
+    --level-progress: 0%;
     width: 100%;
     height: 5px;
     margin: 4px 0;
@@ -363,7 +364,7 @@ body.app-shell input[type="range"]#auto-level-setting {
     appearance: none;
     border: 0;
     border-radius: 99px;
-    background: linear-gradient(90deg, var(--dm-gold), #6b5522 46%, #302b22 46%);
+    background: linear-gradient(90deg, #554016, #f5d76d) 0 / var(--level-progress) 100% no-repeat, #302b22;
     accent-color: var(--dm-gold-strong);
     cursor: pointer;
 }
@@ -402,10 +403,10 @@ body.app-shell #level-selection-grid .veto-option:has(input:checked) {
 @media (min-width: 880px) {
     body.app-shell .lobby-layout {
         grid-template-columns: minmax(250px, .72fr) minmax(0, 1.6fr);
-        align-items: stretch;
+        align-items: start;
     }
 
-    body.app-shell .lobby-brand-panel { position: sticky; top: 20px; min-height: 620px; }
+    body.app-shell .lobby-brand-panel { position: sticky; top: 20px; min-height: 0; height: fit-content; }
 }
 
 @media (max-width: 879px) {
@@ -481,6 +482,15 @@ body.app-shell .turn-help,
 body.app-shell #active-lvl-display {
     color: var(--dm-muted) !important;
 }
+
+body.app-shell .connection-status[data-status="local"] { color: var(--dm-muted) !important; }
+body.app-shell .connection-status[data-status="online"] {
+    color: #8fcf93 !important;
+    text-shadow: 0 0 12px rgba(143,207,147,.18);
+}
+body.app-shell .connection-status[data-status="connecting"] { color: #d7b95c !important; }
+body.app-shell .connection-status[data-status="offline"],
+body.app-shell .connection-status[data-status="error"] { color: #d98b8b !important; }
 
 body.app-shell .room-code-display,
 body.app-shell .gold-name,
@@ -586,9 +596,32 @@ body.app-shell .game-controls #lvl-up-btn {
     min-height: 44px;
 }
 
+body.app-shell .game-controls #btn-skip-card,
+body.app-shell .game-controls #btn-pause-game,
+body.app-shell .game-controls #btn-request-pause {
+    height: 44px;
+    padding: 10px;
+}
+
 body.app-shell .game-controls #btn-exit-room {
-    margin-top: 16px !important;
+    min-height: 34px;
+    height: 34px;
+    padding: 5px 14px;
+    margin-top: 8px !important;
     color: var(--dm-muted);
+}
+
+@media (min-width: 560px) {
+    body.app-shell .game-controls #btn-skip-card,
+    body.app-shell .game-controls #btn-pause-game,
+    body.app-shell .game-controls #btn-request-pause {
+        grid-column: auto;
+    }
+
+    body.app-shell .game-controls #btn-skip-card { grid-column: 1; }
+    body.app-shell .game-controls #btn-pause-game,
+    body.app-shell .game-controls #btn-request-pause { grid-column: 2; }
+    body.app-shell .game-controls #btn-exit-room { grid-column: 1 / -1; }
 }
 
 body.app-shell .modal-box {

@@ -468,11 +468,14 @@
         .game-controls #btn-next-card { min-height: 58px; }
         .game-controls .btn-lvl-up { min-height: 44px; }
         #truth-mission-controls {
+            grid-column: 1 / -1;
+            width: 100%;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 8px;
             margin-bottom: 12px;
         }
         #truth-mission-controls .truth-choice-btn {
+            width: 100%;
             min-width: 0;
             min-height: 48px;
             margin: 0;
@@ -618,6 +621,7 @@
                     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
                         <label for="game-mode-setting" style="font-size:.7rem;color:var(--gold);text-transform:uppercase;letter-spacing:1px;">Spelläge:</label>
                         <select id="game-mode-setting" onchange="updateGameModeSetting()" style="width:auto;padding:7px 10px;border-radius:8px;background:#000;color:#fff;border:1px solid #444;">
+                            <option value="" disabled>Välj spelläge…</option>
                             <option value="dare">Dare Me</option>
                             <option value="truth">Truth</option>
                             <option value="truth_or_dare">Truth or Dare</option>
@@ -782,8 +786,8 @@
             <div id="turn-help" class="turn-help" aria-live="polite"></div>
             <div id="truth-mission-controls" style="display:none;">
                 <button class="btn btn-next truth-choice-btn" type="button" onclick="generateTurn('truth')">TRUTH</button>
-                <button class="btn btn-next truth-choice-btn" type="button" onclick="generateTurn('dare')">DARE</button>
                 <button class="btn truth-choice-btn truth-choice-random" type="button" onclick="generateTurn('random')">SLUMPA</button>
+                <button class="btn btn-next truth-choice-btn" type="button" onclick="generateTurn('dare')">DARE</button>
             </div>
             <button class="btn btn-next" id="btn-next-card" onclick="generateTurn()">NÄSTA KORT</button>
             <button class="btn btn-rules" id="btn-skip-card" style="margin-bottom: 25px;" onclick="skipCard()">BYT KORT 🔄</button>
@@ -822,7 +826,7 @@
         isHost: false,
         players: [],
         selectedLevels: [],
-        gameMode: 'dare',
+        gameMode: '',
         customDecks: [],
         sharedDecks: [],
         availableItems: [],
@@ -883,7 +887,7 @@
     }
 
     function normalizeGameMode(value) {
-        return value === 'mission' ? 'dare' : (['dare', 'truth', 'truth_or_dare'].includes(value) ? value : 'dare');
+        return value === 'mission' ? 'dare' : (['dare', 'truth', 'truth_or_dare'].includes(value) ? value : '');
     }
 
     function isBuiltInLevelId(value) {
@@ -1057,12 +1061,13 @@
         hydrateCustomDares();
         state.customDecks.forEach(deck => {
             const isChecked = state.selectedLevels.includes(deck.id) ? 'checked' : '';
-            htmlBuffer += `<label class="veto-option"><input type="checkbox" class="lvl-cb" value="${escapeHtml(deck.id)}" ${isChecked} onchange="toggleLevelSelection()"> ${escapeHtml(deck.difficulty)} ${escapeHtml(deck.name)} <small style="color:#777;">(egen kortlek, ${deck.dares.length} kort)</small></label>`;
+            htmlBuffer += `<label class="veto-option dare-level-option"><input type="checkbox" class="lvl-cb" value="${escapeHtml(deck.id)}" ${isChecked} onchange="toggleLevelSelection()"> ${escapeHtml(deck.difficulty)} ${escapeHtml(deck.name)} <small style="color:#777;">(egen kortlek, ${deck.dares.length} kort)</small></label>`;
             foundCount++;
         });
 
         if (foundCount > 0) {
             grid.innerHTML = htmlBuffer;
+            applyLevelModeVisibility();
         } else {
             if (statusText) statusText.innerText = "Inga nivå-filer hittades.";
         }
@@ -1078,6 +1083,16 @@
         maybeShowLevel4Notice(state.selectedLevels);
         if (isHost && state.roomCode) updateCloud().catch(err => console.warn('Kunde inte synka nivåvalet.', err));
     };
+
+    function applyLevelModeVisibility() {
+        const mode = normalizeGameMode(state.gameMode);
+        document.querySelectorAll('.truth-level-option').forEach(el => {
+            el.style.display = mode === 'dare' ? 'none' : '';
+        });
+        document.querySelectorAll('.dare-level-option').forEach(el => {
+            el.style.display = mode === 'truth' ? 'none' : '';
+        });
+    }
 
     async function readDeckFile(file) {
         const text = await file.text();
@@ -1454,8 +1469,9 @@
         const modeSel = document.getElementById('game-mode-setting');
         state.gameMode = normalizeGameMode(state.gameMode);
         if (modeSel) modeSel.value = state.gameMode;
-            document.querySelectorAll('.truth-level-option').forEach(el => el.style.display = state.gameMode === 'dare' ? 'none' : '');
-            document.querySelectorAll('.dare-level-option').forEach(el => el.style.display = state.gameMode === 'truth' ? 'none' : '');
+            const startButton = document.getElementById('start-game-btn');
+            if (startButton) startButton.disabled = !state.gameMode;
+            applyLevelModeVisibility();
             const manStarsCb = document.getElementById('setting-manual-stars');
             if (manStarsCb) manStarsCb.checked = state.allowManualStars;
             const timerSel = document.getElementById('star-timer-setting');
@@ -1567,6 +1583,8 @@
     function updateAutoLevelLabel(value) {
         const output = document.getElementById('auto-level-output');
         if (output) output.textContent = Number(value) ? `${value} kort/spelare` : 'Av';
+        const slider = document.getElementById('auto-level-setting');
+        if (slider) slider.style.setProperty('--level-progress', `${(Number(value) / 10) * 100}%`);
     }
     window.updateAutoLevelSetting = () => {
         const value = parseInt(document.getElementById('auto-level-setting').value) || 0;
@@ -1851,6 +1869,7 @@
 
     window.startGame = async () => {
         if (!isHost) return;
+        if (!state.gameMode) { showLobbyWarning('Välj ett spelläge innan spelet startas.'); return; }
         state.selectedLevels = Array.from(document.querySelectorAll('.lvl-cb:checked'))
             .map(cb => normalizeLevelId(cb.value))
             .sort((a,b) => String(a).localeCompare(String(b), 'sv', { numeric: true }));
@@ -1894,8 +1913,9 @@
     window.updateGameModeSetting = () => {
         const select = document.getElementById('game-mode-setting');
         state.gameMode = normalizeGameMode(select?.value);
-        document.querySelectorAll('.truth-level-option').forEach(el => el.style.display = state.gameMode === 'dare' ? 'none' : '');
-        document.querySelectorAll('.dare-level-option').forEach(el => el.style.display = state.gameMode === 'truth' ? 'none' : '');
+        applyLevelModeVisibility();
+        const startButton = document.getElementById('start-game-btn');
+        if (startButton) startButton.disabled = !state.gameMode;
         if (isHost && state.roomCode) updateCloud().catch(() => {});
         saveLocal();
     };
@@ -1959,7 +1979,7 @@
 
     function playerCountIsEnough(dare) {
         const text = String(dare.text || '').toLowerCase();
-        let required = 2;
+        let required = Number.isInteger(dare.minPlayers) ? dare.minPlayers : 2;
         if (dare.text.includes('[PARTNER]')) required = Math.max(required, 3);
         if (textHas(text, /två\s+(hemliga|tysta|andra)\s+(med)?spelare|två\s+spelare/)) required = Math.max(required, 4);
         else if (textHas(text, /tre\s+(hemliga|tysta|andra)\s+(med)?spelare|tre\s+spelare/)) required = Math.max(required, 5);
