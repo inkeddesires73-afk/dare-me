@@ -252,10 +252,10 @@
         .dare-tags-container, .dare-word-bank { display:none !important; }
         .truth-word-bank { display:block; }
         .truth-word-bank .category-grid { gap:8px; }
-        .truth-word-bank .category-box { padding:7px; }
+        .truth-word-bank .category-box { padding:7px; box-sizing:border-box; }
         .truth-word-bank .word-group { gap:3px; margin-bottom:6px; }
         .truth-word-bank .category-grid { display:block; column-count:2; column-gap:8px; }
-        .truth-word-bank .category-grid .category-box { display:inline-block; width:100%; margin:0 0 8px; vertical-align:top; }
+        .truth-word-bank .category-grid .category-box { display:inline-block; width:100%; max-width:100%; margin:0 0 8px; vertical-align:top; box-sizing:border-box; break-inside:avoid; }
         @media (max-width:700px) {
             .truth-word-bank .category-grid { column-count:1; }
         }
