@@ -547,6 +547,7 @@
             <button class="btn btn-add" id="show-join-room-btn" onclick="showJoinRoomInput()">GÅ MED I RUM</button>
             <a class="btn btn-architect" href="./architect.html" target="_blank" rel="noopener">ÖPPNA DARE-ARKITEKTEN</a>
             <a class="btn btn-architect" href="./trutharchitect.html" target="_blank" rel="noopener">ÖPPNA TRUTH-ARKITEKTEN</a>
+            <button class="btn btn-back" id="return-to-lobby-btn" onclick="returnToLobbyFromChooser()" style="display:none;">TILLBAKA TILL LOBBYN</button>
             <input type="text" id="join-code-input" placeholder="ANGE RUMSKOD" maxlength="5" autocomplete="off" style="display:none; text-align: center; margin-top: 10px;">
             <button class="btn btn-start" id="join-room-submit" onclick="initJoinRoom()" style="display:none;">ANSLUT TILL RUM</button>
             <button class="btn btn-install" id="install-pwa-btn" onclick="installPwa()" style="display:none;">INSTALLERA PÅ HEMSKÄRM</button>
@@ -740,6 +741,7 @@
                 <div class="guest-only waiting-copy" style="color:#8e8980; font-style:italic;">Väntar på att värden ska starta...</div>
                 <a href="rules.html" onclick="saveLocal()" class="btn btn-rules" style="text-decoration:none; display:block;">VISA REGLER</a>
                 <button class="btn btn-rules card-tool-btn" onclick="showSavedCards()">★ LISTA</button>
+                <button class="btn btn-back" onclick="openGameChooser()">TILL SPELVALET</button>
             </div>
             
             <button class="btn btn-reset-danger" onclick="requestReset()">Nollställ allt / Byt roll</button>
@@ -1396,6 +1398,7 @@
 
     let lastRenderedLevelId = null;
     let levelBannerTimer = null;
+    let showingGameChooser = false;
 
     function showLevel4Banner() {
         const banner = document.getElementById('level-banner');
@@ -1424,6 +1427,8 @@
         if (exitButton) exitButton.innerText = isHost ? 'LOBBY / REDIGERA' : 'LÄMNA RUM';
         const shareDecksButton = document.getElementById('share-custom-decks-btn');
         if (shareDecksButton) shareDecksButton.style.display = state.roomCode ? '' : 'none';
+        const returnToLobbyButton = document.getElementById('return-to-lobby-btn');
+        if (returnToLobbyButton) returnToLobbyButton.style.display = showingGameChooser ? '' : 'none';
         const pages = ['intro-page', 'start-page', 'lobby-page', 'game-page'];
         pages.forEach(p => {
             const el = document.getElementById(p);
@@ -1455,7 +1460,7 @@
 
         if (!state.introSeen) {
             document.getElementById('intro-page').classList.add('active');
-        } else if (!state.modeSelected) {
+        } else if (!state.modeSelected || showingGameChooser) {
             document.getElementById('start-page').classList.add('active');
         } else if (state.isPlaying) {
             document.getElementById('game-page').classList.add('active');
@@ -1598,6 +1603,16 @@
     };
     window.toggleManualStars = () => { state.allowManualStars = document.getElementById('setting-manual-stars').checked; updateCloud(); saveLocal(); };
     window.enterGame = () => { state.introSeen = true; applyStateToUI(); saveLocal(); };
+    window.openGameChooser = () => {
+        showingGameChooser = true;
+        applyStateToUI();
+        window.scrollTo({ top: 0, behavior: 'auto' });
+    };
+    window.returnToLobbyFromChooser = () => {
+        showingGameChooser = false;
+        applyStateToUI();
+        window.scrollTo({ top: 0, behavior: 'auto' });
+    };
 
     function isStandaloneMode() {
         return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
@@ -1649,9 +1664,10 @@
         if (state.roomCode) setConnectionStatus('offline', 'Ingen internetanslutning');
     });
 
-    window.initLocalGame = async () => { isHost = true; state.isHost = true; state.modeSelected = true; state.roomCode = null; await scanForLevels(); saveLocal(); applyStateToUI(); };
+    window.initLocalGame = async () => { showingGameChooser = false; isHost = true; state.isHost = true; state.modeSelected = true; state.roomCode = null; await scanForLevels(); saveLocal(); applyStateToUI(); };
     window.initCreateRoom = async () => {
         const ok = await initFirebase(); if (!ok) return;
+        showingGameChooser = false;
         isHost = true; state.isHost = true; state.modeSelected = true;
         state.roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
         state.hostUid = user ? user.uid : null;
@@ -1680,6 +1696,7 @@
         try {
             const directorySnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'roomDirectory', code));
             if (!directorySnap.exists()) { showLobbyWarning('Rummet hittades inte. Kontrollera koden.'); return; }
+            showingGameChooser = false;
             isHost = false; state.isHost = false; state.modeSelected = true; state.roomCode = code;
             participantPlayers = []; lastStarCounts = {};
             state.hostUid = directorySnap.data().hostUid || null;
