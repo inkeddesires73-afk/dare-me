@@ -1735,7 +1735,6 @@
         const choiceMode = state.gameMode === 'truth_or_dare';
             choiceBox.style.display = choiceMode && guestCanAct ? 'grid' : 'none';
         }
-        const nextButton = document.getElementById('btn-next-card');
         if (nextButton && state.gameMode === 'truth_or_dare') nextButton.style.display = 'none';
         const pauseRequestButton = document.getElementById('btn-request-pause');
         if (pauseRequestButton) pauseRequestButton.disabled = Boolean(state.gamePaused || !ownPlayer);
