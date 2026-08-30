@@ -1577,6 +1577,9 @@
             if (action.type === 'nextCard') {
                 const activePlayer = state.players[state.currentPlayerIdx];
                 if (activePlayer?.id === action.playerId && action.playerUid === action.uid) window.generateTurn(action.choice || true);
+            } else if (action.type === 'skipCard') {
+                const displayedPlayer = state.players[(state.currentPlayerIdx - 1 + state.players.length) % state.players.length];
+                if (displayedPlayer?.id === action.playerId && action.playerUid === action.uid) window.skipCard(true);
             } else if (action.type === 'useStar' && action.playerUid) {
                 const playerIndex = state.players.findIndex(p => p.id === action.playerId);
                 if (playerIndex >= 0) activateStarPowerForPlayer(playerIndex);
@@ -2406,6 +2409,13 @@
     };
 
     window.skipCard = () => {
+        const ownPlayer = participantPlayers.find(player => player.uid === user?.uid);
+        if (!isHost && state.roomCode) {
+            if (!ownPlayer) return;
+            requestRoomAction('skipCard', { playerUid: user.uid, playerId: ownPlayer.id })
+                .catch(() => showLobbyWarning('Kortet kunde inte bytas. Kontrollera anslutningen.'));
+            return;
+        }
         const activeIdx = (state.currentPlayerIdx - 1 + state.players.length) % state.players.length;
         state.currentPlayerIdx = activeIdx; 
         window.generateTurn();
