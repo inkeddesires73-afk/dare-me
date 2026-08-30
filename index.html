@@ -1548,10 +1548,12 @@
 
     async function requestRoomAction(type, extra = {}) {
         if (!state.roomCode || !db || !user) return;
+        const actionData = { uid: user.uid, type, ...extra };
+        // Skicka inte null/undefined för valfria fält. Firebase-regeln
+        // tillåter choice endast när ett faktiskt Truth/Dare-val gjorts.
+        if (actionData.choice == null) delete actionData.choice;
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'actions'), {
-            uid: user.uid,
-            type,
-            ...extra
+            ...actionData
         });
     }
 
