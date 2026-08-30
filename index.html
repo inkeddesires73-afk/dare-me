@@ -378,6 +378,34 @@
         .setup-section .veto-title:first-child { display:none; }
         .setup-section.veto-container { padding: 0; margin: 12px 0; }
         .setup-section .veto-grid { padding-top: 10px; }
+        #auto-level-setting {
+            --level-progress: 0%;
+            appearance: none;
+            width: 100%;
+            height: 7px;
+            margin: 8px 0 4px;
+            border: 1px solid #615434;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #29251d 0%, #f0cf63 var(--level-progress), #29251d var(--level-progress), #29251d 100%);
+            cursor: pointer;
+        }
+        #auto-level-setting::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #f5dc83;
+            border-radius: 50%;
+            background: #24221d;
+            box-shadow: 0 0 9px rgba(240,207,99,.35);
+        }
+        #auto-level-setting::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #f5dc83;
+            border-radius: 50%;
+            background: #24221d;
+            box-shadow: 0 0 9px rgba(240,207,99,.35);
+        }
         .veto-container { background: rgba(10,10,10,.75); }
         .veto-title { color: #e2c35c; }
         .veto-option { min-height: 32px; line-height: 1.25; }
@@ -610,8 +638,8 @@
                     <div id="setup-controls">
                 <div class="profile-panel" aria-label="Spelarprofil">
                     <input type="text" id="pName" placeholder="DITT NAMN" autocomplete="off">
-                    <select id="pGender" aria-label="Kön" onchange="toggleBiOption()"><option value="kvinna">KVINNA</option><option value="man">MAN</option></select>
-                    <select id="pPref" aria-label="Sexuell läggning" onchange="toggleBiOption()"><option value="bi" selected>BISEXUELL</option><option value="hetero">HETEROSEXUELL</option><option value="gay">HOMOSEXUELL</option></select>
+                    <select id="pGender" aria-label="Kön" onchange="toggleBiOption()"><option value="" disabled selected>VÄLJ KÖN</option><option value="kvinna">KVINNA</option><option value="man">MAN</option></select>
+                    <select id="pPref" aria-label="Sexuell läggning" onchange="toggleBiOption()"><option value="hetero" selected>HETEROSEXUELL</option><option value="bi">BISEXUELL</option><option value="gay">HOMOSEXUELL</option></select>
                 </div>
 
                 <details class="setup-section host-only">
@@ -851,6 +879,12 @@
     const DEFAULT_AVAILABLE_ITEMS = [...state.availableItems];
 
     let isHost = false, lastStarCounts = {}, participantPlayers = [], db, auth, unsubscribe, unsubscribeDirectory, unsubscribeParticipants, unsubscribeActions, user;
+    let firebaseInitPromise = null;
+    let authStateUnsubscribe = null;
+    let activeRoomListenerCode = null;
+    let lastCloudStateJson = '';
+    let cloudWriteTimer = null;
+    let pendingCloudWrite = false;
     let deferredInstallPrompt = null;
     let preserveScrollY = null;
     let lastLevel4NoticeKey = '';
@@ -1081,17 +1115,15 @@
             .sort((a,b) => String(a).localeCompare(String(b), 'sv', { numeric: true }));
         saveLocal();
         maybeShowLevel4Notice(state.selectedLevels);
-        if (isHost && state.roomCode) updateCloud().catch(err => console.warn('Kunde inte synka nivåvalet.', err));
+        if (isHost && state.roomCode) scheduleCloudUpdate();
     };
 
     function applyLevelModeVisibility() {
         const mode = normalizeGameMode(state.gameMode);
-        document.querySelectorAll('.truth-level-option').forEach(el => {
-            el.style.display = mode === 'dare' ? 'none' : '';
-        });
-        document.querySelectorAll('.dare-level-option').forEach(el => {
-            el.style.display = mode === 'truth' ? 'none' : '';
-        });
+        const showTruth = mode === 'truth' || mode === 'truth_or_dare';
+        const showDare = mode === 'dare' || mode === 'truth_or_dare';
+        document.querySelectorAll('.truth-level-option').forEach(el => el.style.display = showTruth ? '' : 'none');
+        document.querySelectorAll('.dare-level-option').forEach(el => el.style.display = showDare ? '' : 'none');
     }
 
     async function readDeckFile(file) {
@@ -1174,34 +1206,33 @@
     }
 
     async function initFirebase() {
-        setConnectionStatus('connecting', 'Ansluter...');
-        try {
-            auth = getAuth(app); db = getFirestore(app);
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-            user = auth.currentUser;
-            if (!user) throw new Error('Firebase-användaren kunde inte skapas.');
-            onAuthStateChanged(auth, async (u) => {
-                user = u;
-                if (u && state.roomCode) {
-                    if (state.isHost) {
-                        listenToRoom(state.roomCode);
-                    } else {
-                        const participant = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'participants', u.uid));
-                        if (participant.exists()) listenToRoom(state.roomCode);
-                        else leaveGuestRoom('Du har lämnat rummet. Lägg till dig igen för att ansluta.');
-                    }
+        if (firebaseInitPromise) return firebaseInitPromise;
+        firebaseInitPromise = (async () => {
+            setConnectionStatus('connecting', 'Ansluter...');
+            try {
+                auth = getAuth(app);
+                db = getFirestore(app);
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else if (!auth.currentUser) {
+                    await signInAnonymously(auth);
                 }
-            });
-            setConnectionStatus('online', 'Ansluten');
-            return true;
-        } catch (e) {
-            setConnectionStatus('error', 'Kunde inte ansluta');
-            return false;
-        }
+                user = auth.currentUser;
+                if (!user) throw new Error('Firebase-användaren kunde inte skapas.');
+                if (!authStateUnsubscribe) {
+                    authStateUnsubscribe = onAuthStateChanged(auth, (u) => {
+                        user = u;
+                    });
+                }
+                setConnectionStatus('online', 'Ansluten');
+                return true;
+            } catch (e) {
+                firebaseInitPromise = null;
+                setConnectionStatus('error', 'Kunde inte ansluta');
+                return false;
+            }
+        })();
+        return firebaseInitPromise;
     }
 
     function setConnectionStatus(status, message) {
@@ -1211,12 +1242,59 @@
         element.innerText = message;
     }
 
-    async function updateCloud() {
-        if (!state.roomCode) return;
-        if (!db || !user) throw new Error('Firebase är inte redo.');
+    function getCloudState() {
         const cloudState = { ...state };
         delete cloudState.cardHistory;
-        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode), cloudState);
+        delete cloudState.timer;
+        return cloudState;
+    }
+
+    async function updateCloud({ immediate = true } = {}) {
+        if (!state.roomCode) return;
+        if (!db || !user) throw new Error('Firebase är inte redo.');
+        const cloudState = getCloudState();
+        const serialized = JSON.stringify(cloudState);
+        if (serialized === lastCloudStateJson) {
+            pendingCloudWrite = false;
+            return;
+        }
+        if (!immediate) {
+            pendingCloudWrite = true;
+            clearTimeout(cloudWriteTimer);
+            cloudWriteTimer = setTimeout(() => {
+                cloudWriteTimer = null;
+                updateCloud({ immediate: true }).catch(error => console.warn('Kunde inte synka ändringen.', error));
+            }, 120);
+            return;
+        }
+        pendingCloudWrite = false;
+        const roomCode = state.roomCode;
+        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomCode), cloudState);
+        if (state.roomCode === roomCode) lastCloudStateJson = serialized;
+    }
+
+    function scheduleCloudUpdate() {
+        if (!state.roomCode) return;
+        clearTimeout(cloudWriteTimer);
+        pendingCloudWrite = true;
+        cloudWriteTimer = setTimeout(() => {
+            cloudWriteTimer = null;
+            updateCloud({ immediate: true }).catch(error => console.warn('Kunde inte synka ändringen.', error));
+        }, 120);
+    }
+
+    function stopRoomListeners() {
+        [unsubscribe, unsubscribeDirectory, unsubscribeParticipants, unsubscribeActions].forEach(stop => {
+            if (typeof stop === 'function') stop();
+        });
+        unsubscribe = null;
+        unsubscribeDirectory = null;
+        unsubscribeParticipants = null;
+        unsubscribeActions = null;
+        activeRoomListenerCode = null;
+        clearTimeout(cloudWriteTimer);
+        cloudWriteTimer = null;
+        pendingCloudWrite = false;
     }
 
     function showStarNotif(name) {
@@ -1234,14 +1312,8 @@
             deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'participants', user.uid)).catch(() => {});
         }
         clearInterval(window.tInt);
-        if (unsubscribe) unsubscribe();
-        if (unsubscribeDirectory) unsubscribeDirectory();
-        if (unsubscribeParticipants) unsubscribeParticipants();
-        if (unsubscribeActions) unsubscribeActions();
-        unsubscribe = null;
-        unsubscribeDirectory = null;
-        unsubscribeParticipants = null;
-        unsubscribeActions = null;
+        stopRoomListeners();
+        lastCloudStateJson = '';
         lastStarCounts = {};
         participantPlayers = [];
         const joinInput = document.getElementById('join-code-input');
@@ -1284,7 +1356,15 @@
 
     function listenToRoom(code) {
         if (!db || !user) return;
+        if (activeRoomListenerCode === code && unsubscribe) return;
         if (unsubscribe) unsubscribe();
+        if (unsubscribeParticipants) unsubscribeParticipants();
+        if (unsubscribeActions) unsubscribeActions();
+        activeRoomListenerCode = code;
+        if (unsubscribeDirectory) {
+            unsubscribeDirectory();
+            unsubscribeDirectory = null;
+        }
         listenToParticipants(code);
         if (isHost) listenToRoomActions(code);
         unsubscribe = onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code), (snapshot) => {
@@ -1327,6 +1407,7 @@
                 const localHistory = Array.isArray(state.cardHistory) ? state.cardHistory : [];
                 state = { ...state, ...cloudData, gameMode: normalizeGameMode(cloudData.gameMode), selectedLevels: remoteLevels, customDecks: remoteCustomDecks, isHost: localHostRole, cardHistory: localHistory };
                 mergeSyncedPlayers(roomPlayers, cloudData.hostUid);
+                lastCloudStateJson = JSON.stringify(getCloudState());
                applyStateToUI();
                 if (window.renderSharedDecks) window.renderSharedDecks();
                if (!isHost) maybeShowLevel4Notice(state.selectedLevels);
@@ -1335,6 +1416,19 @@
             console.error("Snapshot error:", err);
             setConnectionStatus('error', 'Anslutningen bröts – försöker igen');
         });
+    }
+
+    async function reconnectSavedRoom() {
+        const code = state.roomCode;
+        if (!code || !db || !user) return;
+        if (isHost || state.isHost) {
+            listenToRoom(code);
+            return;
+        }
+        const participant = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code, 'participants', user.uid));
+        if (state.roomCode !== code) return;
+        if (participant.exists()) listenToRoom(code);
+        else leaveGuestRoom('Du tillhör inte längre rummet. Lägg till dig igen för att ansluta.');
     }
 
     function listenToRoomDirectory(code) {
@@ -1357,6 +1451,10 @@
             collection(db, 'artifacts', appId, 'public', 'data', 'rooms', code, 'participants'),
             (snapshot) => {
                 participantPlayers = snapshot.docs.map(item => ({ ...item.data(), uid: item.id }));
+                if (!isHost && state.roomCode === code && user && !participantPlayers.some(player => player.uid === user.uid)) {
+                    leaveGuestRoom('Din spelare har tagits bort från rummet.');
+                    return;
+                }
                 mergeSyncedPlayers();
                 renderLobby();
                 if (state.isPlaying) renderGameBar();
@@ -1578,8 +1676,8 @@
         if (addButton) addButton.disabled = Boolean(guestHasPlayer);
     }
 
-    window.updateStarTimerSetting = () => { state.starPowerDuration = parseInt(document.getElementById('star-timer-setting').value); updateCloud(); saveLocal(); };
-    window.updateStarChanceSetting = () => { state.starChance = parseInt(document.getElementById('star-chance-setting').value); updateCloud(); saveLocal(); };
+    window.updateStarTimerSetting = () => { state.starPowerDuration = parseInt(document.getElementById('star-timer-setting').value); scheduleCloudUpdate(); saveLocal(); };
+    window.updateStarChanceSetting = () => { state.starChance = parseInt(document.getElementById('star-chance-setting').value); scheduleCloudUpdate(); saveLocal(); };
     function updateAutoLevelLabel(value) {
         const output = document.getElementById('auto-level-output');
         if (output) output.textContent = Number(value) ? `${value} kort/spelare` : 'Av';
@@ -1591,12 +1689,12 @@
         state.autoLevelUpCards = value;
         state.cardsSinceLevelUp = 0;
         updateAutoLevelLabel(value);
-        updateCloud();
+        scheduleCloudUpdate();
         saveLocal();
     };
     window.updateEnvironmentItems = () => {
         state.availableItems = Array.from(document.querySelectorAll('.environment-cb:checked')).map(cb => cb.value);
-        if (state.roomCode) updateCloud().catch(err => console.warn('Kunde inte synka utrustningsvalen.', err));
+        if (state.roomCode) scheduleCloudUpdate();
         saveLocal();
         updateSetupSummaries();
     };
@@ -1647,7 +1745,7 @@
         const ownPlayer = participantPlayers.find(player => player.uid === user?.uid);
         if (ownPlayer) requestRoomAction('pauseRequest', { playerUid: user.uid, playerId: ownPlayer.id }).catch(() => showLobbyWarning('Pausen kunde inte begäras.'));
     };
-    window.toggleManualStars = () => { state.allowManualStars = document.getElementById('setting-manual-stars').checked; updateCloud(); saveLocal(); };
+    window.toggleManualStars = () => { state.allowManualStars = document.getElementById('setting-manual-stars').checked; scheduleCloudUpdate(); saveLocal(); };
     window.enterGame = () => { state.introSeen = true; applyStateToUI(); saveLocal(); };
     window.openGameChooser = () => {
         showingGameChooser = true;
@@ -1710,7 +1808,25 @@
         if (state.roomCode) setConnectionStatus('offline', 'Ingen internetanslutning');
     });
 
-    window.initLocalGame = async () => { showingGameChooser = false; isHost = true; state.isHost = true; state.modeSelected = true; state.roomCode = null; await scanForLevels(); saveLocal(); applyStateToUI(); };
+    window.initLocalGame = async () => {
+        const previousRoomCode = state.roomCode;
+        const wasGuest = Boolean(previousRoomCode && !isHost);
+        if (wasGuest && db && user) {
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', previousRoomCode, 'participants', user.uid)).catch(() => {});
+        }
+        stopRoomListeners();
+        lastCloudStateJson = '';
+        participantPlayers = [];
+        showingGameChooser = false;
+        isHost = true;
+        state.isHost = true;
+        state.modeSelected = true;
+        state.roomCode = null;
+        state.hostUid = null;
+        await scanForLevels();
+        saveLocal();
+        applyStateToUI();
+    };
     window.initCreateRoom = async () => {
         const ok = await initFirebase(); if (!ok) return;
         showingGameChooser = false;
@@ -1767,6 +1883,11 @@
         const nameInput = document.getElementById('pName');
         const name = nameInput.value.trim().toUpperCase();
         if (!name) return;
+        const selectedGender = document.getElementById('pGender').value;
+        if (!selectedGender) {
+            showLobbyWarning('Välj kön innan spelaren läggs till.');
+            return;
+        }
         if (!isHost && state.roomCode && participantPlayers.some(player => player.uid === user?.uid)) {
             showLobbyWarning('Den här enheten har redan en spelare i rummet.');
             return;
@@ -1774,7 +1895,7 @@
         const editedPlayer = editingPlayerId == null ? null : state.players.find(player => player.id === editingPlayerId);
         const finalStars = editedPlayer ? editedPlayer.stars : tempStars;
         const newPlayer = {
-            id: editedPlayer?.id ?? Date.now(), name, gender: document.getElementById('pGender').value,
+            id: editedPlayer?.id ?? Date.now(), name, gender: selectedGender,
             pref: document.getElementById('pPref').value, vetos: Array.from(document.querySelectorAll('.veto-cb:checked')).map(cb => cb.value), 
             biNoPen: document.getElementById('bi-no-pen').checked, stars: finalStars,
             uid: editedPlayer?.uid ?? user?.uid ?? null
@@ -1849,6 +1970,10 @@
     function resetPlayerEditor() {
         const nameInput = document.getElementById('pName');
         if (nameInput) nameInput.value = '';
+        const gender = document.getElementById('pGender');
+        if (gender) gender.value = '';
+        const preference = document.getElementById('pPref');
+        if (preference) preference.value = 'hetero';
         document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = false);
         const biNoPen = document.getElementById('bi-no-pen');
         if (biNoPen) biNoPen.checked = false;
@@ -1916,7 +2041,7 @@
         applyLevelModeVisibility();
         const startButton = document.getElementById('start-game-btn');
         if (startButton) startButton.disabled = !state.gameMode;
-        if (isHost && state.roomCode) updateCloud().catch(() => {});
+        if (isHost && state.roomCode) scheduleCloudUpdate();
         saveLocal();
     };
 
@@ -2168,7 +2293,7 @@
                 batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'roomDirectory', state.roomCode));
                 await batch.commit();
             }
-            if (unsubscribe) unsubscribe();
+            stopRoomListeners();
             // Nollställ bara den aktuella spelomgången. Egna/importerade
             // kortlekar är sparade på enheten och ska kunna väljas igen.
             const savedCustomDecks = normalizeCustomDecks(state.customDecks);
@@ -2425,14 +2550,25 @@
                 console.warn('Sparad speldata kunde inte läsas och ignorerades.', e);
             }
         }
-        initFirebase().then(async () => {
+        const boot = async () => {
             sortCheckboxLabels();
             await scanForLevels();
-            hideLoading(); 
-            toggleBiOption(); 
-            applyStateToUI();
+            hideLoading();
+            toggleBiOption();
+            if (state.roomCode) {
+                isHost = Boolean(state.isHost);
+                applyStateToUI();
+                const ready = await initFirebase();
+                if (ready) await reconnectSavedRoom();
+            } else {
+                applyStateToUI();
+            }
             // EXTRA TRIGGER FÖR ANALYTICS REALTIME
             logEvent(analytics, 'app_open', { platform: 'web' });
+        };
+        boot().catch(error => {
+            console.error('Dare Me kunde inte starta.', error);
+            hideLoading();
         });
     });
 </script>

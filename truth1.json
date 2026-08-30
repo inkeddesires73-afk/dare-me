@@ -81,6 +81,15 @@
     { "text": "Hur hanterar du att få ett nej eller bli avvisad av någon du visat intresse för?", "tags": ["flirt", "personal"] },
     { "text": "Vad är en sak om dig själv som nästan ingen i detta rum känner till ännu?", "tags": ["personal", "group"] },
     { "text": "Om du fick ge ett enda uppriktigt råd till ditt yngre jag, vad skulle du säga?", "tags": ["personal"] },
-    { "text": "Om alla här fick ställa en gemensam, helt ärlig fråga till dig just nu, vad skulle du svara på utan att tveka?", "tags": ["group", "personal"] }
+    { "text": "Om alla här fick ställa en gemensam, helt ärlig fråga till dig just nu, vad skulle du svara på utan att tveka?", "tags": ["group", "personal"] },
+    { "text": "Har du någonsin kysst någon och ångrat det direkt efteråt?", "tags": ["romance", "experiences"] },
+    { "text": "Har du någonsin skickat ett meddelande till fel person när det egentligen var menat för någon du flörtade med?", "tags": ["embarrassing", "flirt", "experiences"] },
+    { "text": "Har du någonsin haft en crush på en lärare, chef eller en väns partner?", "tags": ["flirt", "experiences"] },
+    { "text": "Vilken del av din kropp får du oftast komplimanger för?", "tags": ["flirt", "personal"] },
+    { "text": "Föredrar du att ta initiativet själv eller vill du att den andra personen gör det?", "tags": ["flirt", "personal"] },
+    { "text": "Har du någonsin ljugit om hur många personer du har kysst?", "tags": ["embarrassing", "experiences"] },
+    { "text": "Vad är det första du lägger märke till hos en person som du attraheras av?", "tags": ["flirt", "personal"] },
+    { "text": "Har du någonsin haft känslor för någon som du visste att du inte borde tycka om?", "tags": ["romance", "experiences"] },
+    { "text": "Föredrar du en romantisk middag eller en spontan utekväll?", "tags": ["romance", "personal"] }
   ]
 }
