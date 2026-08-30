@@ -15,7 +15,7 @@
         
         .word-bank { background: #1f1f1f; padding: 12px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #2a2a2a; text-align: left; }
         .word-group { margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
-        .category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: start; }
+        .category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: max-content; gap: 8px; align-items: start; align-content: start; }
         .category-column { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
         .category-box { background: #181818; border: 1px solid #333; border-radius: 8px; padding: 10px; break-inside: avoid; margin: 0; box-sizing:border-box; }
         .category-title { color: #aaa; font-size: 10px; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px; }
@@ -228,16 +228,21 @@
         }
         .tag-item:hover { background:#1d1b16; border-color:#443d28; }
         .tag-item input { width:17px; height:17px; accent-color:var(--gold); }
-        .btn-gen, .btn-copy, .btn-clear, .btn-import, .btn-export, .btn-copy-json, .btn-remove-last {
+        .card-analysis { display:none; margin-top:8px; padding:9px 10px; border:1px solid #38352e; border-radius:7px; color:#c9c4b8; background:#151515; font-size:12px; line-height:1.5; }
+        .card-analysis strong { color:#e8cf76; }
+        .card-preview { display:none; margin-top:8px; padding:12px 14px; border:1px solid #6d5b24; border-radius:8px; color:#f3e5b0; background:linear-gradient(135deg,#1b1810,#121212); font-size:15px; line-height:1.55; box-shadow:0 5px 18px rgba(0,0,0,.25); }
+        .card-preview strong { display:block; color:#e4c24f; font-size:11px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px; }
+        .btn-gen, .btn-preview, .btn-copy, .btn-clear, .btn-import, .btn-export, .btn-copy-json, .btn-remove-last {
             min-height:44px;
             border-radius:10px;
             border:1px solid #4c4637;
             transition: transform .14s ease, border-color .18s ease, box-shadow .18s ease;
         }
         .btn-gen { color:#090909; background:linear-gradient(180deg,#e4c24f,#c69b1e); border-color:#d7b33b; }
+        .btn-preview { color:#e8d581; background:#18160f; border-color:#64572d; }
         .btn-copy, .btn-import, .btn-export, .btn-copy-json { color:#e8d581; background:#18160f; border-color:#64572d; }
         .btn-clear, .btn-remove-last { color:#e3b7b7; background:#1b1010; border-color:#663232; }
-        .btn-gen:hover, .btn-copy:hover, .btn-clear:hover, .btn-import:hover, .btn-export:hover, .btn-copy-json:hover, .btn-remove-last:hover:not(:disabled) {
+        .btn-gen:hover, .btn-preview:hover, .btn-copy:hover, .btn-clear:hover, .btn-import:hover, .btn-export:hover, .btn-copy-json:hover, .btn-remove-last:hover:not(:disabled) {
             transform:translateY(-1px);
             border-color:#b99a39;
             box-shadow:0 8px 20px rgba(0,0,0,.3);
@@ -271,9 +276,8 @@
                 .import-export button { padding: 8px 4px; font-size: 10px; }
             }
         </style>
-    <link rel="stylesheet" href="./design-system.css">
 </head>
-<body class="architect-page dare-architect">
+<body>
 
 <div class="container">
     <img src="dareme.png" alt="Dare Me Logo" class="header-img" onerror="this.style.display='none'">
@@ -281,7 +285,7 @@
     <h2>DARE ME - ARCHITECT 💋</h2>
 
     <div class="deck-settings">
-        <input id="deckName" type="text" placeholder="Namn på kortleken" value="Min egen kortlek">
+        <input id="deckName" type="text" placeholder="Döp din kortlek (obligatoriskt)" value="">
         <select id="deckDifficulty" aria-label="Kortlekens nivå">
             <option value="🌶️">🌶️ Nivå 1</option>
             <option value="🌶️🌶️">🌶️🌶️ Nivå 2</option>
@@ -303,15 +307,23 @@
             <br><strong>Tre personer:</strong>
             <em>[ACTIVE] och [PARTNER] hjälps åt att suga [TARGET].</em>
             <br><span style="color:#777;">Blir till exempel: “Mia och Sara hjälps åt att suga Peter.” Kräver minst tre spelare.</span>
+            <br><br><strong>Nivåerna:</strong>
+            <br><span style="color:#777;">🌶️ Nivå 1 – Flirtigt &amp; mjukt: kyssar, beröring och lättare flört.</span>
+            <br><span style="color:#777;">🌶️🌶️ Nivå 2 – Vågat &amp; hetare: tydligare sexuell lek och mer intimitet.</span>
+            <br><span style="color:#777;">🌶️🌶️🌶️ Nivå 3 – Sex å sånt: sexuella uppdrag, positioner och leksaker.</span>
+            <br><span style="color:#777;">🌶️🌶️🌶️🌶️ Nivå 4 – Extreme: de mest intensiva och avancerade uppdragen.</span>
         </div>
     </div>
 
     <div class="composer">
         <textarea id="dareText" inputmode="text" enterkeyhint="done" oninput="handleTextInput(this)" placeholder="Klicka på orden nedan eller skriv fritt här..."></textarea>
+        <div id="card-analysis" class="card-analysis" role="status"></div>
         <div class="composer-actions">
-            <button class="btn-gen" onclick="generateJSON()">LÄGG TILL I LISTAN ➕</button>
+            <button class="btn-gen" type="button" onclick="generateJSON()">LÄGG TILL I LISTAN ➕</button>
+            <button id="preview-card-btn" class="btn-preview" type="button" onclick="previewCard()">PROVKÖR KORT 👁</button>
             <button id="keyboardToggle" class="keyboard-toggle" type="button" onclick="toggleKeyboard()">⌨️ VISA TANGENTBORD</button>
         </div>
+        <div id="card-preview" class="card-preview" role="status" aria-live="polite"></div>
     </div>
 
     <div class="architect-toolbar">
@@ -349,7 +361,7 @@
             <button class="btn-word" onclick="addWord('kissa')">kissa</button>
             <button class="btn-word" onclick="addWord('spruta')">spruta</button>
             <button class="btn-word" onclick="addWord('svälj')">svälj</button>
-            <button class="btn-word" onclick="addWord('stryp')">stryp</button>
+            <button class="btn-word" onclick="addWord('sperma')">sperma</button>
             <button class="btn-word" onclick="addWord('stearin')">stearin</button>
             <button class="btn-word" onclick="addWord('onani')">onani</button>
             <button class="btn-word" onclick="addWord('ge')">ge</button>
@@ -624,6 +636,7 @@
             <div class="tag-item"><input type="checkbox" value="belt" class="tag-check"> bälte</div>
             <div class="tag-item"><input type="checkbox" value="hairbrush" class="tag-check"> hårborste</div>
             <div class="tag-item"><input type="checkbox" value="massage_oil" class="tag-check"> massageolja</div>
+            <div class="tag-item"><input type="checkbox" value="lubricant" class="tag-check"> glidmedel</div>
         </div>
     </div>
 
@@ -704,31 +717,32 @@
         { words: ['kissa', 'pissa'], tags: ['wet'] },
         { words: ['stearin'], tags: ['stearin'] },
         { words: ['naken', 'kläder', 'underkläder'], tags: ['nudity'] },
-        { words: ['dildo'], tags: ['dildo', 'sex_toys', 'penetration'], excludeWords: ['dubbel dildo', 'glasdildo', 'metalldildo'] },
+        { words: ['dildo', 'dildon', 'löskuk', 'gummikuk', 'silikonkuk', 'plastkuk', 'attrapp', 'fallos'], tags: ['dildo', 'sex_toys', 'penetration'], excludeWords: ['dubbel dildo', 'glasdildo', 'metalldildo'] },
         { words: ['strap-on', 'strapon'], tags: ['strapon', 'sex_toys', 'penetration'] },
         { words: ['dubbel dildo'], tags: ['double_dildo', 'sex_toys', 'penetration'] },
-        { words: ['glasdildo'], tags: ['glass_dildo', 'sex_toys', 'penetration'] },
-        { words: ['metalldildo'], tags: ['metal_dildo', 'sex_toys', 'penetration'] },
-        { words: ['vibrator'], tags: ['vibrator', 'sex_toys'] },
-        { words: ['bullet'], tags: ['bullet', 'sex_toys'] },
-        { words: ['wand'], tags: ['wand', 'sex_toys'] },
-        { words: ['lufttrycksvibrator'], tags: ['air_pressure_vibrator', 'sex_toys'] },
-        { words: ['fjärrstyrd vibrator', 'fjärrstyrd'], tags: ['remote_vibrator', 'sex_toys'] },
-        { words: ['analplugg', 'buttplugg', 'butt plug'], tags: ['anal_plug', 'sex_toys', 'anal', 'penetration'] },
+        { words: ['glasdildo', 'glasstav', 'borosilikatstav', 'kristallstav', 'kylstav', 'värmestav'], tags: ['glass_dildo', 'sex_toys', 'penetration'] },
+        { words: ['metalldildo', 'ståldildo', 'stålstav', 'metallstav', 'aluminiumstav', 'njoy pure wand'], tags: ['metal_dildo', 'sex_toys', 'penetration'] },
+        { words: ['vibrator', 'vibratorn', 'vibbe', 'surrare', 'pirrare', 'njutningsstav', 'pulserare'], tags: ['vibrator', 'sex_toys'] },
+        { words: ['bullet', 'bulletvibrator', 'vibrationskula', 'vibrerande ägg', 'fickvibrator'], tags: ['bullet', 'sex_toys'] },
+        { words: ['wand', 'trollspö', 'magisk wand', 'massagestav', 'tryckvibrator', 'jättevibrator', 'hitachi magic wand', 'doxy'], tags: ['wand', 'sex_toys'] },
+        { words: ['lufttrycksvibrator', 'satisfyer', 'womanizer', 'lelo sona'], tags: ['air_pressure_vibrator', 'sex_toys'] },
+        { words: ['fjärrstyrd vibrator', 'fjärrstyrd', 'lovense lush', 'lovense ferri'], tags: ['remote_vibrator', 'sex_toys'] },
+        { words: ['analplugg', 'analpluggen', 'buttplugg', 'butt plug', 'plugg', 'rump-plugg', 'analpropp', 'stussplugg', 'njoy pure plug'], tags: ['anal_plug', 'sex_toys', 'anal', 'penetration'] },
         { words: ['expanderande plugg'], tags: ['expanding_plug', 'sex_toys', 'anal', 'penetration'] },
         { words: ['analkulor'], tags: ['anal_beads', 'sex_toys', 'anal', 'penetration'] },
         { words: ['analprob'], tags: ['anal_probe', 'sex_toys', 'anal', 'penetration'] },
         { words: ['analt', 'anal stimulans'], tags: ['anal'] },
-        { words: ['paddel'], tags: ['paddle', 'impact_play'] },
-        { words: ['ridspö', 'ridpiska'], tags: ['riding_crop', 'impact_play'] },
-        { words: ['flogger'], tags: ['flogger', 'impact_play'] },
+        { words: ['paddel', 'smiskplatta', 'läderpaddel'], tags: ['paddle', 'impact_play'] },
+        { words: ['ridspö', 'ridspöet', 'ridpiska', 'crop', 'dressyrspö', 'piskkäpp'], tags: ['riding_crop', 'impact_play'] },
+        { words: ['flogger', 'floggern', 'mångsvansad piska', 'svanspiska', 'läderflogger', 'piskknippe'], tags: ['flogger', 'impact_play'] },
         { words: ['klämma', 'klämmor', 'klädnypa'], tags: ['nipple_clamps', 'impact_play'] },
-        { words: ['handbojor'], tags: ['handcuffs', 'bondage'] },
-        { words: ['ankelbojor'], tags: ['ankle_cuffs', 'bondage'] },
-        { words: ['rep'], tags: ['rope', 'bondage'] },
-        { words: ['bälte', 'läderrem'], tags: ['belt', 'impact_play'] },
-        { words: ['hårborste'], tags: ['hairbrush', 'impact_play'] },
-        { words: ['massageolja'], tags: ['massage_oil'] },
+        { words: ['handbojor', 'handboja'], tags: ['handcuffs', 'bondage'] },
+        { words: ['ankelbojor', 'ankelboja'], tags: ['ankle_cuffs', 'bondage'] },
+        { words: ['rep', 'repet', 'shibari-rep', 'bondage-rep', 'bindrep'], tags: ['rope', 'bondage'] },
+        { words: ['bälte', 'läderrem', 'livrem', 'piskrem'], tags: ['belt', 'impact_play'] },
+        { words: ['hårborste', 'hårborsten', 'borste', 'piggborste', 'träborste', 'paddelborste'], tags: ['hairbrush', 'impact_play'] },
+        { words: ['massageolja', 'kroppsolja'], tags: ['massage_oil'] },
+        { words: ['glidmedel', 'glidolja', 'glid', 'smörjmedel', 'silikonglid'], tags: ['lubricant'] },
         { words: ['ögonbindel', 'ogonbindel'], tags: ['blindfold'] },
         { words: ['stryp', 'strypning'], tags: ['strangulation'] },
         { words: ['spruta'], tags: ['ejaculation'] },
@@ -743,6 +757,9 @@
         { words: ['underkastelse'], tags: ['submission'] },
         { words: ['förnedra', 'förnedring'], tags: ['humiliation'] }
     ];
+    const ambiguousEquipmentMappings = [
+        { words: ['piska', 'piskan'], tags: ['riding_crop', 'flogger'] }
+    ];
 
     let automaticallyCheckedTags = new Set();
 
@@ -754,6 +771,28 @@
     function mappingMatchesText(mapping, text) {
         return mapping.words.some(word => textContainsTerm(text, word)) &&
             !(mapping.excludeWords || []).some(word => textContainsTerm(text, word));
+    }
+
+
+    function updateCardAnalysis(text) {
+        const panel = document.getElementById('card-analysis');
+        if (!panel) return;
+        if (!text.trim()) { panel.textContent = ''; panel.style.display = 'none'; return; }
+        const selected = new Set(Array.from(document.querySelectorAll('.tag-check:checked')).map(cb => cb.value));
+        const findings = [];
+        if (text.toLowerCase().includes('[partner]')) findings.push('⚠ Kräver minst 3 spelare ([PARTNER])');
+        if (textContainsTerm(text, 'klitoris') || textContainsTerm(text, 'klittan') || textContainsTerm(text, 'klitta')) findings.push('⚠ Kvinnlig målspelare');
+        const equipmentNames = { dildo:'dildo', anal_plug:'analplugg', riding_crop:'ridspö', flogger:'flogger', lubricant:'glidmedel', massage_oil:'massageolja' };
+        autoTagMappings.forEach(mapping => {
+            if (!mappingMatchesText(mapping, text)) return;
+            mapping.tags.filter(tag => equipmentNames[tag]).forEach(tag => {
+                if (!selected.has(tag)) findings.push(`⚠ Taggen ${equipmentNames[tag]} saknas`);
+            });
+        });
+        const uniqueFindings = [...new Set(findings)];
+        if (!uniqueFindings.length) { panel.textContent = ''; panel.style.display = 'none'; return; }
+        panel.innerHTML = `<strong>Upptäckt i texten:</strong><br>${uniqueFindings.join('<br>')}`;
+        panel.style.display = 'block';
     }
 
     function clearTagSelections() {
@@ -771,10 +810,17 @@
             clearTagSelections();
             return;
         }
+        updateCardAnalysis(text);
 
         const nextAutomaticTags = new Set();
         autoTagMappings.forEach(mapping => {
             if (mappingMatchesText(mapping, text)) mapping.tags.forEach(tag => nextAutomaticTags.add(tag));
+        });
+        ambiguousEquipmentMappings.forEach(mapping => {
+            if (mapping.words.some(word => textContainsTerm(text, word)) &&
+                !['flogger', 'ridspö', 'ridpiska', 'mångsvansad piska'].some(word => textContainsTerm(text, word))) {
+                mapping.tags.forEach(tag => nextAutomaticTags.add(tag));
+            }
         });
 
         document.querySelectorAll('.tag-check').forEach(checkbox => {
@@ -783,6 +829,7 @@
             else if (automaticallyCheckedTags.has(value) && checkbox.dataset.manual !== 'true') checkbox.checked = false;
         });
         automaticallyCheckedTags = nextAutomaticTags;
+        updateCardAnalysis(text);
     }
 
     function sortTagCheckboxes() {
@@ -874,6 +921,26 @@
         }
     }
 
+    function previewCard() {
+        const text = document.getElementById('dareText').value.trim();
+        const panel = document.getElementById('card-preview');
+        const button = document.getElementById('preview-card-btn');
+        if (panel.style.display === 'block') {
+            panel.style.display = 'none';
+            button.textContent = 'PROVKÖR KORT 👁';
+            return;
+        }
+        if (!text) { panel.style.display = 'none'; panel.textContent = ''; return; }
+        const replacements = {
+            '[TARGET]': 'Lisa', '[TARGETS]': 'Lisas', '[HEN]': 'henne', '[HENS]': 'hennes',
+            '[SUBJECT]': 'hon', '[ACTIVE]': 'Mia', '[PARTNER]': 'Sara'
+        };
+        const rendered = text.replace(/\[(TARGETS?|HEN|HENS|SUBJECT|ACTIVE|PARTNER)\]/g, token => replacements[token] || token);
+        panel.innerHTML = '<strong>Så här kan kortet visas</strong>' + rendered;
+        panel.style.display = 'block';
+        button.textContent = 'DÖLJ PROVKÖRNING ▲';
+    }
+
     function generateJSON() {
         const textInput = document.getElementById('dareText');
         const text = textInput.value.trim();
@@ -884,6 +951,10 @@
         let selectedTags = [];
         checkboxes.forEach((item) => { if (item.checked) selectedTags.push(item.value); });
         const obj = { text: text, tags: selectedTags };
+        if (textContainsTerm(text.toLowerCase(), 'piska') &&
+            !['flogger', 'ridspö', 'ridpiska', 'mångsvansad piska'].some(word => textContainsTerm(text.toLowerCase(), word))) {
+            obj.equipmentAlternatives = [['riding_crop', 'flogger']];
+        }
         if (editingIndex !== null && deckDares[editingIndex]) {
             deckDares[editingIndex] = obj;
         } else {
@@ -981,10 +1052,23 @@
         updateRemoveButton();
     }
 
+    function requireDeckName() {
+        const input = document.getElementById('deckName');
+        const name = input?.value.trim() || '';
+        if (!name) {
+            alert('Döp din kortlek innan du fortsätter.');
+            input?.focus();
+            return null;
+        }
+        return name;
+    }
+
     function exportDeck() {
         if (!deckDares.length) { alert('Lägg till minst ett kort först.'); return; }
+        const deckName = requireDeckName();
+        if (!deckName) return;
         const deck = {
-            name: document.getElementById('deckName').value.trim() || 'Min egen kortlek',
+            name: deckName,
             difficulty: document.getElementById('deckDifficulty').value,
             dares: deckDares
         };
@@ -998,8 +1082,10 @@
 
     function copyDeckJson() {
         if (!deckDares.length) { alert('Lägg till minst ett kort först.'); return; }
+        const deckName = requireDeckName();
+        if (!deckName) return;
         const deck = {
-            name: document.getElementById('deckName').value.trim() || 'Min egen kortlek',
+            name: deckName,
             difficulty: document.getElementById('deckDifficulty').value,
             dares: deckDares
         };
@@ -1033,7 +1119,7 @@
                 const deck = JSON.parse(reader.result);
                 if (!deck || !Array.isArray(deck.dares) || deck.dares.some(card => !card || typeof card.text !== 'string')) throw new Error('Ogiltig kortlek');
                 deckDares = deck.dares.map(card => ({ text: card.text.trim(), tags: Array.isArray(card.tags) ? card.tags.filter(tag => typeof tag === 'string') : [] }));
-                document.getElementById('deckName').value = deck.name || 'Min egen kortlek';
+                document.getElementById('deckName').value = deck.name || '';
                 if (deck.difficulty) document.getElementById('deckDifficulty').value = deck.difficulty;
                 renderOutput();
                 saveDraft();
@@ -1044,11 +1130,10 @@
         reader.readAsText(file);
     }
 
-    window.getArchitectDeck = () => ({
-        name: document.getElementById('deckName').value.trim() || 'Min egen kortlek',
-        difficulty: document.getElementById('deckDifficulty').value,
-        dares: deckDares
-    });
+    window.getArchitectDeck = () => {
+        const name = requireDeckName();
+        return name ? { name, difficulty: document.getElementById('deckDifficulty').value, dares: deckDares } : null;
+    };
 
     window.addEventListener('load', () => {
         arrangeCategoryColumns();

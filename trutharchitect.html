@@ -188,6 +188,10 @@
             box-shadow: inset 0 1px rgba(255,255,255,.02);
         }
         textarea#dareText:focus { border-color: var(--gold-light); box-shadow: 0 0 0 3px rgba(212,175,55,.1); outline:none; }
+        .card-analysis { display:none; margin-top:8px; padding:9px 10px; border:1px solid #38352e; border-radius:7px; color:#c9c4b8; background:#151515; font-size:12px; line-height:1.5; }
+        .card-analysis strong { color:#e8cf76; }
+        .card-preview { display:none; margin-top:8px; padding:12px 14px; border:1px solid #6d5b24; border-radius:8px; color:#f3e5b0; background:linear-gradient(135deg,#1b1810,#121212); font-size:15px; line-height:1.55; box-shadow:0 5px 18px rgba(0,0,0,.25); }
+        .card-preview strong { display:block; color:#e4c24f; font-size:11px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px; }
         .word-bank, .tags-container {
             background: rgba(15,15,15,.82);
             border-color: #38352e;
@@ -221,16 +225,17 @@
         }
         .tag-item:hover { background:#1d1b16; border-color:#443d28; }
         .tag-item input { width:17px; height:17px; accent-color:var(--gold); }
-        .btn-gen, .btn-copy, .btn-clear, .btn-import, .btn-export, .btn-copy-json, .btn-remove-last {
+        .btn-gen, .btn-preview, .btn-copy, .btn-clear, .btn-import, .btn-export, .btn-copy-json, .btn-remove-last {
             min-height:44px;
             border-radius:10px;
             border:1px solid #4c4637;
             transition: transform .14s ease, border-color .18s ease, box-shadow .18s ease;
         }
         .btn-gen { color:#090909; background:linear-gradient(180deg,#e4c24f,#c69b1e); border-color:#d7b33b; }
+        .btn-preview { color:#e8d581; background:#18160f; border-color:#64572d; }
         .btn-copy, .btn-import, .btn-export, .btn-copy-json { color:#e8d581; background:#18160f; border-color:#64572d; }
         .btn-clear, .btn-remove-last { color:#e3b7b7; background:#1b1010; border-color:#663232; }
-        .btn-gen:hover, .btn-copy:hover, .btn-clear:hover, .btn-import:hover, .btn-export:hover, .btn-copy-json:hover, .btn-remove-last:hover:not(:disabled) {
+        .btn-gen:hover, .btn-preview:hover, .btn-copy:hover, .btn-clear:hover, .btn-import:hover, .btn-export:hover, .btn-copy-json:hover, .btn-remove-last:hover:not(:disabled) {
             transform:translateY(-1px);
             border-color:#b99a39;
             box-shadow:0 8px 20px rgba(0,0,0,.3);
@@ -281,9 +286,8 @@
                 .import-export button { padding: 8px 4px; font-size: 10px; }
             }
         </style>
-    <link rel="stylesheet" href="./design-system.css">
 </head>
-<body class="architect-page truth-architect">
+<body>
 
 <div class="container">
     <img src="dareme.png" alt="Dare Me Logo" class="header-img" onerror="this.style.display='none'">
@@ -291,7 +295,7 @@
     <h2>TRUTH - ARCHITECT 💬</h2>
 
     <div class="deck-settings">
-        <input id="deckName" type="text" placeholder="Namn på kortleken" value="Min egen Truth-kortlek">
+        <input id="deckName" type="text" placeholder="Döp din Truth-kortlek (obligatoriskt)" value="">
         <select id="deckDifficulty" aria-label="Kortlekens nivå">
             <option value="💬">💬 Nivå 1 – Soft</option>
             <option value="💬💬">💬💬 Nivå 2 – Warm</option>
@@ -303,20 +307,33 @@
         <button id="examples-toggle" class="examples-toggle" type="button" onclick="toggleExamples()">VISA EXEMPEL</button>
         <div id="examples-content" class="examples-content" style="display:none;">
             <strong>Platshållare:</strong>
-            [TARGET] = personens namn · [TARGETS] = personens namn i ägarform
+            [TARGET] = personens namn · [TARGETS] = personens namn i ägarform ·
+            [HEN] = honom/henne · [HENS] = hans/hennes · [SUBJECT] = han/hon ·
+            [ACTIVE] = den aktiva spelaren · [PARTNER] = en andra medverkande spelare
             <br><br>
             <strong>Exempel:</strong>
             <em>Vilken egenskap hos [TARGET] tycker du är mest attraktiv?</em>
             <br><span style="color:#777;">Blir till exempel: “Vilken egenskap hos Lisa tycker du är mest attraktiv?”</span>
+            <br><br><strong>Längre exempel med flera platshållare:</strong>
+            <br><em>Vad är det mest pinsamma [TARGET] har gjort på en dejt, och skulle [SUBJECT] våga berätta det för [ACTIVE] och [PARTNER]?</em>
+            <br><span style="color:#777;">Blir till exempel: “Vad är det mest pinsamma Lisa har gjort på en dejt, och skulle hon våga berätta det för Mia och Sara?”</span>
+            <br><br><strong>Nivåerna:</strong>
+            <br><span style="color:#777;">💬 Nivå 1 – Soft: oskyldiga, flirtiga och lättsamma frågor.</span>
+            <br><span style="color:#777;">💬💬 Nivå 2 – Warm: sexuell nyfikenhet, lust och erfarenheter.</span>
+            <br><span style="color:#777;">💬💬💬 Nivå 3 – Hard: makt, gruppfantasier och mer personliga ämnen.</span>
+            <br><span style="color:#777;">💬💬💬💬 Nivå 4 – Extreme: de mest privata, intensiva och utmanande frågorna.</span>
         </div>
     </div>
 
     <div class="composer">
         <textarea id="dareText" inputmode="text" enterkeyhint="done" oninput="handleTextInput(this)" placeholder="Skriv en Truth-fråga här..."></textarea>
+        <div id="card-analysis" class="card-analysis" role="status"></div>
         <div class="composer-actions">
-            <button class="btn-gen" onclick="generateJSON()">LÄGG TILL I LISTAN ➕</button>
+            <button class="btn-gen" type="button" onclick="generateJSON()">LÄGG TILL I LISTAN ➕</button>
+            <button id="preview-card-btn" class="btn-preview" type="button" onclick="previewCard()">PROVKÖR KORT 👁</button>
             <button id="keyboardToggle" class="keyboard-toggle" type="button" onclick="toggleKeyboard()">⌨️ VISA TANGENTBORD</button>
         </div>
+        <div id="card-preview" class="card-preview" role="status" aria-live="polite"></div>
     </div>
 
     <div class="architect-toolbar">
@@ -573,6 +590,15 @@
     </div>
 
     <div class="word-bank truth-word-bank">
+        <div class="word-group placeholder-group">
+            <button class="btn-word btn-target" onclick="addWord('[TARGET]')">[TARGET]</button>
+            <button class="btn-word btn-target" onclick="addWord('[TARGETS]')">[TARGETS]</button>
+            <button class="btn-word btn-target" onclick="addWord('[HEN]')">[HEN]</button>
+            <button class="btn-word btn-target" onclick="addWord('[HENS]')">[HENS]</button>
+            <button class="btn-word btn-target" onclick="addWord('[SUBJECT]')">[SUBJECT]</button>
+            <button class="btn-word btn-target" onclick="addWord('[ACTIVE]')">[ACTIVE]</button>
+            <button class="btn-word btn-target" onclick="addWord('[PARTNER]')">[PARTNER]</button>
+        </div>
         <div class="category-grid">
             <div class="category-box"><div class="category-title">FRÅGESTARTER</div><div class="word-group">
                 <button class="btn-word" onclick="addWord('Vad')">Vad</button>
@@ -1079,6 +1105,23 @@
             !(mapping.excludeWords || []).some(word => textContainsTerm(text, word));
     }
 
+    function updateCardAnalysis(text) {
+        const panel = document.getElementById('card-analysis');
+        if (!panel) return;
+        if (!text.trim()) { panel.textContent = ''; panel.style.display = 'none'; return; }
+        const selected = new Set(Array.from(document.querySelectorAll('.tag-check:checked')).map(cb => cb.value));
+        const labels = { group:'grupp', flirt:'flört/attraktion', romance:'romantik/dejting', experiences:'tidigare erfarenheter', fantasies:'fantasier', sexuality:'sex och sexualitet', boundaries:'gränser', dominance:'dominans', submission:'underkastelse', oral:'oralsex', penetration:'penetration', masturbation:'onani', sex_toys:'sexleksaker', nudity:'nakenhet', pain:'smärta', humiliation:'förnedring' };
+        const findings = [];
+        if (text.toLowerCase().includes('[partner]')) findings.push('⚠ Kräver minst 3 spelare ([PARTNER])');
+        truthAutoTagMappings.forEach(mapping => {
+            if (mappingMatchesText(mapping, text)) mapping.tags.forEach(tag => findings.push(`✓ ${labels[tag] || tag}`));
+        });
+        const uniqueFindings = [...new Set(findings)];
+        if (!uniqueFindings.length) { panel.textContent = ''; panel.style.display = 'none'; return; }
+        panel.innerHTML = `<strong>Upptäckt i frågan:</strong><br>${uniqueFindings.join('<br>')}`;
+        panel.style.display = 'block';
+    }
+
     function clearTagSelections() {
         document.querySelectorAll('.tag-check').forEach(checkbox => {
             checkbox.checked = false;
@@ -1092,8 +1135,10 @@
         const text = el.value.trim().toLowerCase();
         if (!text) {
             clearTagSelections();
+            updateCardAnalysis('');
             return;
         }
+        updateCardAnalysis(text);
 
         const nextAutomaticTags = new Set();
         truthAutoTagMappings.forEach(mapping => {
@@ -1106,6 +1151,7 @@
             else if (automaticallyCheckedTags.has(value) && checkbox.dataset.manual !== 'true') checkbox.checked = false;
         });
         automaticallyCheckedTags = nextAutomaticTags;
+        updateCardAnalysis(text);
     }
 
     function sortTagCheckboxes() {
@@ -1195,6 +1241,26 @@
             button.dataset.keyboard = 'shown';
             button.textContent = '⌨️ DÖLJ TANGENTBORD';
         }
+    }
+
+    function previewCard() {
+        const text = document.getElementById('dareText').value.trim();
+        const panel = document.getElementById('card-preview');
+        const button = document.getElementById('preview-card-btn');
+        if (panel.style.display === 'block') {
+            panel.style.display = 'none';
+            button.textContent = 'PROVKÖR KORT 👁';
+            return;
+        }
+        if (!text) { panel.style.display = 'none'; panel.textContent = ''; return; }
+        const replacements = {
+            '[TARGET]': 'Lisa', '[TARGETS]': 'Lisas', '[HEN]': 'henne', '[HENS]': 'hennes',
+            '[SUBJECT]': 'hon', '[ACTIVE]': 'Mia', '[PARTNER]': 'Sara'
+        };
+        const rendered = text.replace(/\[(TARGETS?|HEN|HENS|SUBJECT|ACTIVE|PARTNER)\]/g, token => replacements[token] || token);
+        panel.innerHTML = '<strong>Så här kan frågan visas</strong>' + rendered;
+        panel.style.display = 'block';
+        button.textContent = 'DÖLJ PROVKÖRNING ▲';
     }
 
     function generateJSON() {
@@ -1304,10 +1370,23 @@
         updateRemoveButton();
     }
 
+    function requireDeckName() {
+        const input = document.getElementById('deckName');
+        const name = input?.value.trim() || '';
+        if (!name) {
+            alert('Döp din Truth-kortlek innan du fortsätter.');
+            input?.focus();
+            return null;
+        }
+        return name;
+    }
+
     function exportDeck() {
         if (!deckDares.length) { alert('Lägg till minst ett kort först.'); return; }
+        const deckName = requireDeckName();
+        if (!deckName) return;
         const deck = {
-            name: document.getElementById('deckName').value.trim() || 'Min egen Truth-kortlek',
+            name: deckName,
             difficulty: document.getElementById('deckDifficulty').value,
             dares: deckDares
         };
@@ -1321,8 +1400,10 @@
 
     function copyDeckJson() {
         if (!deckDares.length) { alert('Lägg till minst ett kort först.'); return; }
+        const deckName = requireDeckName();
+        if (!deckName) return;
         const deck = {
-            name: document.getElementById('deckName').value.trim() || 'Min egen Truth-kortlek',
+            name: deckName,
             difficulty: document.getElementById('deckDifficulty').value,
             dares: deckDares
         };
@@ -1356,7 +1437,7 @@
                 const deck = JSON.parse(reader.result);
                 if (!deck || !Array.isArray(deck.dares) || deck.dares.some(card => !card || typeof card.text !== 'string')) throw new Error('Ogiltig kortlek');
                 deckDares = deck.dares.map(card => ({ text: card.text.trim(), tags: Array.isArray(card.tags) ? card.tags.filter(tag => typeof tag === 'string') : [] }));
-                document.getElementById('deckName').value = deck.name || 'Min egen Truth-kortlek';
+                document.getElementById('deckName').value = deck.name || '';
                 if (deck.difficulty) document.getElementById('deckDifficulty').value = deck.difficulty;
                 renderOutput();
                 saveDraft();
@@ -1367,11 +1448,10 @@
         reader.readAsText(file);
     }
 
-    window.getArchitectDeck = () => ({
-        name: document.getElementById('deckName').value.trim() || 'Min egen Truth-kortlek',
-        difficulty: document.getElementById('deckDifficulty').value,
-        dares: deckDares
-    });
+    window.getArchitectDeck = () => {
+        const name = requireDeckName();
+        return name ? { name, difficulty: document.getElementById('deckDifficulty').value, dares: deckDares } : null;
+    };
 
     window.addEventListener('load', () => {
         arrangeCategoryColumns();

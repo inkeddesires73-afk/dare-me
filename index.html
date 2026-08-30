@@ -494,6 +494,12 @@
         .game-controls > * { margin: 0 !important; }
         .game-controls #turn-help, .game-controls #btn-next-card, .game-controls #btn-exit-room { grid-column: 1 / -1; }
         .game-controls #btn-next-card { min-height: 58px; }
+        .game-controls #btn-skip-card,
+        .game-controls #btn-pause-game,
+        .game-controls #btn-request-pause { margin: 0 !important; min-height: 48px; }
+        .game-controls #btn-skip-card { grid-column: 1; }
+        .game-controls #btn-pause-game,
+        .game-controls #btn-request-pause { grid-column: 2; }
         .game-controls .btn-lvl-up { min-height: 44px; }
         #truth-mission-controls {
             grid-column: 1 / -1;
@@ -643,13 +649,13 @@
                 </div>
 
                 <details class="setup-section host-only">
-                    <summary><span class="section-heading">Spelinställningar & nivåer</span><span class="section-summary" id="settings-summary">Dare Me</span></summary>
+                    <summary><span class="section-heading">Spelinställningar & nivåer</span><span class="section-summary" id="settings-summary">Välj spel</span></summary>
                     <div class="setup-section-body">
                     <span class="veto-title">Globala Inställningar (Endast Värd)</span>
                     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
                         <label for="game-mode-setting" style="font-size:.7rem;color:var(--gold);text-transform:uppercase;letter-spacing:1px;">Spelläge:</label>
                         <select id="game-mode-setting" onchange="updateGameModeSetting()" style="width:auto;padding:7px 10px;border-radius:8px;background:#000;color:#fff;border:1px solid #444;">
-                            <option value="" disabled>Välj spelläge…</option>
+                            <option value="" disabled selected>Välj spelläge…</option>
                             <option value="dare">Dare Me</option>
                             <option value="truth">Truth</option>
                             <option value="truth_or_dare">Truth or Dare</option>
@@ -718,11 +724,43 @@
                                 <label class="veto-option"><input type="checkbox" class="environment-cb" value="ankle_cuffs" onchange="updateEnvironmentItems()"> Ankelbojor</label>
                                 <label class="veto-option"><input type="checkbox" class="environment-cb" value="rope" onchange="updateEnvironmentItems()"> Rep</label>
                                 <label class="veto-option"><input type="checkbox" class="environment-cb" value="massage_oil" onchange="updateEnvironmentItems()"> Massageolja</label>
+                                <label class="veto-option"><input type="checkbox" class="environment-cb" value="lubricant" onchange="updateEnvironmentItems()"> Glidmedel</label>
                                 <div class="environment-actions" style="grid-column: 1 / -1; display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;">
                                     <button type="button" class="btn btn-rules" onclick="selectAllEnvironmentItems()">MARKERA ALLT</button>
                                     <button type="button" class="btn btn-rules" onclick="clearEnvironmentItems()">RENSA VAL</button>
                                 </div>
                         </div>
+                    </div>
+                </details>
+
+                <details class="setup-section veto-container truth-veto-section">
+                    <summary><span class="section-heading">Truth-veton</span><span class="section-summary" id="truth-veto-summary">0 valda</span></summary>
+                    <div class="setup-section-body">
+                    <div class="veto-grid">
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="boundaries"> Gränser</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="embarrassing"> Pinsamma händelser</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="experiences"> Tidigare erfarenheter</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="fantasies"> Fantasier</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="flirt"> Flört och attraktion</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="group"> Grupp, trekant och flera personer</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="personal"> Personliga frågor</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="relationships"> Relationer och ex</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="romance"> Romantik och dejting</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="sexuality"> Sex och sexualitet</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="masturbation"> Onani</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="oral"> Oralsex</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="penetration"> Penetration</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="anal"> Anal och analsex</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="bondage"> Bondage</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="dominance"> Dominans och underkastelse</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="humiliation"> Förnedring</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="pain"> Smärta och impact</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="sex_toys"> Sexleksaker</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="fluids"> Kroppsvätskor och wet</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="genitals"> Könsorgan</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="fingers"> Fingrar</label>
+                        <label class="veto-option"><input type="checkbox" class="truth-veto-cb" value="swallowing"> Svälja</label>
+                    </div>
                     </div>
                 </details>
 
@@ -737,8 +775,8 @@
                     Nivåhöjning: <span id="guest-level-info" style="color: var(--gold); font-weight: bold;">Av</span>
                 </div>
 
-                <details class="setup-section veto-container">
-                    <summary><span class="section-heading">Mina veton</span><span class="section-summary" id="veto-summary">0 valda</span></summary>
+                <details class="setup-section veto-container dare-veto-section">
+                    <summary><span class="section-heading">Dare Veto</span><span class="section-summary" id="veto-summary">0 valda</span></summary>
                     <div class="setup-section-body">
                     <span class="veto-title">Vetos (Detta vill jag INTE göra)</span>
                     <div class="veto-grid">
@@ -936,16 +974,32 @@
         if (!deck || typeof deck !== 'object' || !Array.isArray(deck.dares)) return null;
         const dares = deck.dares
             .filter(card => card && typeof card.text === 'string' && card.text.trim())
-            .map(card => ({
-                text: card.text.trim().slice(0, 1500),
-                tags: Array.isArray(card.tags) ? card.tags.filter(tag => typeof tag === 'string').slice(0, 30) : []
-            }));
-        if (!dares.length) return null;
+            .map(card => {
+                const normalized = {
+                    text: card.text.trim().slice(0, 1500),
+                    tags: Array.isArray(card.tags) ? card.tags.filter(tag => typeof tag === 'string').slice(0, 30) : [],
+                    equipmentAlternatives: Array.isArray(card.equipmentAlternatives) ? card.equipmentAlternatives.filter(group => Array.isArray(group) && group.every(item => typeof item === 'string')).slice(0, 10) : []
+                };
+                // Komplettera saknade funktionstaggar från synonymregistret.
+                // Korttexten och befintliga taggar lämnas oförändrade.
+                if (typeof detectedCardTags === 'function') {
+                    normalized.tags = [...new Set(detectedCardTags(normalized))].slice(0, 30);
+                }
+                return normalized;
+            });
+        const uniqueTexts = new Set();
+        const uniqueDares = dares.filter(card => {
+            const key = card.text.trim().toLocaleLowerCase('sv-SE');
+            if (uniqueTexts.has(key)) return false;
+            uniqueTexts.add(key);
+            return true;
+        });
+        if (!uniqueDares.length) return null;
         return {
             id: typeof deck.id === 'string' && deck.id.startsWith('custom:') ? deck.id : `custom:${crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`}`,
             name: String(deck.name || 'Egen kortlek').trim().slice(0, 80) || 'Egen kortlek',
             difficulty: String(deck.difficulty || '🌶️ Egen kortlek').trim().slice(0, 40),
-            dares
+            dares: uniqueDares
         };
     }
 
@@ -1124,6 +1178,14 @@
         const showDare = mode === 'dare' || mode === 'truth_or_dare';
         document.querySelectorAll('.truth-level-option').forEach(el => el.style.display = showTruth ? '' : 'none');
         document.querySelectorAll('.dare-level-option').forEach(el => el.style.display = showDare ? '' : 'none');
+        document.querySelectorAll('.truth-veto-section').forEach(el => {
+            el.style.display = showTruth ? '' : 'none';
+            if (!showTruth) el.removeAttribute('open');
+        });
+        document.querySelectorAll('.dare-veto-section').forEach(el => {
+            el.style.display = showDare ? '' : 'none';
+            if (!showDare) el.removeAttribute('open');
+        });
     }
 
     async function readDeckFile(file) {
@@ -1721,9 +1783,10 @@
         if (settingsSummary) {
             const selectedLevels = Array.from(document.querySelectorAll('.lvl-cb:checked'))
                 .filter(cb => cb.closest('label')?.style.display !== 'none').length;
+            const currentMode = normalizeGameMode(state.gameMode);
             settingsSummary.textContent = selectedLevels
-                ? `${modeNames[normalizeGameMode(state.gameMode)]} · ${selectedLevels}`
-                : modeNames[normalizeGameMode(state.gameMode)];
+                ? `${modeNames[currentMode] || 'Välj spel'} · ${selectedLevels}`
+                : (modeNames[currentMode] || 'Välj spel');
         }
         if (equipmentSummary) {
             const count = document.querySelectorAll('.environment-cb:checked').length;
@@ -1732,6 +1795,11 @@
         if (vetoSummary) {
             const count = document.querySelectorAll('.veto-cb:checked').length;
             vetoSummary.textContent = `${count} valda`;
+        }
+        const truthVetoSummary = document.getElementById('truth-veto-summary');
+        if (truthVetoSummary) {
+            const count = document.querySelectorAll('.truth-veto-cb:checked').length;
+            truthVetoSummary.textContent = `${count} valda`;
         }
     }
     document.getElementById('lobby-page')?.addEventListener('change', () => requestAnimationFrame(updateSetupSummaries));
@@ -1896,7 +1964,9 @@
         const finalStars = editedPlayer ? editedPlayer.stars : tempStars;
         const newPlayer = {
             id: editedPlayer?.id ?? Date.now(), name, gender: selectedGender,
-            pref: document.getElementById('pPref').value, vetos: Array.from(document.querySelectorAll('.veto-cb:checked')).map(cb => cb.value), 
+            pref: document.getElementById('pPref').value,
+            vetos: Array.from(document.querySelectorAll('.veto-cb:checked')).map(cb => cb.value),
+            truthVetos: Array.from(document.querySelectorAll('.truth-veto-cb:checked')).map(cb => cb.value),
             biNoPen: document.getElementById('bi-no-pen').checked, stars: finalStars,
             uid: editedPlayer?.uid ?? user?.uid ?? null
         };
@@ -1958,7 +2028,9 @@
         editingPlayerId = id;
         tempStars = p.stars;
         document.getElementById('pName').value = p.name; document.getElementById('pGender').value = p.gender;
-        document.getElementById('pPref').value = p.pref; document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = p.vetos.includes(cb.value));
+        document.getElementById('pPref').value = p.pref;
+        document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = (p.vetos || []).includes(cb.value));
+        document.querySelectorAll('.truth-veto-cb').forEach(cb => cb.checked = (p.truthVetos || []).includes(cb.value));
         document.getElementById('bi-no-pen').checked = Boolean(p.biNoPen);
         const submitButton = document.getElementById('player-submit-button');
         const cancelButton = document.getElementById('cancel-player-edit');
@@ -1974,7 +2046,7 @@
         if (gender) gender.value = '';
         const preference = document.getElementById('pPref');
         if (preference) preference.value = 'hetero';
-        document.querySelectorAll('.veto-cb').forEach(cb => cb.checked = false);
+        document.querySelectorAll('.veto-cb, .truth-veto-cb').forEach(cb => cb.checked = false);
         const biNoPen = document.getElementById('bi-no-pen');
         if (biNoPen) biNoPen.checked = false;
         const submitButton = document.getElementById('player-submit-button');
@@ -2065,18 +2137,88 @@
         return pattern.test(String(text || '').toLowerCase());
     }
 
+    // Synonymregister för manuellt skrivna kort. Taggarna är fortfarande den
+    // exakta källan, men registret gör att vanliga alternativa ord inte kringgår
+    // köns-, anatomi- eller vätskefiltreringen.
+    const anatomySynonyms = {
+        maleGenitals: ['penis', 'penisen', 'penisskaft', 'penishuvud', 'kuk', 'kuken', 'kukar', 'snopp', 'snoppen', 'balle', 'ballen', 'stake', 'staken', 'lem', 'lemmen', 'ollon', 'ollonet', 'pung', 'pungen', 'testiklar', 'testiklarna', 'kulor', 'kulorna'],
+        femaleGenitals: ['vagina', 'vaginan', 'vulva', 'vulvan', 'slida', 'slidan', 'fitta', 'fittan', 'fittor', 'mus', 'musen', 'muff', 'muffen', 'snippa', 'snippan'],
+        clitoris: ['klitoris', 'klitorisen', 'klitorisollon', 'klitta', 'klittan', 'fittknapp'],
+        breasts: ['bröst', 'brösten', 'bröstkorg', 'bröstvårta', 'bröstvårtan', 'bröstvårtor', 'bröstvårtorna', 'tuttar', 'tuttarna', 'pattar', 'pattarna'],
+        anal: ['anus', 'ändtarm', 'ändtarmen', 'rektum', 'analöppning', 'ringmuskel', 'ringmuskeln', 'rövhål', 'rövhålet', 'bakhål', 'bakhålet', 'anal', 'analen', 'analt', 'anala'],
+        buttocks: ['rumpa', 'rumpan', 'rumpor', 'skinka', 'skinkan', 'skinkor', 'skinkorna', 'röv', 'röven', 'bakdel', 'baken', 'stjärt', 'stjärten', 'stuss', 'säte'],
+        semen: ['sperma', 'sperman', 'säd', 'säden', 'sats', 'satsen', 'sprut', 'sprutet', 'cum']
+    };
+
+    function synonymPattern(words) {
+        const escaped = words.map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+        return new RegExp(`(?:^|[^a-zåäö])(?:${escaped.join('|')})(?=$|[^a-zåäö])`, 'i');
+    }
+
+    const synonymPatterns = Object.fromEntries(
+        Object.entries(anatomySynonyms).map(([key, words]) => [key, synonymPattern(words)])
+    );
+
+    const cardExpressionPatterns = {
+        multiPlayer: synonymPattern(['gruppen', 'flera spelare', 'flera medspelare', 'medspelarna', 'två medspelare', 'hemlig spelare', 'tyst medspelare', 'okänd spelare']),
+        wet: synonymPattern(['wet-play', 'wet play', 'kissa', 'kissar', 'kissade', 'urin']),
+        candleWax: synonymPattern(['stearin', 'stearinljus', 'smält stearin']),
+        equipment: {
+            dildo: synonymPattern(['dildo', 'dildon']),
+            strapon: synonymPattern(['strap-on', 'strapon']),
+            double_dildo: synonymPattern(['dubbel dildo']),
+            glass_dildo: synonymPattern(['glasdildo', 'glasstav', 'borosilikatstav', 'kristallstav', 'kylstav', 'värmestav']),
+            metal_dildo: synonymPattern(['metalldildo', 'ståldildo', 'stålstav', 'metallstav', 'aluminiumstav', 'njoy pure wand']),
+            vibrator: synonymPattern(['vibrator', 'vibratorn', 'vibbe', 'surrare', 'pirrare', 'njutningsstav', 'pulserare']),
+            bullet: synonymPattern(['bulletvibrator', 'bullet vibrator']),
+            wand: synonymPattern(['wandvibrator', 'wand vibrator', 'trollspö', 'magisk wand', 'massagestav', 'hitachi magic wand', 'doxy']),
+            air_pressure_vibrator: synonymPattern(['lufttrycksvibrator', 'satisfyer', 'womanizer', 'lelo sona']),
+            anal_plug: synonymPattern(['analplugg', 'analpluggen', 'buttplug', 'butt plug', 'plugg', 'analpropp', 'stussplugg', 'njoy pure plug']),
+            expanding_plug: synonymPattern(['expanderande plugg']),
+            anal_beads: synonymPattern(['analkulor']),
+            anal_probe: synonymPattern(['analprob', 'analproben']),
+            paddle: synonymPattern(['paddel', 'paddeln']),
+            riding_crop: synonymPattern(['ridspö', 'ridspöet']),
+            flogger: synonymPattern(['flogger', 'floggern']),
+            belt: synonymPattern(['bälte', 'bältet', 'skärp', 'skärpet']),
+            nipple_clamps: synonymPattern(['bröstvårtsklämmor', 'bröstvårteklämmor', 'klämmor']),
+            hairbrush: synonymPattern(['hårborste', 'hårborsten']),
+            blindfold: synonymPattern(['ögonbindel', 'ögonbindeln']),
+            handcuffs: synonymPattern(['handbojor', 'handbojorna', 'handboja']),
+            ankle_cuffs: synonymPattern(['ankelbojor', 'ankelbojorna', 'ankelboja']),
+            rope: synonymPattern(['rep', 'repet']),
+            massage_oil: synonymPattern(['massageolja', 'massageoljan'])
+        }
+    };
+
+    function detectedCardTags(dare) {
+        const tags = new Set(dare.tags || []);
+        const text = dare.text || '';
+        if (textHas(text, synonymPatterns.anal)) tags.add('anal');
+        if (textHas(text, synonymPatterns.semen)) tags.add('semen');
+        if (textHas(text, cardExpressionPatterns.wet)) tags.add('wet');
+        if (textHas(text, cardExpressionPatterns.candleWax)) tags.add('stearin');
+        if (textHas(text, synonymPatterns.clitoris)) tags.add('genitals');
+        for (const [item, pattern] of Object.entries(cardExpressionPatterns.equipment)) {
+            if (textHas(text, pattern)) tags.add(item);
+        }
+        return tags;
+    }
+
     // Kort med sperma måste alltid ha en manlig spelare i rollen som källa.
     function semenRolesArePossible(dare, active, target, partner) {
-        if (!dare.tags?.includes('semen') && !textHas(dare.text, /sperma|säd/)) return true;
+        if (!dare.tags?.includes('semen') && !textHas(dare.text, synonymPatterns.semen)) return true;
         const text = String(dare.text || '').toLowerCase();
         if (textHas(text, /från\s+\[target\]|av\s+\[target\]/)) return target?.gender === 'man';
-        if (textHas(text, /\[partner\].*(sperma|säd)|(sperma|säd).*\[partner\]/)) return partner?.gender === 'man';
-        if (textHas(text, /\[active\].*(sperma|säd)|(sperma|säd).*\[active\]/)) return active?.gender === 'man';
+        if (textHas(text, new RegExp(`\\[partner\\].*${synonymPatterns.semen.source}|${synonymPatterns.semen.source}.*\\[partner\\]`, 'i'))) return partner?.gender === 'man';
+        if (textHas(text, new RegExp(`\\[active\\].*${synonymPatterns.semen.source}|${synonymPatterns.semen.source}.*\\[active\\]`, 'i'))) return active?.gender === 'man';
         return [active, target, partner].some(player => player?.gender === 'man');
     }
 
     function anatomyIsPossible(dare, target) {
-        if (textHas(dare.text, /klitoris/)) return target?.gender === 'kvinna';
+        if (textHas(dare.text, synonymPatterns.clitoris)) return target?.gender === 'kvinna';
+        if (textHas(dare.text, synonymPatterns.femaleGenitals)) return target?.gender === 'kvinna';
+        if (textHas(dare.text, synonymPatterns.maleGenitals)) return target?.gender === 'man';
         return true;
     }
 
@@ -2108,15 +2250,18 @@
         if (dare.text.includes('[PARTNER]')) required = Math.max(required, 3);
         if (textHas(text, /två\s+(hemliga|tysta|andra)\s+(med)?spelare|två\s+spelare/)) required = Math.max(required, 4);
         else if (textHas(text, /tre\s+(hemliga|tysta|andra)\s+(med)?spelare|tre\s+spelare/)) required = Math.max(required, 5);
-        else if (textHas(text, /gruppen|flera\s+medverkande|flera\s+spelare|okänd\s+spelare|hemlig\s+spelare|\båt\s+alla\b/)) required = Math.max(required, 3);
+        else if (textHas(text, cardExpressionPatterns.multiPlayer) || textHas(text, /flera\s+medverkande|\båt\s+alla\b/)) required = Math.max(required, 3);
         return state.players.length >= required;
     }
 
-    function dareIsAllowed(dare, active, target, partner) {
+    function dareIsAllowed(dare, active, target, partner, isTruthCard = false) {
         if (dare.answererGender === 'woman' && active?.gender !== 'kvinna') return false;
         if (dare.answererGender === 'man' && active?.gender !== 'man') return false;
         if (dare.answererGender === 'woman_or_bi_man' && !(active?.gender === 'kvinna' || (active?.gender === 'man' && active?.pref === 'bi'))) return false;
         if (!playerCountIsEnough(dare)) return false;
+        if (isTruthCard) {
+            return !dare.tags?.some(tag => (active?.truthVetos || []).includes(tag));
+        }
         const environmentTags = new Set(dare.tags || []);
         const environmentAliases = {
             sex_toys: ['dildo', 'strapon', 'double_dildo', 'glass_dildo', 'metal_dildo', 'vibrator', 'bullet', 'wand', 'air_pressure_vibrator', 'remote_vibrator', 'anal_plug', 'expanding_plug', 'anal_beads', 'anal_probe'],
@@ -2126,10 +2271,16 @@
         for (const [group, items] of Object.entries(environmentAliases)) {
             if (environmentTags.has(group) && !items.some(item => state.availableItems.includes(item))) return false;
         }
-        const exactEquipment = ['dildo', 'strapon', 'double_dildo', 'glass_dildo', 'metal_dildo', 'vibrator', 'bullet', 'wand', 'air_pressure_vibrator', 'remote_vibrator', 'anal_plug', 'expanding_plug', 'anal_beads', 'anal_probe', 'paddle', 'riding_crop', 'flogger', 'belt', 'nipple_clamps', 'hairbrush', 'blindfold', 'handcuffs', 'ankle_cuffs', 'rope', 'massage_oil'];
-        if (exactEquipment.some(item => environmentTags.has(item) && !state.availableItems.includes(item))) return false;
+        for (const [item, pattern] of Object.entries(cardExpressionPatterns.equipment)) {
+            if (textHas(dare.text, pattern) && !state.availableItems.includes(item)) return false;
+        }
+        const alternativeItems = new Set((dare.equipmentAlternatives || []).flat());
+        const exactEquipment = ['dildo', 'strapon', 'double_dildo', 'glass_dildo', 'metal_dildo', 'vibrator', 'bullet', 'wand', 'air_pressure_vibrator', 'remote_vibrator', 'anal_plug', 'expanding_plug', 'anal_beads', 'anal_probe', 'paddle', 'riding_crop', 'flogger', 'belt', 'nipple_clamps', 'hairbrush', 'blindfold', 'handcuffs', 'ankle_cuffs', 'rope', 'massage_oil', 'lubricant'];
+        if (exactEquipment.some(item => environmentTags.has(item) && !alternativeItems.has(item) && !state.availableItems.includes(item))) return false;
+        if ((dare.equipmentAlternatives || []).some(group => group.length && !group.some(item => state.availableItems.includes(item)))) return false;
         const involved = [active, target, partner].filter(Boolean);
-        if (dare.tags?.some(tag => involved.some(player => player.vetos?.includes(tag)))) return false;
+        const detectedTags = detectedCardTags(dare);
+        if (Array.from(detectedTags).some(tag => involved.some(player => player.vetos?.includes(tag)))) return false;
         const sexual = isSexualDare(dare);
         if (sexual && !pairIsAllowed(active, target)) return false;
         if (sexual && dare.text.includes('[PARTNER]') && (!partner || !pairIsAllowed(partner, target))) return false;
@@ -2179,7 +2330,7 @@
                     const partners = dare.text.includes('[PARTNER]') ? partnerCandidates : [null];
                     for (const partner of partners) {
                         if (/\[(?:ACTIVE|PARTNER)\]/.test(dare.text) && !partner && dare.text.includes('[PARTNER]')) continue;
-                        if (dareIsAllowed(dare, active, target, partner)) turns.push({ dare, dareIndex, target, partner });
+                        if (dareIsAllowed(dare, active, target, partner, useTruth)) turns.push({ dare, dareIndex, target, partner });
                     }
                 }
             }
@@ -2553,8 +2704,8 @@
         const boot = async () => {
             sortCheckboxLabels();
             await scanForLevels();
-            hideLoading();
-            toggleBiOption();
+            hideLoading(); 
+            toggleBiOption(); 
             if (state.roomCode) {
                 isHost = Boolean(state.isHost);
                 applyStateToUI();
