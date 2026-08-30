@@ -871,7 +871,7 @@
 <script type="module">
     import { initializeApp } from "firebase/app";
     import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "firebase/auth";
-    import { getFirestore, doc, setDoc, getDoc, getDocs, onSnapshot, deleteDoc, collection, addDoc, writeBatch } from "firebase/firestore";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc, collection, addDoc, writeBatch } from "firebase/firestore";
     import { getAnalytics, logEvent } from "firebase/analytics";
 
     const firebaseConfig = {
@@ -1727,7 +1727,8 @@
         const nextButton = document.getElementById('btn-next-card');
         if (nextButton) nextButton.disabled = !guestCanAct;
         const skipButton = document.getElementById('btn-skip-card');
-        const guestCanSkip = !state.gamePaused && (isHost || !state.roomCode || Boolean(ownPlayer && cardPlayer &&
+        const hasCurrentCard = state.currentTask !== 'TRYCK FÖR KORT';
+        const guestCanSkip = hasCurrentCard && !state.gamePaused && (isHost || !state.roomCode || Boolean(ownPlayer && cardPlayer &&
             (cardPlayer.id === ownPlayer.id || cardPlayer.uid === ownPlayer.uid)));
         if (skipButton) skipButton.disabled = !guestCanSkip;
         const choiceBox = document.getElementById('truth-mission-controls');
@@ -1742,7 +1743,8 @@
         if (turnHelp) {
             if (state.gamePaused) turnHelp.innerText = isHost ? 'Spelet är pausat. Fortsätt när alla är redo.' : 'Spelet är pausat av värden.';
             else if (isHost) turnHelp.innerText = 'Värden styr kortdragningen och kan alltid gå vidare.';
-            else if (guestCanAct) turnHelp.innerText = 'Det är din tur – välj nästa kort eller byt kort.';
+            else if (guestCanAct) turnHelp.innerText = 'Det är din tur – välj nästa kort.';
+            else if (guestCanSkip) turnHelp.innerText = 'Det här är ditt kort – du kan byta det.';
             else turnHelp.innerText = activePlayer ? `Väntar på ${activePlayer.name}...` : 'Väntar på nästa tur...';
         }
         const guestHasPlayer = !isHost && state.roomCode && participantPlayers.some(player => player.uid === user?.uid);
@@ -1909,25 +1911,6 @@
     };
     window.initCreateRoom = async () => {
         const ok = await initFirebase(); if (!ok) return;
-        // Rensa gamla katalogposter vars riktiga rum redan är borta.
-        // Aktiva rum lämnas orörda.
-        try {
-            const directoryRef = collection(db, 'artifacts', appId, 'public', 'data', 'roomDirectory');
-            const directorySnap = await getDocs(directoryRef);
-            const cleanup = writeBatch(db);
-            let orphanCount = 0;
-            for (const entry of directorySnap.docs) {
-                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', entry.id);
-                const roomSnap = await getDoc(roomRef);
-                if (!roomSnap.exists()) {
-                    cleanup.delete(entry.ref);
-                    orphanCount += 1;
-                }
-            }
-            if (orphanCount) await cleanup.commit();
-        } catch (cleanupError) {
-            console.warn('Kunde inte rensa gamla rumsposter.', cleanupError);
-        }
         showingGameChooser = false;
         isHost = true; state.isHost = true; state.modeSelected = true;
         state.roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
