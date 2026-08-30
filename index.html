@@ -494,7 +494,7 @@
         #next-up-info { color: #efcc58 !important; font-weight: 850 !important; }
         #active-lvl-display { color: #a9a49b !important; }
         #current-lvl-text { color: #dfbd4b !important; }
-        .game-controls { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+        .game-controls { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-flow: dense; gap: 8px; }
         .game-controls > * { margin: 0 !important; }
         .game-controls #turn-help, .game-controls #btn-next-card, .game-controls #btn-exit-room, .game-controls #lvl-up-btn { grid-column: 1 / -1; }
         .game-controls #btn-next-card { min-height: 58px; }
