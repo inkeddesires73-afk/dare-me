@@ -192,10 +192,11 @@
             top:10px;
             z-index:20;
             display:flex;
+            flex-wrap:wrap;
             gap:7px;
             padding:8px;
             margin:0 0 22px;
-            overflow-x:auto;
+            overflow-x:visible;
             scrollbar-width:none;
             border:1px solid #3d382d;
             border-radius:14px;
@@ -228,7 +229,8 @@
             body { padding:10px; }
             .container { padding:22px 16px 34px; border-radius:18px; }
             h1 { font-size:1.75rem; letter-spacing:.11em; }
-            .rules-nav { margin-inline:-5px; }
+            .rules-nav { margin-inline:-5px; gap:5px; }
+            .rules-nav a { flex:1 1 auto; text-align:center; padding:8px 7px; font-size:.68rem; }
             h2 { font-size:1.05rem; margin-top:30px; }
             p, li { font-size:.96rem; }
         }
@@ -243,6 +245,8 @@
         <nav class="rules-nav" aria-label="Genvägar i reglerna">
             <a href="#nivåer">Nivåer</a>
             <a href="#spelflöde">Så spelar ni</a>
+            <a href="#spellägen">Spellägen</a>
+            <a href="#arkitekterna">Arkitekterna</a>
             <a href="#veto">Veto</a>
             <a href="#samtycke">Samtycke</a>
             <a href="#stjärnan">Guldstjärnan</a>
@@ -300,6 +304,29 @@
         </ol>
         <p><strong>Automatisk nivåhöjning:</strong> Värden kan välja att nivån höjs automatiskt efter 1–10 kort per spelare. Det räknas hela varv, och inställningen kan stängas av. Värden kan fortfarande alltid använda <strong>HÖJ STÄMNINGEN</strong> manuellt.</p>
         <p><strong>Ändra inställningar:</strong> Gå tillbaka till lobbyn om ni vill ändra nivåer, stjärninställningar, veton eller andra spelaruppgifter.</p>
+
+        <h2 id="spellägen">🎴 SPELLÄGEN & KORTLEKAR</h2>
+        <ul>
+            <li><strong>Dare:</strong> Spelet visar uppdrag från de valda Dare-nivåerna.</li>
+            <li><strong>Truth:</strong> Spelet visar frågor från de valda Truth-nivåerna.</li>
+            <li><strong>Truth or Dare:</strong> Den aktiva spelaren väljer Truth, Dare eller Slumpa när det är hens tur.</li>
+            <li><strong>Egna kortlekar:</strong> Värden kan lägga till en eller flera egna kortlekar och välja dem tillsammans med nivåerna.</li>
+            <li><strong>Utrustning:</strong> Värden markerar vilka konkreta redskap som finns i rummet. Kort som kräver något som saknas väljs bort automatiskt.</li>
+        </ul>
+        <p><strong>Lokalt spel:</strong> Sidan behöver först laddas från webben, men därefter körs spelet på samma enhet utan Firebase-synkning. <strong>Rumsspel:</strong> Kräver internet under spelet eftersom värd och gäster synkas via Firebase. Värden skapar rummet och övriga ansluter med rumskoden.</p>
+
+        <h2 id="arkitekterna">🛠️ SÅ FUNGERAR ARKITEKTERNA</h2>
+        <p>Med Arkitekterna kan ni skapa egna Dare- eller Truth-kortlekar som kan sparas och användas i spelet.</p>
+        <ol>
+            <li><strong>Döp kortleken:</strong> Skriv ett namn på kortleken och välj vilken nivå den hör till.</li>
+            <li><strong>Skriv kortet:</strong> Skriv fritt i textrutan eller bygg meningen genom att trycka på orden och fraserna i ordlistorna.</li>
+            <li><strong>Använd platshållare:</strong> Platshållare som <code>[TARGET]</code>, <code>[HEN]</code>, <code>[SUBJECT]</code>, <code>[ACTIVE]</code> och <code>[PARTNER]</code> ersätts automatiskt med rätt spelares namn och pronomen.</li>
+            <li><strong>Välj taggar:</strong> Välj relevanta Veto-taggar för innehållet. Utrustning väljs separat, till exempel dildo, rep eller vibrator.</li>
+            <li><strong>Förhandsgranska:</strong> Tryck <strong>PROVKÖR KORT</strong> för att se hur kortet kan visas. Tryck igen för att fälla in förhandsvisningen.</li>
+            <li><strong>Lägg till:</strong> Tryck <strong>LÄGG TILL I LISTAN</strong> när kortet är färdigt. Det påverkar inte kortleken förrän det läggs till.</li>
+            <li><strong>Spara eller exportera:</strong> Spara kortleken som en JSON-fil på en plats du själv väljer. Den filen kan senare öppnas och importeras igen.</li>
+        </ol>
+        <p>Truth-Arkitekten används för frågor och Dare-Arkitekten för uppdrag. De har separata ordlistor, taggar och kortlekar. En färdig kortlek kan läggas till i ett spel av värden eller skickas till spelskaparen för eventuell granskning.</p>
 
         <h2 id="veto">🛡️ DIN TRYGGHET – VETO-SYSTEMET</h2>
         <p>Veto-systemet är byggt för att automatiskt filtrera bort uppdrag som rör ämnen du eller din motspelare valt att undvika. Det är ett kraftfullt verktyg för att skapa en trygg miljö, men säkerheten är ett samspel mellan tekniken och er spelare.</p>
