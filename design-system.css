@@ -590,6 +590,7 @@ body.app-shell .game-controls #turn-help {
 }
 
 body.app-shell .game-controls #btn-skip-card,
+body.app-shell .game-controls #btn-complete-card,
 body.app-shell .game-controls #btn-pause-game,
 body.app-shell .game-controls #btn-request-pause,
 body.app-shell .game-controls #lvl-up-btn {
@@ -597,11 +598,19 @@ body.app-shell .game-controls #lvl-up-btn {
 }
 
 body.app-shell .game-controls #btn-skip-card,
+body.app-shell .game-controls #btn-complete-card,
 body.app-shell .game-controls #btn-pause-game,
 body.app-shell .game-controls #btn-request-pause {
     height: 44px;
     padding: 10px;
+    font-size: clamp(.62rem, 2.5vw, .74rem);
+    letter-spacing: .04em;
 }
+
+body.app-shell .game-controls #btn-skip-card { grid-column: 1; }
+body.app-shell .game-controls #btn-complete-card { grid-column: 2; }
+body.app-shell .game-controls #btn-pause-game,
+body.app-shell .game-controls #btn-request-pause { grid-column: 3; }
 
 body.app-shell .game-controls #btn-exit-room {
     min-height: 34px;
@@ -609,19 +618,6 @@ body.app-shell .game-controls #btn-exit-room {
     padding: 5px 14px;
     margin-top: 8px !important;
     color: var(--dm-muted);
-}
-
-@media (min-width: 560px) {
-    body.app-shell .game-controls #btn-skip-card,
-    body.app-shell .game-controls #btn-pause-game,
-    body.app-shell .game-controls #btn-request-pause {
-        grid-column: auto;
-    }
-
-    body.app-shell .game-controls #btn-skip-card { grid-column: 1; }
-    body.app-shell .game-controls #btn-pause-game,
-    body.app-shell .game-controls #btn-request-pause { grid-column: 2; }
-    body.app-shell .game-controls #btn-exit-room { grid-column: 1 / -1; }
 }
 
 body.app-shell .modal-box {

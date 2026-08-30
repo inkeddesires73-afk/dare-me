@@ -861,9 +861,9 @@
                 <button class="btn btn-next truth-choice-btn" type="button" onclick="generateTurn('dare')">DARE</button>
             </div>
             <button class="btn btn-next" id="btn-next-card" onclick="generateTurn()">NÄSTA KORT</button>
-            <button class="btn btn-next" id="btn-complete-card" onclick="completeCard()" disabled>KLAR ✓</button>
+            <button class="btn btn-rules" id="btn-complete-card" onclick="completeCard()" disabled>KLAR ✓</button>
             <button class="btn btn-rules" id="btn-skip-card" style="margin-bottom: 25px;" onclick="skipCard()">BYT KORT 🔄</button>
-            <button class="btn btn-lvl-up host-only" id="btn-pause-game" onclick="togglePause()">PAUSA SPELET ⏸</button>
+            <button class="btn btn-lvl-up host-only" id="btn-pause-game" onclick="togglePause()">PAUS ⏸</button>
             <button class="btn btn-lvl-up guest-only" id="btn-request-pause" onclick="requestPause()">BEGÄR PAUS ⏸</button>
             <button class="btn btn-lvl-up host-only" id="lvl-up-btn" onclick="advanceLevel()">HÖJ STÄMNINGEN 🔥</button>
             <button class="btn btn-back" id="btn-exit-room" style="margin-top: 30px;" onclick="goToLobby()">LOBBY / REDIGERA</button>
@@ -1690,7 +1690,7 @@
             const pausedBanner = document.getElementById('game-paused-banner');
             if (pausedBanner) pausedBanner.style.display = state.gamePaused ? 'block' : 'none';
             const pauseButton = document.getElementById('btn-pause-game');
-            if (pauseButton) pauseButton.innerText = state.gamePaused ? 'FORTSÄTT SPELET ▶' : 'PAUSA SPELET ⏸';
+            if (pauseButton) pauseButton.innerText = state.gamePaused ? 'FORTSÄTT ▶' : 'PAUS ⏸';
             const dareLevels = getSelectedDareLevels();
             const curLvlId = dareLevels[state.activeLevelIdx];
             if (lastRenderedLevelId === null) lastRenderedLevelId = curLvlId;
