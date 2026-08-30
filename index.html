@@ -2283,7 +2283,7 @@
         if (Array.from(detectedTags).some(tag => involved.some(player => player.vetos?.includes(tag)))) return false;
         const sexual = isSexualDare(dare);
         if (sexual && !pairIsAllowed(active, target)) return false;
-        if (sexual && dare.text.includes('[PARTNER]') && (!partner || !pairIsAllowed(partner, target))) return false;
+        if (sexual && partner && !pairIsAllowed(partner, target)) return false;
         if (!semenRolesArePossible(dare, active, target, partner)) return false;
         if (!anatomyIsPossible(dare, target)) return false;
         if (!penetrationRolesArePossible(dare, active, target, partner)) return false;
