@@ -112,12 +112,12 @@ Värden kan ange vilken konkret utrustning som finns i rummet. Kort som kräver 
 - Könsberoende Truth-frågor kan filtreras efter den aktiva spelarens kön och läggning.
 - Truth nivå 3 och 4 har genomgått en separat språkgranskning.
 
-### Kvar att bygga och testa
+### Genomfört
 
 - Separata Truth-veton för exempelvis personliga frågor, fantasier, gruppfrågor och erfarenheter.
 - Testa alla tre spellägen lokalt och i rum med flera enheter.
 - Kontrollera nivåval, turordning, historik och slumpning med flera valda Truth-nivåer.
-- Bygg stöd för Truth-kort i Arkitekten.
+- Truth-stöd finns i Arkitekten.
 - Möjliga framtida lägen: Het stol, Snurra/flaska och Aldrig har jag.
 
 ## 5. Poäng, statistik och dagliga utmaningar — ⬜ ej påbörjad
@@ -157,6 +157,12 @@ Värden ska kunna lägga till egna regler eller konsekvenser för en spelrunda.
 - Dare Me, Arkitekten och regelsidan använder samma svart-guld-formspråk.
 - Arkitekten har mindre toppbild, konsekventa knappar och sökning bland ord och utrustning.
 - Regelsidan har en fast genvägsrad till de viktigaste avsnitten.
+- Senaste designjusteringarna använder en mer exklusiv svart/guld-stil med tydligare paneler.
+- Blandläget visar Dare- och Truth-nivåer sida vid sida.
+- Välj kön och spelläge börjar neutralt och kräver ett aktivt val.
+- Truth- och Dare-veton visas bara för valt spelläge; båda visas i blandläget.
+- Gemensam kortanalys, synonymregister och filtrering efter kön, spelarantal och utrustning är införda.
+- Lokalt spel startar utan Firebase-inloggning och onödiga Firestore-lyssnare.
 
 ### Att testa
 

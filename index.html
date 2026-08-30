@@ -871,7 +871,7 @@
 <script type="module">
     import { initializeApp } from "firebase/app";
     import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "firebase/auth";
-    import { getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc, collection, addDoc, writeBatch } from "firebase/firestore";
+    import { getFirestore, doc, setDoc, getDoc, getDocs, onSnapshot, deleteDoc, collection, addDoc, writeBatch } from "firebase/firestore";
     import { getAnalytics, logEvent } from "firebase/analytics";
 
     const firebaseConfig = {
@@ -1902,6 +1902,25 @@
     };
     window.initCreateRoom = async () => {
         const ok = await initFirebase(); if (!ok) return;
+        // Rensa gamla katalogposter vars riktiga rum redan är borta.
+        // Aktiva rum lämnas orörda.
+        try {
+            const directoryRef = collection(db, 'artifacts', appId, 'public', 'data', 'roomDirectory');
+            const directorySnap = await getDocs(directoryRef);
+            const cleanup = writeBatch(db);
+            let orphanCount = 0;
+            for (const entry of directorySnap.docs) {
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', entry.id);
+                const roomSnap = await getDoc(roomRef);
+                if (!roomSnap.exists()) {
+                    cleanup.delete(entry.ref);
+                    orphanCount += 1;
+                }
+            }
+            if (orphanCount) await cleanup.commit();
+        } catch (cleanupError) {
+            console.warn('Kunde inte rensa gamla rumsposter.', cleanupError);
+        }
         showingGameChooser = false;
         isHost = true; state.isHost = true; state.modeSelected = true;
         state.roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
