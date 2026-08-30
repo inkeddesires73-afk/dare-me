@@ -1720,13 +1720,16 @@
 
     function updateGuestTurnControls() {
         const activePlayer = state.players[state.currentPlayerIdx];
+        const cardPlayer = state.players[(state.currentPlayerIdx - 1 + state.players.length) % state.players.length];
         const ownPlayer = participantPlayers.find(player => player.uid === user?.uid);
         const guestCanAct = !state.gamePaused && (isHost || !state.roomCode || Boolean(ownPlayer && activePlayer &&
             (activePlayer.id === ownPlayer.id || activePlayer.uid === ownPlayer.uid)));
-        ['btn-next-card', 'btn-skip-card'].forEach(id => {
-            const button = document.getElementById(id);
-            if (button) button.disabled = !guestCanAct;
-        });
+        const nextButton = document.getElementById('btn-next-card');
+        if (nextButton) nextButton.disabled = !guestCanAct;
+        const skipButton = document.getElementById('btn-skip-card');
+        const guestCanSkip = !state.gamePaused && (isHost || !state.roomCode || Boolean(ownPlayer && cardPlayer &&
+            (cardPlayer.id === ownPlayer.id || cardPlayer.uid === ownPlayer.uid)));
+        if (skipButton) skipButton.disabled = !guestCanSkip;
         const choiceBox = document.getElementById('truth-mission-controls');
         if (choiceBox) {
         const choiceMode = state.gameMode === 'truth_or_dare';
@@ -2412,7 +2415,9 @@
         const ownPlayer = participantPlayers.find(player => player.uid === user?.uid);
         if (!isHost && state.roomCode) {
             if (!ownPlayer) return;
-            requestRoomAction('skipCard', { playerUid: user.uid, playerId: ownPlayer.id })
+            const cardPlayer = state.players[(state.currentPlayerIdx - 1 + state.players.length) % state.players.length];
+            if (!cardPlayer || (cardPlayer.id !== ownPlayer.id && cardPlayer.uid !== ownPlayer.uid)) return;
+            requestRoomAction('skipCard', { playerUid: user.uid, playerId: cardPlayer.id })
                 .catch(() => showLobbyWarning('Kortet kunde inte bytas. Kontrollera anslutningen.'));
             return;
         }
