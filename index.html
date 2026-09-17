@@ -2023,11 +2023,11 @@
             showLobbyWarning('Välj kön innan spelaren läggs till.');
             return;
         }
-        if (!isHost && state.roomCode && participantPlayers.some(player => player.uid === user?.uid)) {
+        const editedPlayer = editingPlayerId == null ? null : state.players.find(player => player.id === editingPlayerId);
+        if (!isHost && state.roomCode && !editedPlayer && participantPlayers.some(player => player.uid === user?.uid)) {
             showLobbyWarning('Den här enheten har redan en spelare i rummet.');
             return;
         }
-        const editedPlayer = editingPlayerId == null ? null : state.players.find(player => player.id === editingPlayerId);
         const finalStars = editedPlayer ? editedPlayer.stars : tempStars;
         const newPlayer = {
             id: editedPlayer?.id ?? Date.now(), name, gender: selectedGender,
