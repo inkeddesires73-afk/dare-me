@@ -1054,6 +1054,28 @@
         });
     }
 
+    const PERSONAL_DECKS_STORAGE_KEY = 'dareme_personal_custom_decks';
+
+    function getPersonalCustomDecks() {
+        try {
+            return normalizeCustomDecks(JSON.parse(localStorage.getItem(PERSONAL_DECKS_STORAGE_KEY) || '[]'));
+        } catch (error) {
+            console.warn('Sparade egna kortlekar kunde inte läsas.', error);
+            return [];
+        }
+    }
+
+    function savePersonalCustomDecks(decks) {
+        localStorage.setItem(PERSONAL_DECKS_STORAGE_KEY, JSON.stringify(normalizeCustomDecks(decks)));
+    }
+
+    function clearSharedCustomDecks(personalDecks) {
+        const personalIds = new Set(normalizeCustomDecks(personalDecks).map(deck => deck.id));
+        Object.keys(allDares).forEach(id => {
+            if (id.startsWith('custom:') && !personalIds.has(id)) delete allDares[id];
+        });
+    }
+
     function hydrateCustomDares(decks = state.customDecks) {
         normalizeCustomDecks(decks).forEach(deck => {
             allDares[deck.id] = { name: deck.name, difficulty: deck.difficulty, dares: deck.dares };
@@ -1418,7 +1440,7 @@
     }
 
     function leaveGuestRoom(message = '') {
-        const localCustomDecks = normalizeCustomDecks(state.customDecks);
+        const localCustomDecks = getPersonalCustomDecks();
         if (!isHost && state.roomCode && user && db) {
             deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.roomCode, 'participants', user.uid)).catch(() => {});
         }
@@ -1446,21 +1468,31 @@
             isHost: false,
             players: [],
             selectedLevels: [],
+            gameMode: '',
             customDecks: localCustomDecks,
             sharedDecks: [],
+            availableItems: [...DEFAULT_AVAILABLE_ITEMS],
            activeLevelIdx: 0,
             currentPlayerIdx: 0,
+            allowManualStars: false,
+            starPowerDuration: 3,
+            starChance: 3,
+            autoLevelUpCards: 0,
             currentTask: 'TRYCK FÖR KORT',
+            currentCardTemplate: '',
             awaitingCompletion: false,
             timer: null,
             timerEndsAt: null,
             cardsSinceLevelUp: 0,
             usedDareKeys: [],
+            cardHistory: [],
             isPlaying: false,
             gamePaused: false,
             roomCode: null,
             hostUid: null
         };
+        clearSharedCustomDecks(localCustomDecks);
+        hydrateCustomDares(localCustomDecks);
         saveLocal();
         applyStateToUI();
         if (message) showLobbyWarning(message);
@@ -1956,10 +1988,38 @@
         participantPlayers = [];
         showingGameChooser = false;
         isHost = true;
-        state.isHost = true;
-        state.modeSelected = true;
-        state.roomCode = null;
-        state.hostUid = null;
+        const personalDecks = getPersonalCustomDecks();
+        state = {
+            introSeen: true,
+            modeSelected: true,
+            isHost: true,
+            players: [],
+            selectedLevels: [],
+            gameMode: '',
+            customDecks: personalDecks,
+            sharedDecks: [],
+            availableItems: [...DEFAULT_AVAILABLE_ITEMS],
+            activeLevelIdx: 0,
+            currentPlayerIdx: 0,
+            allowManualStars: false,
+            starPowerDuration: 3,
+            starChance: 3,
+            autoLevelUpCards: 0,
+            cardsSinceLevelUp: 0,
+            usedDareKeys: [],
+            cardHistory: [],
+            currentCardTemplate: '',
+            currentTask: 'TRYCK FÖR KORT',
+            awaitingCompletion: false,
+            timer: null,
+            timerEndsAt: null,
+            isPlaying: false,
+            gamePaused: false,
+            roomCode: null,
+            hostUid: null
+        };
+        clearSharedCustomDecks(personalDecks);
+        hydrateCustomDares(personalDecks);
         await scanForLevels();
         saveLocal();
         applyStateToUI();
@@ -2722,7 +2782,10 @@
         if (biUi) biUi.style.display = (gender === 'man' && pref === 'bi') ? 'block' : 'none'; 
     };
 
-    function saveLocal() { localStorage.setItem('dareme_state', JSON.stringify(state)); }
+    function saveLocal() {
+        if (isHost) savePersonalCustomDecks(state.customDecks);
+        localStorage.setItem('dareme_state', JSON.stringify(state));
+    }
 
     function getSavedCards() {
         try {
@@ -2869,6 +2932,11 @@
                 state.availableItems = state.availableItems.filter(item => !['wet', 'stearin'].includes(item));
                 hydrateCustomDares();
                 state.cardHistory = Array.isArray(state.cardHistory) ? state.cardHistory.slice(0, MAX_CARD_HISTORY) : [];
+                // Äldre lokala installationer hade bara en gemensam sparfil.
+                // Flytta över egna kortlekar innan ett eventuellt rumsbesök kan ersätta dem.
+                if (!state.roomCode && localStorage.getItem(PERSONAL_DECKS_STORAGE_KEY) === null) {
+                    savePersonalCustomDecks(state.customDecks);
+                }
             } catch (e) {
                 localStorage.removeItem('dareme_state');
                 console.warn('Sparad speldata kunde inte läsas och ignorerades.', e);
