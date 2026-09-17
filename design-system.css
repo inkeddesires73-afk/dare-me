@@ -426,7 +426,20 @@ body.app-shell #level-selection-grid .veto-option:has(input:checked) {
 }
 
 @media (max-width: 520px) {
-    body.app-shell #level-selection-grid { grid-template-columns: 1fr !important; }
+    /* Mixed Truth/Dare mode is two columns on desktop only.  On a phone each
+       deck needs the full row; otherwise the Dare labels collapse into narrow,
+       tall cards beside the Truth cards. */
+    body.app-shell #level-selection-grid.mix-level-layout {
+        grid-template-columns: 1fr !important;
+        grid-auto-flow: row;
+    }
+    body.app-shell #level-selection-grid.mix-level-layout .dare-level-option,
+    body.app-shell #level-selection-grid.mix-level-layout .truth-level-option {
+        grid-column: 1 !important;
+    }
+    body.app-shell #level-selection-grid.mix-level-layout .dare-level-option { order: 1; }
+    body.app-shell #level-selection-grid.mix-level-layout .truth-level-option { order: 2; }
+    body.app-shell #level-selection-grid:not(.mix-level-layout) { grid-template-columns: 1fr !important; }
     body.app-shell #level-selection-grid .veto-option { min-height: 34px; padding: 6px 8px; font-size: .72rem; }
     body.app-shell .level-up-control { width: 100%; }
 }
