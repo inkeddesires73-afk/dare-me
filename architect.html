@@ -922,6 +922,12 @@
         }
     }
 
+    function escapePreviewText(value) {
+        const div = document.createElement('div');
+        div.textContent = String(value ?? '');
+        return div.innerHTML;
+    }
+
     function previewCard() {
         const text = document.getElementById('dareText').value.trim();
         const panel = document.getElementById('card-preview');
@@ -936,7 +942,7 @@
             '[TARGET]': 'Lisa', '[TARGETS]': 'Lisas', '[HEN]': 'henne', '[HENS]': 'hennes',
             '[SUBJECT]': 'hon', '[ACTIVE]': 'Mia', '[PARTNER]': 'Sara'
         };
-        const rendered = text.replace(/\[(TARGETS?|HEN|HENS|SUBJECT|ACTIVE|PARTNER)\]/g, token => replacements[token] || token);
+        const rendered = escapePreviewText(text).replace(/\[(TARGETS?|HEN|HENS|SUBJECT|ACTIVE|PARTNER)\]/g, token => escapePreviewText(replacements[token] || token));
         panel.innerHTML = '<strong>Så här kan kortet visas</strong>' + rendered;
         panel.style.display = 'block';
         button.textContent = 'DÖLJ PROVKÖRNING ▲';
@@ -1119,7 +1125,13 @@
             try {
                 const deck = JSON.parse(reader.result);
                 if (!deck || !Array.isArray(deck.dares) || deck.dares.some(card => !card || typeof card.text !== 'string')) throw new Error('Ogiltig kortlek');
-                deckDares = deck.dares.map(card => ({ text: card.text.trim(), tags: Array.isArray(card.tags) ? card.tags.filter(tag => typeof tag === 'string') : [] }));
+                deckDares = deck.dares.map(card => ({
+                    text: card.text.trim(),
+                    tags: Array.isArray(card.tags) ? card.tags.filter(tag => typeof tag === 'string') : [],
+                    equipmentAlternatives: Array.isArray(card.equipmentAlternatives) ? card.equipmentAlternatives : [],
+                    minPlayers: Number.isInteger(card.minPlayers) ? card.minPlayers : undefined,
+                    answererGender: typeof card.answererGender === 'string' ? card.answererGender : undefined
+                }));
                 document.getElementById('deckName').value = deck.name || '';
                 if (deck.difficulty) document.getElementById('deckDifficulty').value = deck.difficulty;
                 renderOutput();

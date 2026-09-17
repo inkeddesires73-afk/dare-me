@@ -12,11 +12,18 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['deck', 'fileName', 'senderUid', 'submittedAt'])
         && request.resource.data.senderUid == request.auth.uid
         && request.resource.data.fileName is string
+        && request.resource.data.fileName.size() > 0
         && request.resource.data.fileName.size() <= 120
+        && request.resource.data.submittedAt is int
         && request.resource.data.deck is map
+        && request.resource.data.deck.keys().hasOnly(['name', 'difficulty', 'dares'])
         && request.resource.data.deck.name is string
+        && request.resource.data.deck.name.size() > 0
         && request.resource.data.deck.name.size() <= 80
+        && request.resource.data.deck.difficulty is string
+        && request.resource.data.deck.difficulty.size() <= 40
         && request.resource.data.deck.dares is list
+        && request.resource.data.deck.dares.size() > 0
         && request.resource.data.deck.dares.size() <= 200;
       allow read, update, delete: if isAdmin();
     }

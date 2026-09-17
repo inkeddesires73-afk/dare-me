@@ -134,6 +134,7 @@
         .connection-status[data-status="online"] { color: #77b77a; }
         .connection-status[data-status="connecting"] { color: #c8a84e; }
         .connection-status[data-status="offline"], .connection-status[data-status="error"] { color: #d08080; }
+        .connection-status[data-status="local"] { display: none; }
 
         .setup-container { 
             background: var(--panel); padding: 25px; border-radius: 20px; border: 1px solid var(--border); 
@@ -159,9 +160,10 @@
         .veto-title { font-size: 0.7rem; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; display: block; letter-spacing: 1px; }
         .veto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .veto-option { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #eeeeee !important; cursor: pointer; }
-        #level-selection-grid.mix-level-layout { grid-template-columns:repeat(2,minmax(0,1fr)) !important; align-items:start; }
+        #level-selection-grid.mix-level-layout { grid-template-columns:repeat(2,minmax(0,1fr)) !important; align-items:start; grid-auto-flow: row dense; }
         #level-selection-grid.mix-level-layout .dare-level-option { grid-column:1; }
         #level-selection-grid.mix-level-layout .truth-level-option { grid-column:2; }
+        #level-selection-grid.mix-level-layout .veto-option { min-height: 38px; padding: 7px 9px; font-size: .78rem; }
         .veto-option input[type="checkbox"] { appearance: none; -webkit-appearance: none; flex: 0 0 20px; width: 20px; height: 20px; margin: 0; border: 2px solid #a9a9a9; border-radius: 4px; background: #262626; cursor: pointer; opacity: 1; }
         .veto-option input[type="checkbox"]:checked { background: var(--gold); border-color: #f4d36a; box-shadow: inset 0 0 0 3px #262014; }
         .veto-container .veto-option:hover { color: #fff; }
@@ -871,10 +873,12 @@
     </div>
 
 <script type="module">
-    import { initializeApp } from "firebase/app";
-    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "firebase/auth";
-    import { getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc, collection, addDoc, writeBatch } from "firebase/firestore";
-    import { getAnalytics, logEvent } from "firebase/analytics";
+    let initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken;
+    let getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc, collection, addDoc, writeBatch;
+    let getAnalytics, logEvent;
+    let app = null;
+    let analytics = null;
+    let firebaseModulesPromise = null;
 
     const firebaseConfig = {
       apiKey: "AIzaSyADzIduNhKHBKIMWMGIwwPtiqKkZk8xZK4",
@@ -886,8 +890,33 @@
       measurementId: "G-SZC2F73JDZ"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
+    async function loadFirebaseModules() {
+        if (firebaseModulesPromise) return firebaseModulesPromise;
+        firebaseModulesPromise = (async () => {
+            const [appModule, authModule, firestoreModule] = await Promise.all([
+                import('firebase/app'),
+                import('firebase/auth'),
+                import('firebase/firestore')
+            ]);
+            ({ initializeApp } = appModule);
+            ({ getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } = authModule);
+            ({ getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc, collection, addDoc, writeBatch } = firestoreModule);
+            app = initializeApp(firebaseConfig);
+            try {
+                const analyticsModule = await import('firebase/analytics');
+                ({ getAnalytics, logEvent } = analyticsModule);
+                analytics = getAnalytics(app);
+            } catch (error) {
+                analytics = null;
+                console.info('Analytics kunde inte laddas; spelet fortsätter.', error);
+            }
+            return true;
+        })().catch(error => {
+            firebaseModulesPromise = null;
+            throw error;
+        });
+        return firebaseModulesPromise;
+    }
 
     let allDares = {}; 
     let tempStars = 0; 
@@ -985,7 +1014,9 @@
                 const normalized = {
                     text: card.text.trim().slice(0, 1500),
                     tags: Array.isArray(card.tags) ? card.tags.filter(tag => typeof tag === 'string').slice(0, 30) : [],
-                    equipmentAlternatives: Array.isArray(card.equipmentAlternatives) ? card.equipmentAlternatives.filter(group => Array.isArray(group) && group.every(item => typeof item === 'string')).slice(0, 10) : []
+                    equipmentAlternatives: Array.isArray(card.equipmentAlternatives) ? card.equipmentAlternatives.filter(group => Array.isArray(group) && group.every(item => typeof item === 'string')).slice(0, 10) : [],
+                    ...(Number.isInteger(card.minPlayers) ? { minPlayers: card.minPlayers } : {}),
+                    ...(typeof card.answererGender === 'string' ? { answererGender: card.answererGender } : {})
                 };
                 // Komplettera saknade funktionstaggar från synonymregistret.
                 // Korttexten och befintliga taggar lämnas oförändrade.
@@ -1092,15 +1123,15 @@
         };
         const grid = document.getElementById('level-selection-grid');
         try {
-            const truthResponse = await fetch(`truth1.json?t=${Date.now()}`);
+            const truthResponse = await fetch('truth1.json');
             if (truthResponse.ok) allDares.truth = await truthResponse.json();
-            const truth2Response = await fetch(`truth2.json?t=${Date.now()}`);
+            const truth2Response = await fetch('truth2.json');
             if (truth2Response.ok) allDares.truth2 = await truth2Response.json();
-            const truth3Response = await fetch(`truth3.json?t=${Date.now()}`);
+            const truth3Response = await fetch('truth3.json');
             if (truth3Response.ok) allDares.truth3 = await truth3Response.json();
-            const truth4Response = await fetch(`truth4.json?t=${Date.now()}`);
+            const truth4Response = await fetch('truth4.json');
             if (truth4Response.ok) allDares.truth4 = await truth4Response.json();
-        } catch (e) { console.warn('Kunde inte läsa truth.json.', e); }
+        } catch (e) { console.warn('Kunde inte läsa Truth-nivåerna.', e); }
         window.shareAllCustomDecks = async () => {
             if (!isHost || !state.customDecks.length) return showLobbyWarning('Lägg till en egen kortlek först.');
             state.sharedDecks = normalizeCustomDecks(state.customDecks);
@@ -1141,7 +1172,7 @@
 
         for (let i = 1; i <= 20; i++) {
             try {
-                const res = await fetch(`level${i}.json?t=${Date.now()}`);
+                const res = await fetch(`level${i}.json`);
                 if (res.ok) {
                     const data = await res.json();
                     allDares[i] = data;
@@ -1280,6 +1311,7 @@
         firebaseInitPromise = (async () => {
             setConnectionStatus('connecting', 'Ansluter...');
             try {
+                await loadFirebaseModules();
                 auth = getAuth(app);
                 db = getFirestore(app);
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -1464,7 +1496,7 @@
                         state.selectedLevels = remoteLevels;
                         for (const id of state.selectedLevels) {
                             if (isBuiltInLevelId(id) && !allDares[id]) {
-                                fetch(`level${id}.json?t=${Date.now()}`).then(res => {
+                                fetch(`level${id}.json`).then(res => {
                                     if (res.ok) res.json().then(data => allDares[id] = data);
                                 });
                             }
@@ -2352,7 +2384,6 @@
             const turns = [];
             for (let dareIndex = 0; dareIndex < pool.length; dareIndex++) {
                 const dare = pool[dareIndex];
-                const dareKey = `${curLvlId}:${dareIndex}`;
                 const effectiveKey = `${sourceId}:${dareIndex}`;
                 if (!ignoreUsed && usedDareKeys.has(effectiveKey)) continue;
                 for (const target of validTargets) {
@@ -2367,7 +2398,7 @@
             return turns;
         };
         let possibleTurns = collectPossibleTurns();
-        if (possibleTurns.length === 0 && pool.length && pool.every((_, index) => usedDareKeys.has(`${curLvlId}:${index}`))) {
+        if (possibleTurns.length === 0 && pool.length && pool.every((_, index) => usedDareKeys.has(`${sourceId}:${index}`))) {
             state.usedDareKeys = state.usedDareKeys.filter(key => !key.startsWith(`${sourceId}:`));
             usedDareKeys.clear();
             possibleTurns = collectPossibleTurns();
@@ -2378,7 +2409,7 @@
             const { dare, dareIndex, target, partner } = possibleTurns[Math.floor(Math.random() * possibleTurns.length)];
             const dareKey = `${sourceId}:${dareIndex}`;
             if (!state.usedDareKeys.includes(dareKey)) state.usedDareKeys.push(dareKey);
-            const ts = target.name + (target.name.endsWith('S') ? '' : 'S');
+            const ts = /[sxz]$/i.test(target.name) ? target.name : `${target.name}s`;
             const pronomen = target.gender === 'man' ? 'honom' : 'henne';
             const pronomenSubject = target.gender === 'man' ? 'han' : 'hon';
             const pronomenPossessiv = target.gender === 'man' ? 'hans' : 'hennes';
@@ -2773,7 +2804,7 @@
                 applyStateToUI();
             }
             // EXTRA TRIGGER FÖR ANALYTICS REALTIME
-            logEvent(analytics, 'app_open', { platform: 'web' });
+            if (analytics && logEvent) logEvent(analytics, 'app_open', { platform: 'web' });
         };
         boot().catch(error => {
             console.error('Dare Me kunde inte starta.', error);

@@ -384,11 +384,13 @@ body.app-shell .level-up-scale { color: var(--dm-muted); font-size: .57rem; lett
 body.app-shell #level-selection-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 8px !important;
+    grid-auto-flow: row dense;
 }
 
 body.app-shell #level-selection-grid .veto-option {
-    min-height: 48px;
-    padding: 9px 10px;
+    min-height: 38px;
+    padding: 7px 9px;
+    font-size: .78rem;
     border: 1px solid rgba(243,213,117,.16);
     border-radius: 10px;
     background: linear-gradient(145deg, rgba(255,255,255,.035), rgba(0,0,0,.18));
@@ -425,6 +427,7 @@ body.app-shell #level-selection-grid .veto-option:has(input:checked) {
 
 @media (max-width: 520px) {
     body.app-shell #level-selection-grid { grid-template-columns: 1fr !important; }
+    body.app-shell #level-selection-grid .veto-option { min-height: 34px; padding: 6px 8px; font-size: .72rem; }
     body.app-shell .level-up-control { width: 100%; }
 }
 
@@ -483,7 +486,7 @@ body.app-shell #active-lvl-display {
     color: var(--dm-muted) !important;
 }
 
-body.app-shell .connection-status[data-status="local"] { color: var(--dm-muted) !important; }
+body.app-shell .connection-status[data-status="local"] { color: var(--dm-muted) !important; display: none !important; }
 body.app-shell .connection-status[data-status="online"] {
     color: #8fcf93 !important;
     text-shadow: 0 0 12px rgba(143,207,147,.18);

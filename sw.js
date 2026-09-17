@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dare-me-pwa-v10';
+const CACHE_NAME = 'dare-me-pwa-v11';
 const APP_SHELL = [
   './',
   './index.html',
@@ -8,8 +8,8 @@ const APP_SHELL = [
   './design-system.css',
   './manifest.webmanifest',
   './dareme.png',
-  './icon-192.jpg?v=2',
-  './icon-512.jpg?v=2',
+  './icon-192.jpg',
+  './icon-512.jpg',
   './level1.json',
   './level2.json',
   './level3.json',
@@ -33,7 +33,7 @@ self.addEventListener('activate', event => {
     caches.keys()
       .then(keys => Promise.all(
         keys
-          .filter(key => key !== CACHE_NAME)
+          .filter(key => key.startsWith('dare-me-pwa-') && key !== CACHE_NAME)
           .map(key => caches.delete(key))
       ))
       .then(() => self.clients.claim())
@@ -61,11 +61,13 @@ self.addEventListener('fetch', event => {
   }
 
   const isHtml = url.pathname.endsWith('.html') || url.pathname.endsWith('/');
+  const isDeck = /\/(?:level\d+|truth\d+)\.json$/i.test(url.pathname);
+  const cacheRequest = isDeck ? new Request(url.origin + url.pathname) : request;
   event.respondWith(
-    (isHtml ? fetch(request).catch(() => caches.match(request)) : caches.match(request).then(cached => cached || fetch(request))).then(response => {
+    (isHtml ? fetch(request).catch(() => caches.match(cacheRequest)) : caches.match(cacheRequest).then(cached => cached || fetch(request))).then(response => {
       if (!response) return response;
       const copy = response.clone();
-      caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+      caches.open(CACHE_NAME).then(cache => cache.put(cacheRequest, copy));
       return response;
     })
   );
