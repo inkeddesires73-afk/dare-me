@@ -3,7 +3,7 @@
   "difficulty": "🌶️🌶️🌶️",
   "dares": [
     {
-      "text": "få smisk på rumpan av [TARGET], till en början mjukt, men sluta hårt.",
+      "text": "få smisk på rumpan av [TARGET], först mjukt och sedan hårdare.",
       "tags": [
         "spanking"
       ]
@@ -43,6 +43,13 @@
       "text": "penetrera [TARGET] i valfri ställning tills ni hittar en perfekt rytm.",
       "tags": [
         "penetration"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -59,6 +66,13 @@
       "tags": [
         "penetration",
         "public"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -67,6 +81,12 @@
         "sex_toys",
         "genitals",
         "vibrator"
+      ],
+      "anatomyRequirements": [
+        {
+          "role": "target",
+          "gender": "kvinna"
+        }
       ]
     },
     {
@@ -79,6 +99,13 @@
       "text": "knulla [TARGET] bakifrån medan du drar [HEN] i håret.",
       "tags": [
         "penetration"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -100,6 +127,13 @@
       "text": "ha sex med [TARGET] i en ställning ni aldrig provat förut.",
       "tags": [
         "penetration"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "flexible"
+        }
       ]
     },
     {
@@ -118,11 +152,17 @@
       ]
     },
     {
-      "text": "ligg på mage, bli fasthållen och använd av [TARGET], du får inte prata.",
+      "text": "ligg på mage och låt [TARGET] penetrera dig långsamt medan du ligger helt stilla.",
       "tags": [
-        "bondage",
         "penetration",
         "submission"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "target",
+          "receiver": "active",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -133,10 +173,16 @@
       ]
     },
     {
-      "text": "blunda och låt [TARGET] använda dig, du får inte veta exakt vad som händer.",
+      "text": "blunda och låt [TARGET] penetrera dig medan du ligger helt stilla.",
       "tags": [
-        "bondage",
         "penetration"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "target",
+          "receiver": "active",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -147,18 +193,49 @@
       ]
     },
     {
-      "text": "lägg dig i mitten och låt [TARGET] och en annan spelare ta dig.",
+      "text": "lägg dig i mitten och låt [TARGET] och [PARTNER] turas om att penetrera dig.",
       "tags": [
-        "oral",
         "penetration",
         "public"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "target",
+          "receiver": "active",
+          "method": "penile"
+        },
+        {
+          "actor": "partner",
+          "receiver": "active",
+          "method": "penile"
+        }
+      ],
+      "sexualPairs": [
+        [
+          "target",
+          "active"
+        ],
+        [
+          "partner",
+          "active"
+        ]
       ]
     },
     {
-      "text": "[ACTIVE] och [PARTNER] hjälps åt att suga [TARGET].",
+      "text": "[ACTIVE] och [PARTNER] hjälps åt att ge [TARGET] oralsex.",
       "tags": [
         "oral",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ],
+        [
+          "partner",
+          "target"
+        ]
       ]
     },
     {
@@ -178,10 +255,17 @@
       ]
     },
     {
-      "text": "lägg dig på mage och låt [TARGET] ge dig smisk och använda dig.",
+      "text": "lägg dig på mage och låt [TARGET] ge dig smisk och sedan penetrera dig.",
       "tags": [
         "spanking",
         "penetration"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "target",
+          "receiver": "active",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -194,12 +278,26 @@
       "text": "lägg [TARGET] på mage och ta [HEN] långsamt.",
       "tags": [
         "penetration"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile"
+        }
       ]
     },
     {
-      "text": "ligg ner och låt [TARGET] rida dig, eller klättra upp själv och rid [HEN].",
+      "text": "ligg ner och låt [TARGET] rida dig.",
       "tags": [
         "penetration"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -246,24 +344,44 @@
       ]
     },
     {
-      "text": "sätt på [TARGET] en ögonbindel, öppna [HENS] mun och låt gruppen ge [HEN] vad de vill.",
+      "text": "sätt på [TARGET] en ögonbindel och låt [PARTNER] använda [HENS] mun för oralsex.",
       "tags": [
         "blindfold",
         "oral",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "partner",
+          "target"
+        ]
       ]
     },
     {
-      "text": "placera dig på alla fyra och låt [TARGET] bestämma exakt hur du ska tas.",
+      "text": "placera dig på alla fyra och låt [TARGET] penetrera dig bakifrån.",
       "tags": [
         "penetration",
         "submission"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "target",
+          "receiver": "active",
+          "method": "penile"
+        }
       ]
     },
     {
       "text": "ligg i skedposition med [TARGET] och låt [HEN] ta dig långsamt utan ett ord.",
       "tags": [
         "penetration"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "target",
+          "receiver": "active",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -271,12 +389,26 @@
       "tags": [
         "penetration",
         "dominance"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "target",
+          "receiver": "active",
+          "method": "penile"
+        }
       ]
     },
     {
       "text": "ligg ner med benen högt och låt [TARGET] knulla dig långsamt men djupt.",
       "tags": [
         "penetration"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "target",
+          "receiver": "active",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -297,7 +429,6 @@
     {
       "text": "sätt dig i [TARGETS] knä, hångla med [HEN] och låt [HEN] smeka dig över kroppen samtidigt.",
       "tags": [
-        "penetration",
         "public"
       ]
     },
@@ -330,11 +461,24 @@
       ]
     },
     {
-      "text": "ligg på rygg medan gruppen hjälps åt att smeka dig tills någon kliver fram och tar dig.",
+      "text": "ligg på rygg medan gruppen smeker dig, och låt sedan [TARGET] kliva fram och penetrera dig.",
       "tags": [
         "public",
         "penetration",
         "submission"
+      ],
+      "sexualPairs": [
+        [
+          "target",
+          "active"
+        ]
+      ],
+      "penetrationRules": [
+        {
+          "actor": "target",
+          "receiver": "active",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -360,12 +504,18 @@
       ]
     },
     {
-      "text": "sätt på dig en ögonbindel medan en hemlig spelare smeker och slickar ditt kön. Gissa vem det är.",
+      "text": "sätt på dig en ögonbindel och låt [TARGET] smeka och slicka ditt kön i en minut.",
       "tags": [
         "blindfold",
         "oral",
         "genitals",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "target",
+          "active"
+        ]
       ]
     },
     {
@@ -380,8 +530,6 @@
       "text": "använd ditt kön, en leksak eller dina fingrar i [TARGETS] mun.",
       "tags": [
         "oral",
-        "penetration",
-        "sex_toys",
         "fingers"
       ]
     },
@@ -391,6 +539,16 @@
         "masturbation",
         "genitals",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ],
+        [
+          "partner",
+          "target"
+        ]
       ]
     },
     {
@@ -400,6 +558,16 @@
         "submission",
         "fingers",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ],
+        [
+          "partner",
+          "target"
+        ]
       ]
     },
     {
@@ -408,6 +576,12 @@
         "bondage",
         "oral",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "partner",
+          "target"
+        ]
       ]
     },
     {
@@ -417,6 +591,23 @@
         "genitals",
         "fingers",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ],
+        [
+          "partner",
+          "target"
+        ]
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -445,6 +636,13 @@
       "tags": [
         "penetration",
         "dominance"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -452,6 +650,13 @@
       "tags": [
         "penetration",
         "dominance"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -474,14 +679,28 @@
       "tags": [
         "bondage",
         "penetration"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile"
+        }
       ]
     },
     {
-      "text": "lägg [TARGET] på sidan i skedposition, för in dina fingrar eller ditt kön och smek [HENS] bröst samtidigt.",
+      "text": "lägg [TARGET] på sidan i skedposition, för in fingrar analt i [HEN] och smek [HENS] bröst samtidigt.",
       "tags": [
         "penetration",
         "fingers",
-        "genitals"
+        "anal"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "fingers"
+        }
       ]
     },
     {
@@ -508,12 +727,18 @@
       ]
     },
     {
-      "text": "låt [TARGET] hålla dina handleder mot underlaget medan [PARTNER]  slickar och suger ditt kön i valfri takt.",
+      "text": "låt [TARGET] hålla dina handleder mot underlaget medan [PARTNER] slickar och suger ditt kön i valfri takt.",
       "tags": [
         "oral",
         "bondage",
         "genitals",
         "submission"
+      ],
+      "sexualPairs": [
+        [
+          "partner",
+          "active"
+        ]
       ]
     },
     {
@@ -531,7 +756,7 @@
       ]
     },
     {
-      "text": "ta [TARGETS] kön i munnen och använd samtidigt fingrarna för att stimulera [HENS] baksida eller anus.",
+      "text": "ge [TARGET] oralsex och använd samtidigt fingrarna för att stimulera [HENS] baksida eller anus.",
       "tags": [
         "oral",
         "anal",
@@ -561,6 +786,23 @@
         "oral",
         "penetration",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ],
+        [
+          "partner",
+          "target"
+        ]
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -577,14 +819,33 @@
         "oral",
         "biting",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ],
+        [
+          "partner",
+          "target"
+        ]
       ]
     },
     {
-      "text": "låt [TARGET] ligga på rygg medan [ACTIVE] sitter över [HENS] ansikte och [PARTNER] sitter över [HENS] kön.",
+      "text": "låt [TARGET] ligga på rygg medan [ACTIVE] sitter över [HENS] ansikte och [PARTNER] ger [HEN] oralsex.",
       "tags": [
         "oral",
-        "penetration",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ],
+        [
+          "partner",
+          "target"
+        ]
       ]
     },
     {
@@ -593,6 +854,16 @@
         "masturbation",
         "genitals",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ],
+        [
+          "partner",
+          "target"
+        ]
       ]
     },
     {
@@ -602,14 +873,34 @@
         "masturbation",
         "submission",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "target",
+          "active"
+        ],
+        [
+          "target",
+          "partner"
+        ]
       ]
     },
     {
-      "text": "sätt en ögonbindel på [TARGET]. Två spelare smeker [HENS] kön, och [SUBJECT] måste gissa vilka två det är.",
+      "text": "sätt en ögonbindel på [TARGET]. [ACTIVE] och [PARTNER] smeker [HENS] kön samtidigt, och [SUBJECT] måste gissa vem som gör vad.",
       "tags": [
         "blindfold",
         "genitals",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ],
+        [
+          "partner",
+          "target"
+        ]
       ]
     },
     {
@@ -628,15 +919,34 @@
         "submission",
         "dildo",
         "vibrator"
+      ],
+      "equipmentAlternatives": [
+        [
+          "vibrator",
+          "dildo"
+        ]
       ]
     },
     {
-      "text": "ställ dig på alla fyra helt naken medan gruppen beundrar din kropp och bestämmer vem som ska ta dig.",
+      "text": "ställ dig på alla fyra helt naken medan gruppen beundrar din kropp, och låt sedan [TARGET] penetrera dig bakifrån.",
       "tags": [
         "nudity",
         "humiliation",
         "public",
         "penetration"
+      ],
+      "sexualPairs": [
+        [
+          "target",
+          "active"
+        ]
+      ],
+      "penetrationRules": [
+        {
+          "actor": "target",
+          "receiver": "active",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -652,7 +962,6 @@
       "text": "låt [TARGET] föra in fingrar eller en leksak analt på dig i ett lugnt och kontrollerat tempo.",
       "tags": [
         "anal",
-        "sex_toys",
         "fingers"
       ]
     },

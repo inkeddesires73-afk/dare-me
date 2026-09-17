@@ -33,13 +33,36 @@
       ]
     },
     {
-      "text": "lägg [TARGET] på rygg, sära på [HENS] ben och penetrera framifrån medan [PARTNER] för in fingrar eller en leksak analt.",
+      "text": "lägg [TARGET] på rygg, sära på [HENS] ben och penetrera [HEN] vaginalt framifrån medan [PARTNER] använder fingrar analt.",
       "tags": [
         "penetration",
         "anal",
-        "sex_toys",
         "fingers",
         "public"
+      ],
+      "anatomyRequirements": [
+        {
+          "role": "target",
+          "gender": "kvinna"
+        }
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ],
+        [
+          "partner",
+          "target"
+        ]
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile",
+          "receiverGender": "kvinna"
+        }
       ]
     },
     {
@@ -47,24 +70,48 @@
       "tags": [
         "bondage",
         "penetration"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile"
+        }
       ]
     },
     {
-      "text": "lägg [TARGET] på sidan i en skedposition, för in fingrar eller kön och smek [HENS] bröst samtidigt.",
+      "text": "lägg [TARGET] på sidan i en skedposition, för in fingrar analt i [HEN] och smek [HENS] bröst samtidigt.",
       "tags": [
         "penetration",
         "fingers",
-        "genitals"
+        "anal"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "fingers"
+        }
       ]
     },
     {
-      "text": "låt dig bli bunden vid en stol och låt gruppen utföra valfria orala eller manuella handlingar mot ditt kön.",
+      "text": "låt dig bli bunden vid en stol och låt [TARGET] och [PARTNER] turas om att ge dig oral eller manuell stimulans.",
       "tags": [
         "bondage",
         "genitals",
         "oral",
         "masturbation",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "target",
+          "active"
+        ],
+        [
+          "partner",
+          "active"
+        ]
       ]
     },
     {
@@ -84,6 +131,12 @@
         "genitals",
         "public",
         "submission"
+      ],
+      "sexualPairs": [
+        [
+          "partner",
+          "active"
+        ]
       ]
     },
     {
@@ -92,6 +145,13 @@
         "penetration",
         "dominance",
         "impact_play"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -100,25 +160,63 @@
         "oral",
         "penetration",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ],
+        [
+          "partner",
+          "target"
+        ]
+      ],
+      "penetrationRules": [
+        {
+          "actor": "partner",
+          "receiver": "target",
+          "method": "penile"
+        }
       ]
     },
     {
-      "text": "lägg dig naken i mitten och låt gruppen bestämma vilken kroppsöppning som ska användas och med vilket redskap.",
+      "text": "lägg dig naken i mitten och låt [TARGET] penetrera dig analt med fingrar medan [PARTNER] bestämmer tempo och djup.",
       "tags": [
         "nudity",
         "penetration",
-        "anal",
         "public",
-        "submission"
+        "submission",
+        "fingers",
+        "anal"
+      ],
+      "sexualPairs": [
+        [
+          "target",
+          "active"
+        ]
+      ],
+      "penetrationRules": [
+        {
+          "actor": "target",
+          "receiver": "active",
+          "method": "fingers"
+        }
       ]
     },
     {
-      "text": "för in en analplugg eller leksak i [TARGET] och låt [HEN] behålla den under resten av spelet.",
+      "text": "för in en analplugg eller dildo i [TARGET] och låt [HEN] behålla den under resten av spelet.",
       "tags": [
         "anal",
         "sex_toys",
         "dominance",
-        "anal_plug"
+        "anal_plug",
+        "dildo"
+      ],
+      "equipmentAlternatives": [
+        [
+          "anal_plug",
+          "dildo"
+        ]
       ]
     },
     {
@@ -140,13 +238,26 @@
       ]
     },
     {
-      "text": "sätt på dig en ögonbindel medan en okänd spelare utför anal penetration med fingrar eller leksak på dig.",
+      "text": "sätt på dig en ögonbindel och låt [TARGET] penetrera dig analt med fingrar.",
       "tags": [
         "anal",
         "blindfold",
         "fingers",
-        "sex_toys",
-        "submission"
+        "submission",
+        "penetration"
+      ],
+      "sexualPairs": [
+        [
+          "target",
+          "active"
+        ]
+      ],
+      "penetrationRules": [
+        {
+          "actor": "target",
+          "receiver": "active",
+          "method": "fingers"
+        }
       ]
     },
     {
@@ -166,15 +277,32 @@
         "impact_play",
         "genitals",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ],
+        [
+          "partner",
+          "target"
+        ]
       ]
     },
     {
-      "text": "lägg [TARGET] över ett bord och utför anal penetration med glidmedel och kontrollerade rörelser.",
+      "text": "lägg [TARGET] över ett bord och penetrera [HEN] analt med kuk och rikligt med glidmedel i kontrollerade rörelser.",
       "tags": [
         "anal",
         "penetration",
         "dominance",
         "lubricant"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -185,6 +313,12 @@
         "oral",
         "humiliation",
         "public"
+      ],
+      "anatomyRequirements": [
+        {
+          "role": "target",
+          "gender": "man"
+        }
       ]
     },
     {
@@ -232,6 +366,16 @@
         "public",
         "dominance",
         "lubricant"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ],
+        [
+          "partner",
+          "target"
+        ]
       ]
     },
     {
@@ -262,6 +406,12 @@
         "dominance",
         "public",
         "anal_plug"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ]
       ]
     },
     {
@@ -282,7 +432,8 @@
         "dominance",
         "public",
         "vibrator"
-      ]
+      ],
+      "sexualPairs": []
     },
     {
       "text": "ställ [TARGET] inför valet att svälja en sked saltblandad vätska eller ta emot tjugo piskrapp över låren.",
@@ -322,6 +473,19 @@
         "public",
         "dominance",
         "dildo"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ]
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "dildo"
+        }
       ]
     },
     {
@@ -378,6 +542,25 @@
         "public",
         "strapon",
         "dildo"
+      ],
+      "sexualPairs": [
+        [
+          "target",
+          "active"
+        ]
+      ],
+      "equipmentAlternatives": [
+        [
+          "strapon",
+          "dildo"
+        ]
+      ],
+      "penetrationRules": [
+        {
+          "actor": "target",
+          "receiver": "active",
+          "method": "strapon_or_dildo"
+        }
       ]
     },
     {
@@ -416,6 +599,16 @@
         "dominance",
         "submission",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ],
+        [
+          "partner",
+          "target"
+        ]
       ]
     },
     {
@@ -443,6 +636,12 @@
         "fingers",
         "dominance",
         "public"
+      ],
+      "sexualPairs": [
+        [
+          "active",
+          "target"
+        ]
       ]
     },
     {
@@ -537,7 +736,8 @@
         "sex_toys",
         "genitals",
         "dominance"
-      ]
+      ],
+      "sexualPairs": []
     },
     {
       "text": "håll fast [TARGETS] ben mot bröstkorgen och droppa smält stearin i ett jämnt mönster längs [HENS] revben och lår.",
@@ -560,10 +760,18 @@
       "text": "penetrera [TARGET] djupt med en dildo eller kuk medan du tvingar [HEN] att se hela akten i en spegel.",
       "tags": [
         "penetration",
-        "sex_toys",
         "humiliation",
-        "dominance",
+        "dominance"
+      ],
+      "optionalEquipment": [
         "dildo"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile_or_dildo"
+        }
       ]
     },
     {
@@ -591,6 +799,19 @@
         "dominance",
         "strapon",
         "dildo"
+      ],
+      "equipmentAlternatives": [
+        [
+          "strapon",
+          "dildo"
+        ]
+      ],
+      "penetrationRules": [
+        {
+          "actor": "target",
+          "receiver": "active",
+          "method": "strapon_or_dildo"
+        }
       ]
     },
     {
@@ -640,7 +861,7 @@
       ]
     },
     {
-      "text": "spänn fast [TARGETS] handleder vid sänggaveln och sitt grensle över [HENS] ansikte och blir slickad tills du når orgasm.",
+      "text": "spänn fast [TARGETS] handleder vid sänggaveln och sitt grensle över [HENS] ansikte och bli slickad tills du når orgasm.",
       "tags": [
         "bondage",
         "oral",
@@ -657,6 +878,20 @@
         "dominance",
         "genitals",
         "dildo"
+      ],
+      "anatomyRequirements": [
+        {
+          "role": "target",
+          "gender": "kvinna"
+        }
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "dildo",
+          "receiverGender": "kvinna"
+        }
       ]
     },
     {
@@ -665,6 +900,13 @@
         "bondage",
         "penetration",
         "dominance"
+      ],
+      "penetrationRules": [
+        {
+          "actor": "active",
+          "receiver": "target",
+          "method": "penile"
+        }
       ]
     },
     {
@@ -696,7 +938,7 @@
       ]
     },
     {
-      "text": "beordra [TARGET] att lägga sig naken på duschgolvet och pissa över [HENS] mage och bröstkorg medan [SUBJECT] ligger blickstilla.",
+      "text": "beordra [TARGET] att lägga sig naken på duschgolvet och ligga blickstilla medan du pissar över [HENS] mage och bröstkorg.",
       "tags": [
         "wet",
         "nudity",

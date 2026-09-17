@@ -1016,7 +1016,11 @@
                     tags: Array.isArray(card.tags) ? card.tags.filter(tag => typeof tag === 'string').slice(0, 30) : [],
                     equipmentAlternatives: Array.isArray(card.equipmentAlternatives) ? card.equipmentAlternatives.filter(group => Array.isArray(group) && group.every(item => typeof item === 'string')).slice(0, 10) : [],
                     ...(Number.isInteger(card.minPlayers) ? { minPlayers: card.minPlayers } : {}),
-                    ...(typeof card.answererGender === 'string' ? { answererGender: card.answererGender } : {})
+                    ...(typeof card.answererGender === 'string' ? { answererGender: card.answererGender } : {}),
+                    ...(Array.isArray(card.sexualPairs) ? { sexualPairs: card.sexualPairs } : {}),
+                    ...(Array.isArray(card.penetrationRules) ? { penetrationRules: card.penetrationRules } : {}),
+                    ...(Array.isArray(card.anatomyRequirements) ? { anatomyRequirements: card.anatomyRequirements } : {}),
+                    ...(Array.isArray(card.optionalEquipment) ? { optionalEquipment: card.optionalEquipment } : {})
                 };
                 // Komplettera saknade funktionstaggar från synonymregistret.
                 // Korttexten och befintliga taggar lämnas oförändrade.
@@ -2187,8 +2191,9 @@
         saveLocal();
     };
 
+    const sexualDareTags = new Set(['oral', 'masturbation', 'penetration', 'genitals', 'sex_toys', 'anal']);
     function isSexualDare(dare) {
-        return dare.tags?.some(tag => ['oral', 'onani', 'penetration', 'kon', 'leksaker'].includes(tag));
+        return (dare.tags || []).some(tag => sexualDareTags.has(tag));
     }
 
     function orientationAllows(actor, target) {
@@ -2285,33 +2290,107 @@
         return [active, target, partner].some(player => player?.gender === 'man');
     }
 
-    function anatomyIsPossible(dare, target) {
-        if (textHas(dare.text, synonymPatterns.clitoris)) return target?.gender === 'kvinna';
-        if (textHas(dare.text, synonymPatterns.femaleGenitals)) return target?.gender === 'kvinna';
-        if (textHas(dare.text, synonymPatterns.maleGenitals)) return target?.gender === 'man';
+    function playerForRole(role, active, target, partner) {
+        if (role === 'active') return active;
+        if (role === 'target') return target;
+        if (role === 'partner') return partner;
+        return null;
+    }
+
+    function anatomyIsPossible(dare, active, target, partner) {
+        for (const requirement of (dare.anatomyRequirements || [])) {
+            const player = playerForRole(requirement?.role, active, target, partner);
+            if (!player || player.gender !== requirement.gender) return false;
+        }
+
+        // Bakåtkompatibilitet för enkla egna kort. De inbyggda kort som har
+        // särskilda anatomikrav använder anatomyRequirements ovan.
+        if (textHas(dare.text, synonymPatterns.clitoris) && /\[(?:target|targets|hen|hens|subject)\]/i.test(dare.text)) {
+            return target?.gender === 'kvinna';
+        }
         return true;
     }
 
-    // Penetration med dildo, leksak eller fingrar fungerar oavsett kön.
-    // Formuleringar som "knulla", "ta" eller "penetrera" utan ett sådant redskap
-    // kräver däremot en man i den aktiva penetrerande rollen.
+    function sexualPairsArePossible(dare, active, target, partner) {
+        if (!isSexualDare(dare)) return true;
+        const hasExplicitPairs = Array.isArray(dare.sexualPairs);
+        let pairs = hasExplicitPairs ? dare.sexualPairs : [['active', 'target']];
+
+        // Bakåtkompatibilitet för egna kort med PARTNER men utan metadata.
+        if (!hasExplicitPairs && dare.text.includes('[PARTNER]')) {
+            pairs = [['active', 'target'], ['partner', 'target']];
+        }
+
+        return pairs.every(pair => {
+            if (!Array.isArray(pair) || pair.length !== 2) return false;
+            const first = playerForRole(pair[0], active, target, partner);
+            const second = playerForRole(pair[1], active, target, partner);
+            return Boolean(first && second && pairIsAllowed(first, second));
+        });
+    }
+
+    function hasAvailableItem(...items) {
+        return items.some(item => state.availableItems.includes(item));
+    }
+
+    function penetrationRuleIsPossible(rule, active, target, partner) {
+        const actor = playerForRole(rule?.actor, active, target, partner);
+        const receiver = playerForRole(rule?.receiver, active, target, partner);
+        if (!actor || !receiver) return false;
+        if (rule.receiverGender && receiver.gender !== rule.receiverGender) return false;
+
+        let anatomyOk = true;
+        switch (rule.method) {
+            case 'penile':
+                anatomyOk = actor.gender === 'man';
+                break;
+            case 'dildo':
+                anatomyOk = hasAvailableItem('dildo');
+                break;
+            case 'strapon_or_dildo':
+                anatomyOk = hasAvailableItem('strapon', 'dildo');
+                break;
+            case 'penile_or_dildo':
+                anatomyOk = actor.gender === 'man' || hasAvailableItem('dildo');
+                break;
+            case 'fingers':
+            case 'flexible':
+                anatomyOk = true;
+                break;
+            default:
+                anatomyOk = true;
+        }
+        if (!anatomyOk) return false;
+
+        // "Bi-Sex Ingen penetration" ska följa personen, inte bara TARGET.
+        if (actor.gender === receiver.gender && (actor.biNoPen || receiver.biNoPen)) return false;
+
+        return pairIsAllowed(actor, receiver);
+    }
+
     function penetrationRolesArePossible(dare, active, target, partner) {
         if (!dare.tags?.includes('penetration')) return true;
+
+        if (Array.isArray(dare.penetrationRules) && dare.penetrationRules.length) {
+            return dare.penetrationRules.every(rule => penetrationRuleIsPossible(rule, active, target, partner));
+        }
+
+        // Bakåtkompatibilitet för egna kort utan metadata.
         const text = String(dare.text || '').toLowerCase();
-        // "Ditt kön" kräver en manlig aktiv spelare endast när det används
-        // som penetrerande redskap. Kort där någon bara smeker eller slickar
-        // det egna könet ska fortfarande kunna visas för alla kön.
-        if (textHas(text, /för\s+in[^.!?]*ditt\s+kön|penetrer(?:a|ar)[^.!?]*ditt\s+kön|ditt\s+kön[^.!?]*(?:i|mot)\s+(?:[a-zåäö]+\s+)?(?:mun|anus|öppning)/)) {
-            return active?.gender === 'man';
+        const toolInSameCard = textHas(text, /dildo|strap[- ]?on|leksak|fingrar|vibrator|redskap/);
+
+        if (textHas(text, /\[target\]\s+(?:knullar|penetrerar|tar)|låt\s+\[target\]\s+(?:knulla|penetrera|ta)|av\s+\[target\]/)) {
+            if (toolInSameCard) return pairIsAllowed(target, active);
+            return target?.gender === 'man' && pairIsAllowed(target, active);
         }
-        const usesNonPenileTool = textHas(text, /dildo|strap[- ]?on|leksak|fingrar|vibrator|redskap/);
-        if (usesNonPenileTool) return true;
-        const needsPenileActor = textHas(text, /knulla|penetrera|penetrerar|penetration|ta\s+\[|ta\s+dig|trycka\s+sig\s+in|rida|rid\s+\[hen\]|tar\s+dig/);
-        if (!needsPenileActor) return true;
-        if (textHas(text, /\[partner\].*(knulla|penetrera|ta\s+|rida)|(knulla|penetrera|ta\s+|rida).*\[partner\]/)) {
-            return partner?.gender === 'man';
+
+        if (textHas(text, /\[partner\]\s+(?:knullar|penetrerar|tar)|låt\s+\[partner\]\s+(?:knulla|penetrera|ta)/)) {
+            if (toolInSameCard) return pairIsAllowed(partner, target);
+            return partner?.gender === 'man' && pairIsAllowed(partner, target);
         }
-        return active?.gender === 'man';
+
+        if (toolInSameCard) return pairIsAllowed(active, target);
+        return active?.gender === 'man' && pairIsAllowed(active, target);
     }
 
     function playerCountIsEnough(dare) {
@@ -2341,26 +2420,22 @@
         for (const [group, items] of Object.entries(environmentAliases)) {
             if (environmentTags.has(group) && !items.some(item => state.availableItems.includes(item))) return false;
         }
+        const optionalEquipment = new Set(dare.optionalEquipment || []);
         for (const [item, pattern] of Object.entries(cardExpressionPatterns.equipment)) {
-            if (textHas(dare.text, pattern) && !state.availableItems.includes(item)) return false;
+            if (textHas(dare.text, pattern) && !optionalEquipment.has(item) && !state.availableItems.includes(item)) return false;
         }
-        const alternativeItems = new Set((dare.equipmentAlternatives || []).flat());
+        const alternativeGroups = dare.equipmentAlternatives || [];
+        const alternativeItems = new Set(alternativeGroups.flat());
         const exactEquipment = ['dildo', 'strapon', 'double_dildo', 'glass_dildo', 'metal_dildo', 'vibrator', 'bullet', 'wand', 'air_pressure_vibrator', 'remote_vibrator', 'anal_plug', 'expanding_plug', 'anal_beads', 'anal_probe', 'paddle', 'riding_crop', 'flogger', 'belt', 'nipple_clamps', 'hairbrush', 'blindfold', 'handcuffs', 'ankle_cuffs', 'rope', 'massage_oil', 'lubricant'];
-        if (exactEquipment.some(item => environmentTags.has(item) && !alternativeItems.has(item) && !state.availableItems.includes(item))) return false;
-        if ((dare.equipmentAlternatives || []).some(group => group.length && !group.some(item => state.availableItems.includes(item)))) return false;
+        if (exactEquipment.some(item => environmentTags.has(item) && !alternativeItems.has(item) && !optionalEquipment.has(item) && !state.availableItems.includes(item))) return false;
+        if (alternativeGroups.some(group => group.length && !group.some(item => state.availableItems.includes(item)))) return false;
         const involved = [active, target, partner].filter(Boolean);
         const detectedTags = detectedCardTags(dare);
         if (Array.from(detectedTags).some(tag => involved.some(player => player.vetos?.includes(tag)))) return false;
-        const sexual = isSexualDare(dare);
-        if (sexual && !pairIsAllowed(active, target)) return false;
-        if (sexual && partner && !pairIsAllowed(partner, target)) return false;
+        if (!sexualPairsArePossible(dare, active, target, partner)) return false;
         if (!semenRolesArePossible(dare, active, target, partner)) return false;
-        if (!anatomyIsPossible(dare, target)) return false;
+        if (!anatomyIsPossible(dare, active, target, partner)) return false;
         if (!penetrationRolesArePossible(dare, active, target, partner)) return false;
-        if (dare.tags?.includes('penetration') && target.biNoPen) {
-            if ((active.gender === target.gender && active.pref === 'bi') ||
-                (partner && dare.text.includes('[PARTNER]') && partner.gender === target.gender && partner.pref === 'bi')) return false;
-        }
         return true;
     }
 
