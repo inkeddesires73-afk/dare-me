@@ -1273,10 +1273,12 @@
 
     function maybeShowLevel4Notice(levels) {
         const selected = Array.isArray(levels) ? levels : [];
-        if (!selected.includes(4)) return;
-        const noticeKey = selected.join(',');
-        if (noticeKey === lastLevel4NoticeKey) return;
-        lastLevel4NoticeKey = noticeKey;
+        if (!selected.includes(4)) {
+            lastLevel4NoticeKey = '';
+            return;
+        }
+        if (lastLevel4NoticeKey === 'level4-selected') return;
+        lastLevel4NoticeKey = 'level4-selected';
         showLevel4Notice();
     }
 
