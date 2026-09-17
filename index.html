@@ -1212,8 +1212,11 @@
 
     function applyLevelModeVisibility() {
         const mode = normalizeGameMode(state.gameMode);
-        const showTruth = mode === 'truth' || mode === 'truth_or_dare';
-        const showDare = mode === 'dare' || mode === 'truth_or_dare';
+        // A guest has not read the room document until their own player exists.
+        // Keep both personal veto lists available during that short setup step.
+        const modeKnown = mode === 'truth' || mode === 'dare' || mode === 'truth_or_dare';
+        const showTruth = !modeKnown || mode === 'truth' || mode === 'truth_or_dare';
+        const showDare = !modeKnown || mode === 'dare' || mode === 'truth_or_dare';
         document.getElementById('level-selection-grid')?.classList.toggle('mix-level-layout', mode === 'truth_or_dare');
         document.querySelectorAll('.truth-level-option').forEach(el => el.style.display = showTruth ? '' : 'none');
         document.querySelectorAll('.dare-level-option').forEach(el => el.style.display = showDare ? '' : 'none');
@@ -1676,13 +1679,16 @@
         });
         document.body.className = isHost ? "app-shell is-host" : "app-shell is-guest";
         
+        // Both host and guest need this. The host chooses the game mode, but a
+        // guest must immediately see the matching personal veto list.
+        state.gameMode = normalizeGameMode(state.gameMode);
+        applyLevelModeVisibility();
+
         if (isHost) {
         const modeSel = document.getElementById('game-mode-setting');
-        state.gameMode = normalizeGameMode(state.gameMode);
         if (modeSel) modeSel.value = state.gameMode;
             const startButton = document.getElementById('start-game-btn');
             if (startButton) startButton.disabled = !state.gameMode;
-            applyLevelModeVisibility();
             const manStarsCb = document.getElementById('setting-manual-stars');
             if (manStarsCb) manStarsCb.checked = state.allowManualStars;
             const timerSel = document.getElementById('star-timer-setting');
@@ -1990,6 +1996,7 @@
             participantPlayers = []; lastStarCounts = {};
             state.hostUid = directorySnap.data().hostUid || null;
             state.players = [];
+            state.gameMode = '';
             state.selectedLevels = [];
             state.activeLevelIdx = 0;
             state.currentPlayerIdx = 0;
@@ -2083,8 +2090,8 @@
     };
     
     window.editPlayer = (id) => {
-        if (!isHost) return;
         const p = state.players.find(x => x.id === id); if (!p) return;
+        if (!isHost && p.uid !== user?.uid) return;
         editingPlayerId = id;
         tempStars = p.stars;
         document.getElementById('pName').value = p.name; document.getElementById('pGender').value = p.gender;
@@ -2621,7 +2628,7 @@
         document.getElementById('displayList').innerHTML = state.players.map(p => `
             <div class="player-item ${editingPlayerId === p.id ? 'editing-player' : ''}">
                 <div class="player-info"><strong>${escapeHtml(p.name)}</strong><small>${escapeHtml(p.gender)} • ${escapeHtml(p.pref)}</small></div>
-                ${isHost ? `<div class="action-btns"><button type="button" class="edit-btn" aria-label="Redigera ${escapeHtml(p.name)}" onclick="editPlayer(${p.id})">✎</button><button type="button" class="delete-btn" aria-label="Ta bort ${escapeHtml(p.name)}" onclick="removePlayer(${p.id})">×</button></div>` : ''}
+                ${isHost ? `<div class="action-btns"><button type="button" class="edit-btn" aria-label="Redigera ${escapeHtml(p.name)}" onclick="editPlayer(${p.id})">✎</button><button type="button" class="delete-btn" aria-label="Ta bort ${escapeHtml(p.name)}" onclick="removePlayer(${p.id})">×</button></div>` : (state.roomCode && p.uid === user?.uid ? `<div class="action-btns"><button type="button" class="edit-btn" aria-label="Redigera ${escapeHtml(p.name)}" onclick="editPlayer(${p.id})">✎</button></div>` : '')}
             </div>`).join(''); 
     }
     
