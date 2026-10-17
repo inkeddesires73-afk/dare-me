@@ -433,6 +433,8 @@
             gap: 10px;
             margin-top: 14px;
         }
+        .setup-guidance { margin: 0; padding: 11px 13px; border: 1px solid #59491e; border-radius: 10px; color: #e4c65e; background: rgba(212,175,55,.07); font-size: .86rem; line-height: 1.45; }
+        .setup-guidance[data-ready="true"] { color: #9acb9a; border-color: #31553a; background: rgba(60,130,70,.08); }
         .lobby-actions .btn, .lobby-actions a { margin: 0 !important; }
         .lobby-actions .btn-start { min-height: 44px; padding: 10px 14px; font-size: .8rem; }
         .lobby-actions .waiting-copy { margin: 8px 0; }
@@ -716,7 +718,7 @@
                                 <label class="veto-option"><input type="checkbox" class="environment-cb" value="lubricant" onchange="updateEnvironmentItems()"> Glidmedel</label>
                                 <div class="environment-actions" style="grid-column: 1 / -1; display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;">
                                     <button type="button" class="btn btn-rules" onclick="selectAllEnvironmentItems()">MARKERA ALLT</button>
-                                    <button type="button" class="btn btn-rules" onclick="clearEnvironmentItems()">RENSA VAL</button>
+                                    <button type="button" class="btn btn-rules" onclick="confirmNoEquipment()">INGA REDSKAP FINNS</button>
                                 </div>
                         </div>
                     </div>
@@ -806,6 +808,7 @@
             </div>
             <div id="displayList" style="margin-top: 20px;"></div>
             <div class="lobby-actions">
+                <p id="setup-guidance" class="setup-guidance host-only" role="status" aria-live="polite">Steg 1 av 4: Välj spelläge under Spelinställningar & nivåer.</p>
                 <button class="btn btn-start host-only" id="start-game-btn" onclick="startGame()">STARTA SPELET</button>
                 <div class="guest-only waiting-copy" style="color:#8e8980; font-style:italic;">Väntar på att värden ska starta...</div>
                 <div class="lobby-utilities">
@@ -914,6 +917,7 @@
         customDecks: [],
         sharedDecks: [],
         availableItems: [],
+        equipmentConfirmed: false,
         activeLevelIdx: 0,
         currentPlayerIdx: 0,
         allowManualStars: false,
@@ -1217,6 +1221,7 @@
         saveLocal();
         maybeShowLevel4Notice(state.selectedLevels);
         if (isHost && state.roomCode) scheduleCloudUpdate();
+        updateSetupGuidance();
     };
 
     function applyLevelModeVisibility() {
@@ -1455,6 +1460,7 @@
             customDecks: localCustomDecks,
             sharedDecks: [],
             availableItems: [...DEFAULT_AVAILABLE_ITEMS],
+            equipmentConfirmed: false,
            activeLevelIdx: 0,
             currentPlayerIdx: 0,
             allowManualStars: false,
@@ -1714,7 +1720,7 @@
         const modeSel = document.getElementById('game-mode-setting');
         if (modeSel) modeSel.value = state.gameMode;
             const startButton = document.getElementById('start-game-btn');
-            if (startButton) startButton.disabled = !state.gameMode;
+            if (startButton) startButton.disabled = false;
             const manStarsCb = document.getElementById('setting-manual-stars');
             if (manStarsCb) manStarsCb.checked = state.allowManualStars;
             const timerSel = document.getElementById('star-timer-setting');
@@ -1729,10 +1735,12 @@
             document.querySelectorAll('.environment-cb').forEach(cb => {
                 cb.checked = (state.availableItems || []).includes(cb.value);
             });
+            updateSetupSummaries();
         }
 
         const guestLevelInfo = document.getElementById('guest-level-info');
         if (guestLevelInfo) guestLevelInfo.innerText = state.autoLevelUpCards ? `${state.autoLevelUpCards} kort/spelare` : 'Av';
+        updateSetupGuidance();
 
         if (!state.modeSelected || showingGameChooser) {
             document.getElementById('start-page').classList.add('active');
@@ -1853,9 +1861,11 @@
     };
     window.updateEnvironmentItems = () => {
         state.availableItems = Array.from(document.querySelectorAll('.environment-cb:checked')).map(cb => cb.value);
+        state.equipmentConfirmed = true;
         if (state.roomCode) scheduleCloudUpdate();
         saveLocal();
         updateSetupSummaries();
+        updateSetupGuidance();
     };
     window.selectAllEnvironmentItems = () => {
         document.querySelectorAll('.environment-cb').forEach(cb => cb.checked = true);
@@ -1864,6 +1874,15 @@
     window.clearEnvironmentItems = () => {
         document.querySelectorAll('.environment-cb').forEach(cb => cb.checked = false);
         updateEnvironmentItems();
+    };
+    window.confirmNoEquipment = () => {
+        document.querySelectorAll('.environment-cb').forEach(cb => cb.checked = false);
+        state.availableItems = [];
+        state.equipmentConfirmed = true;
+        if (state.roomCode) scheduleCloudUpdate();
+        saveLocal();
+        updateSetupSummaries();
+        updateSetupGuidance();
     };
     function sortCheckboxLabels() {
         document.querySelectorAll('.veto-grid').forEach(grid => {
@@ -1887,7 +1906,7 @@
         }
         if (equipmentSummary) {
             const count = document.querySelectorAll('.environment-cb:checked').length;
-            equipmentSummary.textContent = `${count} valda`;
+            equipmentSummary.textContent = count ? `${count} valda` : (state.equipmentConfirmed ? 'Inga' : 'Välj');
         }
         if (vetoSummary) {
             const count = document.querySelectorAll('.veto-cb:checked').length;
@@ -1900,6 +1919,59 @@
         }
     }
     document.getElementById('lobby-page')?.addEventListener('change', () => requestAnimationFrame(updateSetupSummaries));
+
+    function getSetupRequirement() {
+        const mode = normalizeGameMode(state.gameMode);
+        if (!mode) return { step: 1, message: 'Välj spelläge i Spelinställningar & nivåer.', section: 'settings', target: 'game-mode-setting' };
+
+        const controls = Array.from(document.querySelectorAll('.lvl-cb'));
+        const selected = controls.filter(cb => cb.checked && cb.closest('label')?.style.display !== 'none')
+            .map(cb => normalizeLevelId(cb.value));
+        const hasDare = selected.some(level => !String(level).startsWith('truth'));
+        const hasTruth = selected.some(level => String(level).startsWith('truth'));
+        const hasRequiredLevels = mode === 'truth_or_dare' ? hasDare && hasTruth
+            : mode === 'truth' ? hasTruth : hasDare;
+        if (!hasRequiredLevels) {
+            const message = mode === 'truth_or_dare'
+                ? 'Välj minst en Dare-nivå och en Truth-nivå.'
+                : `Välj minst en ${mode === 'truth' ? 'Truth' : 'Dare'}-nivå.`;
+            return { step: 2, message, section: 'settings', target: 'level-selection-grid' };
+        }
+        if (!state.equipmentConfirmed) {
+            return { step: 3, message: 'Markera redskapen ni har, eller välj ”Inga redskap finns”.', section: 'equipment-section', target: 'equipment-summary' };
+        }
+        if (state.players.length < 2) {
+            return { step: 4, message: 'Lägg till minst två spelare för att kunna starta.', target: 'player-submit-button' };
+        }
+        return { step: 0, message: 'Allt är klart. Tryck på STARTA SPELET.', ready: true };
+    }
+
+    function updateSetupGuidance(focusMissing = false) {
+        const guidance = document.getElementById('setup-guidance');
+        const requirement = getSetupRequirement();
+        if (guidance) {
+            guidance.textContent = requirement.ready
+                ? requirement.message
+                : `Steg ${requirement.step} av 4: ${requirement.message}`;
+            guidance.dataset.ready = requirement.ready ? 'true' : 'false';
+        }
+        if (focusMissing) {
+            const section = requirement.section === 'settings'
+                ? document.querySelector('#lobby-page details.setup-section.host-only:not(.equipment-section)')
+                : requirement.section === 'equipment-section'
+                    ? document.querySelector('#lobby-page details.equipment-section')
+                    : null;
+            if (section) section.open = true;
+            requestAnimationFrame(() => {
+                const target = document.getElementById(requirement.target);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (typeof target.focus === 'function') target.focus({ preventScroll: true });
+                }
+            });
+        }
+        return requirement;
+    }
     window.togglePause = () => {
         if (!isHost) return;
         state.gamePaused = !state.gamePaused;
@@ -1998,6 +2070,7 @@
             customDecks: personalDecks,
             sharedDecks: [],
             availableItems: [...DEFAULT_AVAILABLE_ITEMS],
+            equipmentConfirmed: false,
             activeLevelIdx: 0,
             currentPlayerIdx: 0,
             allowManualStars: false,
@@ -2204,25 +2277,21 @@
 
     window.startGame = async () => {
         if (!isHost) return;
-        if (!state.gameMode) { showLobbyWarning('Välj ett spelläge innan spelet startas.'); return; }
+        const requirement = updateSetupGuidance();
+        if (!requirement.ready) {
+            updateSetupGuidance(true);
+            return;
+        }
         state.selectedLevels = Array.from(document.querySelectorAll('.lvl-cb:checked'))
             .map(cb => normalizeLevelId(cb.value))
             .sort((a,b) => String(a).localeCompare(String(b), 'sv', { numeric: true }));
         if (state.gameMode === 'dare') state.selectedLevels = state.selectedLevels.filter(level => !String(level).startsWith('truth'));
         if (state.gameMode === 'truth') state.selectedLevels = state.selectedLevels.filter(level => String(level).startsWith('truth'));
-        if (state.gameMode === 'dare' && state.selectedLevels.length === 0) {
-            state.selectedLevels = [1, 2, 3, 4].filter(level => allDares[level]);
-        }
         if (state.gameMode === 'truth_or_dare') {
             const hasTruth = state.selectedLevels.some(level => String(level).startsWith('truth'));
             const hasDare = state.selectedLevels.some(level => !String(level).startsWith('truth'));
-            if (!hasTruth || !hasDare) {
-                showLobbyWarning('Välj minst en Truth-nivå och en Dare-nivå innan spelet startas.');
-                return;
-            }
+            if (!hasTruth || !hasDare) return;
         }
-        if (state.gameMode !== 'truth' && state.selectedLevels.length === 0) { showLobbyWarning("Du måste välja minst en nivåfil för att kunna starta."); return; }
-        if (state.players.length < 2) { showLobbyWarning("Det krävs minst två spelare för att kunna börja."); return; }
         maybeShowLevel4Notice(state.selectedLevels);
         state.isPlaying = true;
         state.gamePaused = false;
@@ -2252,8 +2321,7 @@
         const select = document.getElementById('game-mode-setting');
         state.gameMode = normalizeGameMode(select?.value);
         applyLevelModeVisibility();
-        const startButton = document.getElementById('start-game-btn');
-        if (startButton) startButton.disabled = !state.gameMode;
+        updateSetupGuidance();
         if (isHost && state.roomCode) scheduleCloudUpdate();
         saveLocal();
     };
@@ -2775,7 +2843,8 @@
             <div class="player-item ${editingPlayerId === p.id ? 'editing-player' : ''}">
                 <div class="player-info"><strong>${escapeHtml(p.name)}</strong><small>${escapeHtml(p.gender)} • ${escapeHtml(p.pref)}</small></div>
                 ${isHost ? `<div class="action-btns"><button type="button" class="edit-btn" aria-label="Redigera ${escapeHtml(p.name)}" onclick="editPlayer(${p.id})">✎</button><button type="button" class="delete-btn" aria-label="Ta bort ${escapeHtml(p.name)}" onclick="removePlayer(${p.id})">×</button></div>` : (state.roomCode && p.uid === user?.uid ? `<div class="action-btns"><button type="button" class="edit-btn" aria-label="Redigera ${escapeHtml(p.name)}" onclick="editPlayer(${p.id})">✎</button></div>` : '')}
-            </div>`).join(''); 
+            </div>`).join('');
+        updateSetupGuidance();
     }
     
     function renderGameBar() { 
@@ -2937,6 +3006,7 @@
                     selectedLevels: Array.isArray(parsed.selectedLevels) ? parsed.selectedLevels.map(normalizeLevelId) : [],
                     customDecks: normalizeCustomDecks(parsed.customDecks)
                 };
+                state.equipmentConfirmed = parsed.equipmentConfirmed === true || (Array.isArray(state.availableItems) && state.availableItems.length > 0);
                 const oldEnvironmentState = Array.isArray(parsed.availableItems) && parsed.availableItems.some(item => ['leksaker', 'impact'].includes(item));
                 if (oldEnvironmentState || !Array.isArray(state.availableItems)) {
                     state.availableItems = [...DEFAULT_AVAILABLE_ITEMS];
@@ -2973,6 +3043,7 @@
                     customDecks: personalDecks,
                     sharedDecks: [],
                     availableItems: [...DEFAULT_AVAILABLE_ITEMS],
+                    equipmentConfirmed: false,
                     activeLevelIdx: 0,
                     currentPlayerIdx: 0,
                     cardsSinceLevelUp: 0,
