@@ -562,7 +562,7 @@
         /* Kompaktare snabbknappar i lobby */
         .environment-actions .btn { padding: 6px 10px; font-size: 0.68rem; }
     </style>
-    <link rel="stylesheet" href="./design-system.css?v=6">
+    <link rel="stylesheet" href="./design-system.css?v=11">
 </head>
 <body class="app-shell is-host">
 
@@ -600,7 +600,7 @@
         </div>
     </div>
 
-    <div id="level-banner" role="status" aria-live="polite">NIVÅ 4 – EXTREME ÄR AKTIV</div>
+    <div id="level-banner" role="status" aria-live="polite"></div>
 
     <!-- MODAL-BEHÅLLARE (VARNINGAR, STJÄRNOR & RESET) -->
     <div id="modal-overlay">
@@ -643,7 +643,8 @@
                     <summary><span class="section-heading">Spelinställningar & nivåer</span><span class="section-summary" id="settings-summary">Välj spel</span></summary>
                     <div class="setup-section-body">
                     <span class="veto-title">Globala Inställningar (Endast Värd)</span>
-                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
+                    <div class="lobby-settings-toolbar">
+                    <div class="lobby-mode-setting">
                         <label for="game-mode-setting" style="font-size:.7rem;color:var(--gold);text-transform:uppercase;letter-spacing:1px;">Spelläge:</label>
                         <select id="game-mode-setting" onchange="updateGameModeSetting()" style="width:auto;padding:7px 10px;border-radius:8px;background:#000;color:#fff;border:1px solid #444;">
                             <option value="" disabled selected>Välj spelläge…</option>
@@ -652,21 +653,20 @@
                             <option value="truth_or_dare">Truth or Dare</option>
                         </select>
                     </div>
-                    <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
-                        <label class="veto-option" style="margin: 0;"><input type="checkbox" id="setting-manual-stars" onchange="toggleManualStars()"> Manuella stjärnor</label>
-                        <div class="veto-option" style="gap: 8px; margin: 0;">
+                        <label class="veto-option lobby-manual-stars"><input type="checkbox" id="setting-manual-stars" onchange="toggleManualStars()"> Manuella stjärnor</label>
+                        <div class="veto-option lobby-setting-select">
                             <span style="font-size: 0.65rem; color: var(--gold); text-transform: uppercase;">Timer:</span>
                             <select id="star-timer-setting" onchange="updateStarTimerSetting()" style="width: auto; padding: 6px 10px; margin: 0; font-size: 0.8rem; border-radius: 8px; background: #000; color: #fff; border: 1px solid #444; outline: none;">
                                 <option value="1">1 min</option><option value="2">2 min</option><option value="3" selected>3 min</option><option value="4">4 min</option><option value="5">5 min</option>
                             </select>
                         </div>
-                        <div class="veto-option" style="gap: 8px; margin: 0;">
+                        <div class="veto-option lobby-setting-select">
                             <span style="font-size: 0.65rem; color: var(--gold); text-transform: uppercase;">Chans:</span>
                             <select id="star-chance-setting" onchange="updateStarChanceSetting()" style="width: auto; padding: 6px 10px; margin: 0; font-size: 0.8rem; border-radius: 8px; background: #000; color: #fff; border: 1px solid #444; outline: none;">
                                 <option value="1">1%</option><option value="2">2%</option><option value="3" selected>3%</option><option value="4">4%</option><option value="5">5%</option><option value="6">6%</option><option value="7">7%</option><option value="8">8%</option><option value="9">9%</option><option value="10">10%</option>
                             </select>
                         </div>
-                        <div class="level-up-control">
+                        <div class="level-up-control lobby-level-up-control">
                             <div class="level-up-heading"><span>Nivåhöjning</span><output id="auto-level-output" for="auto-level-setting">Av</output></div>
                             <input id="auto-level-setting" type="range" min="0" max="10" step="1" value="0" oninput="updateAutoLevelSetting()" aria-label="Nivåhöjning efter antal kort per spelare">
                             <div class="level-up-scale"><span>Av</span><span>10 kort/spelare</span></div>
@@ -838,6 +838,14 @@
             <div class="card-tools">
                 <button id="btn-save-card" class="btn btn-rules card-tool-btn" onclick="toggleFavoriteCard()" disabled>☆ SPARA</button>
                 <button class="btn btn-rules card-tool-btn" onclick="showSavedCards()">★ LISTA</button>
+                <div class="card-timer-widget" id="card-timer-widget" hidden>
+                    <select id="card-timer-duration" aria-label="Timerlängd">
+                        <option value="1">1 min</option><option value="2">2 min</option><option value="3">3 min</option><option value="4">4 min</option><option value="5">5 min</option>
+                    </select>
+                    <button id="card-timer-start" class="btn btn-rules card-tool-btn" type="button" onclick="startCardTimer()">⏱ STARTA</button>
+                    <span id="card-timer-display" class="card-timer-display" role="status" aria-live="assertive" hidden></span>
+                    <button id="card-timer-stop" class="btn btn-rules card-tool-btn" type="button" onclick="stopCardTimer()" hidden>AVBRYT</button>
+                </div>
             </div>
         </div>
         <div class="game-controls">
@@ -1695,13 +1703,135 @@
     let lastRenderedLevelId = null;
     let levelBannerTimer = null;
     let showingGameChooser = false;
+    let cardTimerEndsAt = null;
+    let cardTimerRemainingMs = 0;
+    let cardTimerInterval = null;
+    let cardTimerPaused = false;
+    let cardTimerExpired = false;
+    let cardTimerAudioContext = null;
+
+    function renderCardTimer() {
+        const widget = document.getElementById('card-timer-widget');
+        if (!widget) return;
+        const hasCard = state.currentTask && state.currentTask !== 'TRYCK FÖR KORT' && state.currentTask !== 'INGA MATCHANDE KORT HITTADES.';
+        widget.hidden = !(state.isPlaying && !state.roomCode && hasCard);
+        const select = document.getElementById('card-timer-duration');
+        const startButton = document.getElementById('card-timer-start');
+        const display = document.getElementById('card-timer-display');
+        const stopButton = document.getElementById('card-timer-stop');
+        const active = cardTimerRemainingMs > 0 && !cardTimerExpired;
+        select.hidden = active || cardTimerExpired;
+        startButton.hidden = active || cardTimerExpired;
+        display.hidden = !active && !cardTimerExpired;
+        stopButton.hidden = !active && !cardTimerExpired;
+        widget.classList.toggle('is-running', active);
+        widget.classList.toggle('is-finished', cardTimerExpired);
+        if (active) {
+            const remaining = cardTimerPaused ? cardTimerRemainingMs : Math.max(0, cardTimerEndsAt - Date.now());
+            const totalSeconds = Math.ceil(remaining / 1000);
+            display.textContent = `${cardTimerPaused ? 'PAUSAD · ' : ''}${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, '0')}`;
+        } else if (cardTimerExpired) {
+            display.textContent = 'TIDEN ÄR UTE';
+            stopButton.textContent = 'STÄNG';
+        } else {
+            stopButton.textContent = 'AVBRYT';
+        }
+    }
+
+    function playCardTimerSignal() {
+        try {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioContextClass) {
+                cardTimerAudioContext ||= new AudioContextClass();
+                const context = cardTimerAudioContext;
+                context.resume().then(() => {
+                    [880, 660, 880].forEach((frequency, index) => {
+                        const startAt = context.currentTime + index * 0.28;
+                        const oscillator = context.createOscillator();
+                        const gain = context.createGain();
+                        oscillator.type = 'sine';
+                        oscillator.frequency.value = frequency;
+                        gain.gain.setValueAtTime(0.0001, startAt);
+                        gain.gain.exponentialRampToValueAtTime(0.22, startAt + 0.025);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.2);
+                        oscillator.connect(gain);
+                        gain.connect(context.destination);
+                        oscillator.start(startAt);
+                        oscillator.stop(startAt + 0.21);
+                    });
+                }).catch(() => {});
+            }
+        } catch (error) { console.warn('Timersignalen kunde inte spelas upp.', error); }
+        try { navigator.vibrate?.([180, 100, 180]); } catch (error) { /* Vibration är valfri. */ }
+    }
+
+    function updateCardTimer() {
+        if (cardTimerPaused || !cardTimerEndsAt) return;
+        cardTimerRemainingMs = Math.max(0, cardTimerEndsAt - Date.now());
+        if (cardTimerRemainingMs === 0) {
+            cardTimerEndsAt = null;
+            cardTimerExpired = true;
+            clearInterval(cardTimerInterval);
+            cardTimerInterval = null;
+            playCardTimerSignal();
+        }
+        renderCardTimer();
+    }
+
+    window.startCardTimer = () => {
+        if (!state.isPlaying || state.roomCode || !state.currentTask || state.currentTask === 'TRYCK FÖR KORT') return;
+        clearInterval(cardTimerInterval);
+        cardTimerExpired = false;
+        cardTimerPaused = Boolean(state.gamePaused);
+        cardTimerRemainingMs = Number(document.getElementById('card-timer-duration').value) * 60 * 1000;
+        cardTimerEndsAt = cardTimerPaused ? null : Date.now() + cardTimerRemainingMs;
+        cardTimerInterval = setInterval(updateCardTimer, 250);
+        try {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioContextClass) {
+                cardTimerAudioContext ||= new AudioContextClass();
+                cardTimerAudioContext.resume().catch(() => {});
+            }
+        } catch (error) { /* Den visuella signalen fungerar även utan ljudstöd. */ }
+        renderCardTimer();
+    };
+
+    window.stopCardTimer = () => {
+        clearInterval(cardTimerInterval);
+        cardTimerInterval = null;
+        cardTimerEndsAt = null;
+        cardTimerRemainingMs = 0;
+        cardTimerPaused = false;
+        cardTimerExpired = false;
+        renderCardTimer();
+    };
+
+    function syncCardTimerWithGame() {
+        if (!state.isPlaying || state.roomCode) {
+            window.stopCardTimer();
+            return;
+        }
+        if (state.gamePaused && !cardTimerPaused && cardTimerEndsAt) {
+            cardTimerRemainingMs = Math.max(0, cardTimerEndsAt - Date.now());
+            cardTimerEndsAt = null;
+            cardTimerPaused = true;
+        } else if (!state.gamePaused && cardTimerPaused && cardTimerRemainingMs > 0) {
+            cardTimerEndsAt = Date.now() + cardTimerRemainingMs;
+            cardTimerPaused = false;
+        }
+        renderCardTimer();
+    }
 
     function showLevel4Banner() {
         const banner = document.getElementById('level-banner');
         if (!banner) return;
-        banner.classList.add('show');
         clearTimeout(levelBannerTimer);
-        levelBannerTimer = setTimeout(() => banner.classList.remove('show'), 4000);
+        banner.textContent = 'NIVÅ 4 – EXTREME ÄR AKTIV';
+        banner.classList.add('show');
+        levelBannerTimer = setTimeout(() => {
+            banner.classList.remove('show');
+            banner.textContent = '';
+        }, 4000);
     }
 
     function getFirstCardInstruction() {
@@ -1713,6 +1843,7 @@
 
     function applyStateToUI() {
         startTimerDisplayLoop();
+        syncCardTimerWithGame();
         // Nivåval synkas i realtid. Behåll då scrollpositionen så att värden
         // kan markera flera nivåer utan att behöva rulla ner efter varje klick.
         const keepGuestPosition = !isHost && Boolean(state.roomCode);
@@ -2618,6 +2749,7 @@
             return;
         }
         if (state.timer) stopTimer();
+        window.stopCardTimer();
         const active = state.players[state.currentPlayerIdx];
         const dareLevels = getSelectedDareLevels();
         const curLvlId = dareLevels[state.activeLevelIdx];
@@ -2733,6 +2865,7 @@
     function activateStarPowerForPlayer(playerIndex) {
         const active = state.players[playerIndex];
         if (!active || active.stars <= 0) return;
+        window.stopCardTimer();
         active.stars--;
         closeModal();
         state.currentTask = `<span class="gold-name">${escapeHtml(active.name)}</span>, DU HAR KONTROLLEN! Bestäm vad de andra ska göra.`;
