@@ -1683,6 +1683,13 @@
         levelBannerTimer = setTimeout(() => banner.classList.remove('show'), 4000);
     }
 
+    function getFirstCardInstruction() {
+        if (state.gameMode === 'truth_or_dare') {
+            return 'VÄLJ TRUTH, SLUMPA ELLER DARE FÖR ATT DRA FÖRSTA KORTET.';
+        }
+        return 'TRYCK PÅ NÄSTA KORT FÖR ATT DRA FÖRSTA KORTET.';
+    }
+
     function applyStateToUI() {
         startTimerDisplayLoop();
         // Nivåval synkas i realtid. Behåll då scrollpositionen så att värden
@@ -1756,7 +1763,10 @@
             const taskBox = document.getElementById('task-box');
             taskBox.classList.remove('card-deal');
             void taskBox.offsetWidth;
-            taskBox.innerHTML = sanitizeTaskHtml(state.currentTask);
+            const displayedTask = state.currentTask === 'TRYCK FÖR KORT'
+                ? getFirstCardInstruction()
+                : state.currentTask;
+            taskBox.innerHTML = sanitizeTaskHtml(displayedTask);
             taskBox.classList.add('card-deal');
             updateFavoriteButton();
             const pausedBanner = document.getElementById('game-paused-banner');
