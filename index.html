@@ -989,8 +989,36 @@
         return Number.isInteger(value) || /^\d+$/.test(String(value));
     }
 
+    function customDeckLevel(deck) {
+        const difficulty = String(deck?.difficulty || '');
+        const chiliLevel = (difficulty.match(/🌶️/gu) || []).length;
+        if (chiliLevel) return chiliLevel;
+        const namedLevel = difficulty.match(/(?:nivå|level)\s*([1-4])/i);
+        return namedLevel ? Number(namedLevel[1]) : 1;
+    }
+
     function getSelectedDareLevels() {
-        return (state.selectedLevels || []).filter(level => !String(level).startsWith('truth'));
+        const selected = new Set((state.selectedLevels || []).filter(isBuiltInLevelId).map(Number));
+        const selectedCustomIds = new Set((state.selectedLevels || []).filter(level => String(level).startsWith('custom:')));
+        (Array.isArray(state.customDecks) ? state.customDecks : []).forEach(deck => {
+            if (selectedCustomIds.has(deck.id)) selected.add(customDeckLevel(deck));
+        });
+        return Array.from(selected).sort((a, b) => a - b);
+    }
+
+    function getDareCardsForLevel(levelId) {
+        const cards = [];
+        if ((state.selectedLevels || []).some(level => isBuiltInLevelId(level) && Number(level) === Number(levelId))) {
+            (allDares[levelId]?.dares || []).forEach((dare, dareIndex) => {
+                cards.push({ dare, sourceId: String(levelId), dareIndex });
+            });
+        }
+        const selectedCustomIds = new Set((state.selectedLevels || []).filter(level => String(level).startsWith('custom:')));
+        (Array.isArray(state.customDecks) ? state.customDecks : []).forEach(deck => {
+            if (!selectedCustomIds.has(deck.id) || customDeckLevel(deck) !== Number(levelId)) return;
+            deck.dares.forEach((dare, dareIndex) => cards.push({ dare, sourceId: deck.id, dareIndex }));
+        });
+        return cards;
     }
 
     function normalizeCustomDeck(deck) {
@@ -2598,39 +2626,42 @@
         const selectedTruthLevels = state.selectedLevels.filter(level => String(level).startsWith('truth'));
         const selectedTruth = selectedTruthLevels[Math.floor(Math.random() * selectedTruthLevels.length)] || 'truth';
         const sourceId = useTruth ? selectedTruth : curLvlId;
-        const pool = allDares[sourceId]?.dares || [];
+        const pool = useTruth
+            ? (allDares[sourceId]?.dares || []).map((dare, dareIndex) => ({ dare, sourceId, dareIndex }))
+            : getDareCardsForLevel(curLvlId);
         state.currentSourceId = sourceId;
         const validTargets = state.players.filter(p => p.id !== active.id);
         if (!Array.isArray(state.usedDareKeys)) state.usedDareKeys = [];
-        const usedDareKeys = new Set(state.usedDareKeys);
+        let usedDareKeys = new Set(state.usedDareKeys);
         const collectPossibleTurns = (ignoreUsed = false) => {
             const turns = [];
-            for (let dareIndex = 0; dareIndex < pool.length; dareIndex++) {
-                const dare = pool[dareIndex];
-                const effectiveKey = `${sourceId}:${dareIndex}`;
+            for (const cardEntry of pool) {
+                const { dare, sourceId: cardSourceId, dareIndex } = cardEntry;
+                const effectiveKey = `${cardSourceId}:${dareIndex}`;
                 if (!ignoreUsed && usedDareKeys.has(effectiveKey)) continue;
                 for (const target of validTargets) {
                     const partnerCandidates = state.players.filter(p => p.id !== active.id && p.id !== target.id);
                     const partners = dare.text.includes('[PARTNER]') ? partnerCandidates : [null];
                     for (const partner of partners) {
                         if (/\[(?:ACTIVE|PARTNER)\]/.test(dare.text) && !partner && dare.text.includes('[PARTNER]')) continue;
-                        if (dareIsAllowed(dare, active, target, partner, useTruth)) turns.push({ dare, dareIndex, target, partner });
+                        if (dareIsAllowed(dare, active, target, partner, useTruth)) turns.push({ dare, sourceId: cardSourceId, dareIndex, target, partner });
                     }
                 }
             }
             return turns;
         };
         let possibleTurns = collectPossibleTurns();
-        if (possibleTurns.length === 0 && pool.length && pool.every((_, index) => usedDareKeys.has(`${sourceId}:${index}`))) {
-            state.usedDareKeys = state.usedDareKeys.filter(key => !key.startsWith(`${sourceId}:`));
-            usedDareKeys.clear();
+        const stageKeys = new Set(pool.map(card => `${card.sourceId}:${card.dareIndex}`));
+        if (possibleTurns.length === 0 && pool.length && Array.from(stageKeys).every(key => usedDareKeys.has(key))) {
+            state.usedDareKeys = state.usedDareKeys.filter(key => !stageKeys.has(key));
+            usedDareKeys = new Set(state.usedDareKeys);
             possibleTurns = collectPossibleTurns();
         }
 
         if (possibleTurns.length === 0) state.currentTask = "INGA MATCHANDE KORT HITTADES.";
         else {
-            const { dare, dareIndex, target, partner } = possibleTurns[Math.floor(Math.random() * possibleTurns.length)];
-            const dareKey = `${sourceId}:${dareIndex}`;
+            const { dare, sourceId: cardSourceId, dareIndex, target, partner } = possibleTurns[Math.floor(Math.random() * possibleTurns.length)];
+            const dareKey = `${cardSourceId}:${dareIndex}`;
             if (!state.usedDareKeys.includes(dareKey)) state.usedDareKeys.push(dareKey);
             const ts = /[sxz]$/i.test(target.name) ? target.name : `${target.name}s`;
             const pronomen = target.gender === 'man' ? 'honom' : 'henne';
@@ -2896,7 +2927,7 @@
         const cards = getSavedCards();
         const existing = cards.findIndex(card => (card.template || card.text) === template);
         if (existing >= 0) cards.splice(existing, 1);
-        else cards.unshift({ text, template, level: state.selectedLevels[state.activeLevelIdx] || '', time: Date.now() });
+        else cards.unshift({ text, template, level: state.currentSourceId || getSelectedDareLevels()[state.activeLevelIdx] || '', time: Date.now() });
         setSavedCards(cards);
         updateFavoriteButton();
     };
