@@ -123,10 +123,6 @@
 
         h1 { color: var(--gold); letter-spacing: 3px; margin: 10px 0 30px 0; font-size: 2.2rem; }
         
-        .intro-text-container { margin: 30px 0; line-height: 1.8; letter-spacing: 0.4px; }
-        .intro-title { color: var(--gold); font-size: 1.6rem; margin-bottom: 20px; display: block; }
-        .intro-body { color: #888; font-style: italic; font-size: 1.1rem; }
-        .intro-highlight { color: #bbb; display: block; margin-top: 20px; font-weight: bold; }
 
         .room-tag { color: #555; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 2px; }
         .room-code-display { color: var(--gold); font-weight: bold; font-size: 1.2rem; }
@@ -256,6 +252,10 @@
         .btn-next { background: var(--gold); color: #000; font-size: 1.4rem; box-shadow: 0 5px 20px rgba(212, 175, 55, 0.28); }
         .btn-back { background: #222; color: #eee; border: 1px solid #444; font-size: 1rem; margin-top: 15px; }
         .btn-lvl-up { background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); font-size: 0.8rem; padding: 10px; margin-top: 10px; }
+        .start-intro { margin: 0 0 22px; text-align: center; line-height: 1.55; }
+        .start-intro h2 { margin: 0 0 12px; color: var(--gold); font-family: Georgia, serif; font-size: 1.45rem; font-weight: 400; }
+        .start-intro p { margin: 0 0 13px; color: #aaa49a; font-size: 0.92rem; font-style: italic; }
+        .start-intro .start-intro-highlight { margin: 0; color: #d6d0c4; font-weight: 700; }
         #start-page.join-mode { padding-bottom: 50vh; }
 
         @media (max-width: 700px) {
@@ -566,38 +566,25 @@
 
     <div id="loading-screen" class="loading-overlay">Laddar Dare Me...</div>
 
-    <!-- INTRO SIDA -->
-    <div id="intro-page" class="page active">
-        <div class="logo-container">
-            <img src="dareme.png" alt="Dare Me Logo">
-        </div>
-        
-        <h1>Dare Me</h1>
-        <div class="intro-text-container">
-            <span class="intro-title">Välkommen till Dare Me</span>
-            <div class="intro-body">
-                Ett förföriskt spel av lust och gränser.<br>
-                Bakom varje kort döljer sig mer än bara en befallning.<br><br>
-                Du kommer att frestas. Du kommer att kapitulera. Du kommer att lyda.<br>
-                <span class="intro-highlight">Dare Me är inte bara ett spel. Det är begär, som väntar på att packas upp.</span>
-            </div>
-        </div>
-        <button class="btn btn-start" onclick="enterGame()">BÖRJA SPELET</button>
-        <a href="rules.html" class="btn btn-rules" style="text-decoration:none; display:block;">REGLER & SAMTYCKE</a>
-    </div>
-
     <!-- STARTVÄLJARE -->
-    <div id="start-page" class="page">
+    <div id="start-page" class="page active">
         <div class="logo-container">
             <img src="dareme.png" alt="Dare Me Logo">
         </div>
         <h1>Dare Me</h1>
         <div class="setup-container">
+            <div class="start-intro">
+                <h2>Välkommen till Dare Me</h2>
+                <p>Ett förföriskt spel av lust och gränser.<br>Bakom varje kort döljer sig mer än bara en befallning.</p>
+                <p>Du kommer att frestas. Du kommer att kapitulera. Du kommer att lyda.</p>
+                <p class="start-intro-highlight">Dare Me är inte bara ett spel. Det är begär, som väntar på att packas upp.</p>
+            </div>
             <button class="btn btn-start" onclick="initLocalGame()">SPELA</button>
             <a class="btn btn-architect" href="./architect.html" target="_blank" rel="noopener">ÖPPNA DARE-ARKITEKTEN</a>
             <a class="btn btn-architect" href="./trutharchitect.html" target="_blank" rel="noopener">ÖPPNA TRUTH-ARKITEKTEN</a>
             <button class="btn btn-back" id="return-to-lobby-btn" onclick="returnToLobbyFromChooser()" style="display:none;">TILLBAKA TILL LOBBYN</button>
             <button class="btn btn-install" id="install-pwa-btn" onclick="installPwa()" style="display:none;">INSTALLERA PÅ HEMSKÄRM</button>
+            <a class="btn btn-architect" href="rules.html">REGLER & SAMTYCKE</a>
         </div>
     </div>
 
@@ -918,7 +905,7 @@
     let tempStars = 0; 
     
     let state = {
-        introSeen: false,
+        introSeen: true,
         modeSelected: false,
         isHost: false,
         players: [],
@@ -1711,7 +1698,7 @@
         if (shareDecksButton) shareDecksButton.style.display = state.roomCode ? '' : 'none';
         const returnToLobbyButton = document.getElementById('return-to-lobby-btn');
         if (returnToLobbyButton) returnToLobbyButton.style.display = showingGameChooser ? '' : 'none';
-        const pages = ['intro-page', 'start-page', 'lobby-page', 'game-page'];
+        const pages = ['start-page', 'lobby-page', 'game-page'];
         pages.forEach(p => {
             const el = document.getElementById(p);
             if (el) el.classList.remove('active');
@@ -1747,9 +1734,7 @@
         const guestLevelInfo = document.getElementById('guest-level-info');
         if (guestLevelInfo) guestLevelInfo.innerText = state.autoLevelUpCards ? `${state.autoLevelUpCards} kort/spelare` : 'Av';
 
-        if (!state.introSeen) {
-            document.getElementById('intro-page').classList.add('active');
-        } else if (!state.modeSelected || showingGameChooser) {
+        if (!state.modeSelected || showingGameChooser) {
             document.getElementById('start-page').classList.add('active');
         } else if (state.isPlaying) {
             document.getElementById('game-page').classList.add('active');
@@ -1926,7 +1911,6 @@
         if (ownPlayer) requestRoomAction('pauseRequest', { playerUid: user.uid, playerId: ownPlayer.id }).catch(() => showLobbyWarning('Pausen kunde inte begäras.'));
     };
     window.toggleManualStars = () => { state.allowManualStars = document.getElementById('setting-manual-stars').checked; scheduleCloudUpdate(); saveLocal(); };
-    window.enterGame = () => { state.introSeen = true; applyStateToUI(); saveLocal(); };
     window.openGameChooser = () => {
         showingGameChooser = true;
         applyStateToUI();
@@ -2947,6 +2931,7 @@
                 state = {
                     ...state,
                     ...parsed,
+                    introSeen: true,
                     gameMode: normalizeGameMode(parsed.gameMode),
                     players,
                     selectedLevels: Array.isArray(parsed.selectedLevels) ? parsed.selectedLevels.map(normalizeLevelId) : [],
