@@ -504,7 +504,7 @@
         .game-controls #btn-skip-card,
         .game-controls #btn-pause-game,
         .game-controls #btn-request-pause { margin: 0 !important; min-height: 48px; }
-        .game-controls #btn-skip-card { grid-column: 1; min-height: 44px; padding: 9px 5px; }
+        .game-controls #btn-skip-card { grid-column: 1 / span 2; min-height: 44px; padding: 9px 5px; }
         .game-controls #btn-pause-game,
         .game-controls #btn-request-pause { grid-column: 3; min-height: 44px; padding: 9px 5px; }
         .game-controls .btn-lvl-up { min-height: 44px; }
@@ -586,7 +586,7 @@
         <a href="rules.html" class="btn btn-rules" style="text-decoration:none; display:block;">REGLER & SAMTYCKE</a>
     </div>
 
-    <!-- STARTVÄLJARE (SKAPA RUM-SIDAN) -->
+    <!-- STARTVÄLJARE -->
     <div id="start-page" class="page">
         <div class="logo-container">
             <img src="dareme.png" alt="Dare Me Logo">
@@ -594,14 +594,10 @@
         <h1>Dare Me</h1>
         <div class="setup-container">
             <button class="btn btn-start" onclick="initLocalGame()">SPELA PÅ DENNA ENHET</button>
-            <div style="margin: 20px 0; color: #444;">— ELLER SYNKAT LÄGE —</div>
-            <button class="btn btn-add" onclick="initCreateRoom()">SKAPA RUM (HOST)</button>
-            <button class="btn btn-add" id="show-join-room-btn" onclick="showJoinRoomInput()">GÅ MED I RUM</button>
+            <p style="margin: 12px 0 18px; color: #a9a49b; font-size: .9rem;">Första betan spelas tillsammans på samma enhet.</p>
             <a class="btn btn-architect" href="./architect.html" target="_blank" rel="noopener">ÖPPNA DARE-ARKITEKTEN</a>
             <a class="btn btn-architect" href="./trutharchitect.html" target="_blank" rel="noopener">ÖPPNA TRUTH-ARKITEKTEN</a>
             <button class="btn btn-back" id="return-to-lobby-btn" onclick="returnToLobbyFromChooser()" style="display:none;">TILLBAKA TILL LOBBYN</button>
-            <input type="text" id="join-code-input" placeholder="ANGE RUMSKOD" maxlength="5" autocomplete="off" style="display:none; text-align: center; margin-top: 10px;">
-            <button class="btn btn-start" id="join-room-submit" onclick="initJoinRoom()" style="display:none;">ANSLUT TILL RUM</button>
             <button class="btn btn-install" id="install-pwa-btn" onclick="installPwa()" style="display:none;">INSTALLERA PÅ HEMSKÄRM</button>
         </div>
     </div>
@@ -918,6 +914,7 @@
         return firebaseModulesPromise;
     }
 
+    const SINGLE_DEVICE_BETA = true;
     let allDares = {}; 
     let tempStars = 0; 
     
@@ -1805,7 +1802,8 @@
         const activePlayer = state.players[state.currentPlayerIdx];
         const cardPlayer = state.players[(state.currentPlayerIdx - 1 + state.players.length) % state.players.length];
         const ownPlayer = participantPlayers.find(player => player.uid === user?.uid);
-        const guestCanAct = !state.awaitingCompletion && !state.gamePaused && (isHost || !state.roomCode || Boolean(ownPlayer && activePlayer &&
+        const localCanContinue = SINGLE_DEVICE_BETA && !state.roomCode && !state.gamePaused;
+        const guestCanAct = (localCanContinue || !state.awaitingCompletion) && !state.gamePaused && (isHost || !state.roomCode || Boolean(ownPlayer && activePlayer &&
             (activePlayer.id === ownPlayer.id || activePlayer.uid === ownPlayer.uid)));
         const nextButton = document.getElementById('btn-next-card');
         if (nextButton) nextButton.disabled = !guestCanAct;
@@ -1816,18 +1814,22 @@
         if (skipButton) skipButton.disabled = !guestCanSkip;
         const completeButton = document.getElementById('btn-complete-card');
         const guestCanComplete = state.awaitingCompletion && !state.gamePaused && (isHost || !state.roomCode || guestOwnsCard);
-        if (completeButton) completeButton.disabled = !guestCanComplete;
+        if (completeButton) {
+            completeButton.style.display = SINGLE_DEVICE_BETA && !state.roomCode ? 'none' : '';
+            completeButton.disabled = !guestCanComplete;
+        }
         const choiceBox = document.getElementById('truth-mission-controls');
         if (choiceBox) {
         const choiceMode = state.gameMode === 'truth_or_dare';
             choiceBox.style.display = choiceMode && guestCanAct ? 'grid' : 'none';
         }
-        if (nextButton && state.gameMode === 'truth_or_dare') nextButton.style.display = 'none';
+        if (nextButton) nextButton.style.display = state.gameMode === 'truth_or_dare' ? 'none' : '';
         const pauseRequestButton = document.getElementById('btn-request-pause');
         if (pauseRequestButton) pauseRequestButton.disabled = Boolean(state.gamePaused || !ownPlayer);
         const turnHelp = document.getElementById('turn-help');
         if (turnHelp) {
             if (state.gamePaused) turnHelp.innerText = isHost ? 'Spelet är pausat. Fortsätt när alla är redo.' : 'Spelet är pausat av värden.';
+            else if (state.awaitingCompletion && SINGLE_DEVICE_BETA && !state.roomCode) turnHelp.innerText = 'Kortet pågår – när ni är färdiga väljer nästa spelare nästa kort.';
             else if (state.awaitingCompletion && isHost) turnHelp.innerText = 'Kortet pågår – tryck KLAR när uppdraget är färdigt.';
             else if (guestCanAct) turnHelp.innerText = 'Det är din tur – välj nästa kort.';
             else if (guestCanComplete) turnHelp.innerText = 'Det här är ditt kort – byt det eller tryck KLAR när du är färdig.';
@@ -1950,6 +1952,10 @@
     };
 
     window.showJoinRoomInput = () => {
+        if (SINGLE_DEVICE_BETA) {
+            showLobbyWarning('Rumsspel är inte tillgängligt i den här betan.');
+            return;
+        }
         document.getElementById('show-join-room-btn').style.display = 'none';
         document.getElementById('join-code-input').style.display = 'block';
         document.getElementById('join-room-submit').style.display = 'block';
@@ -2025,6 +2031,10 @@
         applyStateToUI();
     };
     window.initCreateRoom = async () => {
+        if (SINGLE_DEVICE_BETA) {
+            showLobbyWarning('Rumsspel är inte tillgängligt i den här betan.');
+            return;
+        }
         const ok = await initFirebase(); if (!ok) return;
         showingGameChooser = false;
         isHost = true; state.isHost = true; state.modeSelected = true;
@@ -2049,6 +2059,10 @@
         }
     };
     window.initJoinRoom = async () => {
+        if (SINGLE_DEVICE_BETA) {
+            showLobbyWarning('Rumsspel är inte tillgängligt i den här betan.');
+            return;
+        }
         const code = document.getElementById('join-code-input').value.toUpperCase();
         if(!code) return;
         const ok = await initFirebase(); if (!ok) return;
@@ -2502,7 +2516,11 @@
     window.generateTurn = (choiceOrRoomAction = false) => {
         const selectedChoice = ['truth', 'dare', 'random'].includes(choiceOrRoomAction) ? choiceOrRoomAction : null;
         const fromRoomAction = choiceOrRoomAction === true;
-        if (state.awaitingCompletion) return;
+        if (state.awaitingCompletion) {
+            if (!SINGLE_DEVICE_BETA || state.roomCode) return;
+            state.awaitingCompletion = false;
+            if (state.timer) stopTimer();
+        }
         if (!isHost && state.roomCode && !fromRoomAction) {
             const activePlayer = state.players[state.currentPlayerIdx];
             const ownPlayer = participantPlayers.find(player => player.uid === user?.uid);
@@ -2943,11 +2961,53 @@
             }
         }
         const boot = async () => {
+            // Första betan körs på en enda enhet. Ett tidigare sparat rum får
+            // aldrig starta Firebase eller föra med sig värdens spelinställningar.
+            if (SINGLE_DEVICE_BETA && state.roomCode) {
+                const hasSavedPersonalDecks = localStorage.getItem(PERSONAL_DECKS_STORAGE_KEY) !== null;
+                const personalDecks = hasSavedPersonalDecks
+                    ? getPersonalCustomDecks()
+                    : (state.isHost ? normalizeCustomDecks(state.customDecks) : []);
+                if (!hasSavedPersonalDecks && state.isHost) savePersonalCustomDecks(personalDecks);
+                state = {
+                    ...state,
+                    modeSelected: false,
+                    isHost: true,
+                    players: [],
+                    selectedLevels: [],
+                    gameMode: '',
+                    customDecks: personalDecks,
+                    sharedDecks: [],
+                    availableItems: [...DEFAULT_AVAILABLE_ITEMS],
+                    activeLevelIdx: 0,
+                    currentPlayerIdx: 0,
+                    cardsSinceLevelUp: 0,
+                    usedDareKeys: [],
+                    cardHistory: [],
+                    currentCardTemplate: '',
+                    currentTask: 'TRYCK FÖR KORT',
+                    currentSourceId: null,
+                    awaitingCompletion: false,
+                    timer: null,
+                    timerEndsAt: null,
+                    isPlaying: false,
+                    gamePaused: false,
+                    roomCode: null,
+                    hostUid: null
+                };
+                clearSharedCustomDecks(personalDecks);
+                hydrateCustomDares(personalDecks);
+                saveLocal();
+            }
+            if (SINGLE_DEVICE_BETA) {
+                isHost = true;
+                state.isHost = true;
+            }
             sortCheckboxLabels();
             await scanForLevels();
             hideLoading(); 
             toggleBiOption(); 
-            if (state.roomCode) {
+            if (!SINGLE_DEVICE_BETA && state.roomCode) {
                 isHost = Boolean(state.isHost);
                 applyStateToUI();
                 const ready = await initFirebase();
