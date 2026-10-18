@@ -249,6 +249,14 @@
         .btn-rules { background: transparent; color: var(--gold); border: 1px solid var(--gold); font-size: 0.95rem; padding: 16px; margin-top: 5px; }
         .btn-install { background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); font-size: 0.82rem; padding: 12px 16px; margin-top: 8px; }
         .btn-architect { display: block; width: 100%; text-align: center; text-decoration: none; background: #17130a; color: var(--gold); border: 1px solid #8f7622; font-size: 0.82rem; padding: 12px 16px; margin-top: 8px; }
+        .btn-rules-help { animation: rulesHelpPulse 3.2s ease-in-out infinite; }
+        @keyframes rulesHelpPulse {
+            0%, 100% { box-shadow: 0 0 0 rgba(219, 195, 109, 0); }
+            50% { box-shadow: 0 0 12px rgba(219, 195, 109, 0.24); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .btn-rules-help { animation: none; }
+        }
         .btn-next { background: var(--gold); color: #000; font-size: 1.4rem; box-shadow: 0 5px 20px rgba(212, 175, 55, 0.28); }
         .btn-back { background: #222; color: #eee; border: 1px solid #444; font-size: 1rem; margin-top: 15px; }
         .btn-lvl-up { background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); font-size: 0.8rem; padding: 10px; margin-top: 10px; }
@@ -586,7 +594,7 @@
             <a class="btn btn-architect" href="./trutharchitect.html" target="_blank" rel="noopener">ÖPPNA TRUTH-ARKITEKTEN</a>
             <button class="btn btn-back" id="return-to-lobby-btn" onclick="returnToLobbyFromChooser()" style="display:none;">TILLBAKA TILL LOBBYN</button>
             <button class="btn btn-install" id="install-pwa-btn" onclick="installPwa()" style="display:none;">INSTALLERA PÅ HEMSKÄRM</button>
-            <a class="btn btn-architect" href="rules.html">REGLER & SAMTYCKE</a>
+            <a class="btn btn-architect btn-rules-help" href="rules.html">REGLER & HUR SPELET FUNGERAR?</a>
         </div>
     </div>
 
