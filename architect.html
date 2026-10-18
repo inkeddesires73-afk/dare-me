@@ -1171,9 +1171,14 @@
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app-check.js';
 import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 const app = initializeApp({apiKey:'AIzaSyADzIduNhKHBKIMWMGIwwPtiqKkZk8xZK4',authDomain:'dare-me-1c264.firebaseapp.com',projectId:'dare-me-1c264',storageBucket:'dare-me-1c264.firebasestorage.app',messagingSenderId:'1002052194460',appId:'1:1002052194460:web:9f55d47fbc82745a17dd59'});
+// App Check körs endast på den publicerade domänen. Lokal utveckling behöver inte en produktionsattestering.
+const appCheck = location.hostname === 'dare-me.madebylexi.se'
+  ? initializeAppCheck(app, {provider:new ReCaptchaEnterpriseProvider('6LexK_UtAAAAACHGERTJjj3pcwex-Qhf3nNysC7R'),isTokenAutoRefreshEnabled:true})
+  : null;
 const auth = getAuth(app), db = getFirestore(app);
 window.submitArchitectDeck = async () => {
   const deck = window.getArchitectDeck?.();
