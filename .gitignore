@@ -1,0 +1,15 @@
+# Internal and deployment-only files must never be published with GitHub Pages.
+admin.html
+deckadmin.html
+guest-deck-admin.html
+app.js
+styles.css
+truth.json
+index.working-backup.html
+.firebaserc
+firebase.json
+firestore.rules
+README.md
+Dare Me DesignFörbättringasplan.md
+Dare Me förbättringsplan.md
+Förbättringslista Dare Me.txt
