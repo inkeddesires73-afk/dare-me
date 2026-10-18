@@ -249,10 +249,12 @@
         .btn-rules { background: transparent; color: var(--gold); border: 1px solid var(--gold); font-size: 0.95rem; padding: 16px; margin-top: 5px; }
         .btn-install { background: #1a1a1a; color: var(--gold); border: 1px solid var(--gold); font-size: 0.82rem; padding: 12px 16px; margin-top: 8px; }
         .btn-architect { display: block; width: 100%; text-align: center; text-decoration: none; background: #17130a; color: var(--gold); border: 1px solid #8f7622; font-size: 0.82rem; padding: 12px 16px; margin-top: 8px; }
-        .btn-rules-help { animation: rulesHelpPulse 3.2s ease-in-out infinite; }
+        .btn-rules-help {
+            animation: rulesHelpPulse 3.2s ease-in-out infinite;
+        }
         @keyframes rulesHelpPulse {
-            0%, 100% { box-shadow: 0 0 0 rgba(219, 195, 109, 0); }
-            50% { box-shadow: 0 0 12px rgba(219, 195, 109, 0.24); }
+            0%, 100% { box-shadow: 0 5px 14px -5px rgba(210, 48, 56, 0.42); }
+            50% { box-shadow: 0 7px 20px -3px rgba(225, 45, 55, 0.72); }
         }
         @media (prefers-reduced-motion: reduce) {
             .btn-rules-help { animation: none; }
