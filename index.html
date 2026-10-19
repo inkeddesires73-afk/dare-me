@@ -341,6 +341,16 @@
             margin-bottom: 12px;
         }
         .profile-panel input, .profile-panel select { margin: 0; min-height: 48px; }
+        .player-veto-guidance {
+            margin: 4px 0 10px;
+            padding: 10px 12px;
+            border-left: 2px solid var(--gold);
+            border-radius: 0 8px 8px 0;
+            background: rgba(212,175,55,.06);
+            color: #c9c2b5;
+            font-size: .82rem;
+            line-height: 1.45;
+        }
         input[type="text"], select {
             border-color: #48443b;
             background: #080808;
@@ -643,13 +653,7 @@
             <div class="lobby-workspace">
                 <div class="setup-container">
                     <div id="setup-controls">
-                <div class="profile-panel" aria-label="Spelarprofil">
-                    <input type="text" id="pName" placeholder="DITT NAMN" autocomplete="off">
-                    <select id="pGender" aria-label="Kön" onchange="toggleBiOption()"><option value="" disabled selected>VÄLJ KÖN</option><option value="kvinna">KVINNA</option><option value="man">MAN</option></select>
-                    <select id="pPref" aria-label="Sexuell läggning" onchange="toggleBiOption()"><option value="hetero" selected>HETEROSEXUELL</option><option value="bi">BISEXUELL</option><option value="gay">HOMOSEXUELL</option></select>
-                </div>
-
-                <details class="setup-section host-only">
+                <details class="setup-section host-only" open>
                     <summary><span class="section-heading">Spelinställningar & nivåer</span><span class="section-summary" id="settings-summary">Välj spel</span></summary>
                     <div class="setup-section-body">
                     <span class="veto-title">Globala Inställningar (Endast Värd)</span>
@@ -733,6 +737,13 @@
                         </div>
                     </div>
                 </details>
+
+                <div class="profile-panel" aria-label="Spelarprofil">
+                    <input type="text" id="pName" placeholder="DITT NAMN" autocomplete="off">
+                    <select id="pGender" aria-label="Kön" onchange="toggleBiOption()"><option value="" disabled selected>VÄLJ KÖN</option><option value="kvinna">KVINNA</option><option value="man">MAN</option></select>
+                    <select id="pPref" aria-label="Sexuell läggning" onchange="toggleBiOption()"><option value="hetero" selected>HETEROSEXUELL</option><option value="bi">BISEXUELL</option><option value="gay">HOMOSEXUELL</option></select>
+                </div>
+                <p id="player-veto-guidance" class="player-veto-guidance" role="status" aria-live="polite">Välj spelläge under Spelinställningar &amp; nivåer först. Då visas rätt personliga vetolista.</p>
 
                 <details class="setup-section veto-container truth-veto-section">
                     <summary><span class="section-heading">Truth-veton</span><span class="section-summary" id="truth-veto-summary">0 valda</span></summary>
@@ -1272,11 +1283,9 @@
 
     function applyLevelModeVisibility() {
         const mode = normalizeGameMode(state.gameMode);
-        // A guest has not read the room document until their own player exists.
-        // Keep both personal veto lists available during that short setup step.
         const modeKnown = mode === 'truth' || mode === 'dare' || mode === 'truth_or_dare';
-        const showTruth = !modeKnown || mode === 'truth' || mode === 'truth_or_dare';
-        const showDare = !modeKnown || mode === 'dare' || mode === 'truth_or_dare';
+        const showTruth = mode === 'truth' || mode === 'truth_or_dare';
+        const showDare = mode === 'dare' || mode === 'truth_or_dare';
         document.getElementById('level-selection-grid')?.classList.toggle('mix-level-layout', mode === 'truth_or_dare');
         document.querySelectorAll('.truth-level-option').forEach(el => el.style.display = showTruth ? '' : 'none');
         document.querySelectorAll('.dare-level-option').forEach(el => el.style.display = showDare ? '' : 'none');
@@ -1288,6 +1297,12 @@
             el.style.display = showDare ? '' : 'none';
             if (!showDare) el.removeAttribute('open');
         });
+        const vetoGuidance = document.getElementById('player-veto-guidance');
+        if (vetoGuidance) {
+            vetoGuidance.textContent = modeKnown
+                ? 'Välj veto för spelaren ovan. Valen sparas separat när du trycker LÄGG TILL MIG.'
+                : 'Välj spelläge under Spelinställningar & nivåer först. Då visas rätt personliga vetolista.';
+        }
     }
 
     async function readDeckFile(file) {
@@ -2384,6 +2399,11 @@
             else state.players = state.players.filter(p => p.id !== newPlayer.id);
             renderLobby();
             showLobbyWarning('Spelaren kunde inte läggas till. Kontrollera Firebase-reglerna.');
+            return;
+        }
+        if (!wasEditing) {
+            document.querySelectorAll('.truth-veto-section, .dare-veto-section').forEach(section => section.removeAttribute('open'));
+            document.querySelector('.profile-panel')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     };
 
