@@ -18,6 +18,8 @@
     h2 { margin:2em 0 .7em; font-size:1.45rem; border-bottom:1px solid var(--line); padding-bottom:.4em; }
     h3 { margin:1.6em 0 .55em; font-size:1.12rem; }
     p { margin:.8em 0; } a { color:var(--gold); overflow-wrap:anywhere; }
+    .email-cta { display:inline-flex; align-items:center; justify-content:center; margin:.35em 0; padding:10px 14px; border:1px solid var(--line); border-radius:9px; background:#1b170d; color:var(--gold); font-size:.88rem; font-weight:800; letter-spacing:.04em; text-decoration:none; }
+    .email-cta:focus-visible { outline:2px solid var(--gold); outline-offset:3px; }
     strong { color:#fff2c6; } ol,ul { padding-left:1.5em; } li { padding-left:.2em; margin:.35em 0; }
     figure { margin:1.2em 0 1.6em; padding:10px; border:1px solid var(--line); border-radius:14px; background:#090807; text-align:center; }
     figure a { display:block; text-decoration:none; }
@@ -171,7 +173,7 @@ Om ett kort verkar bryta mot ett valt veto, sakna tillgänglig utrustning eller 
 
 Skriv gärna detta när något går fel eller är svårt att förstå:
 
-Skicka felrapporten och gärna en skärmbild till [madebylexi.se@gmail.com](mailto:madebylexi.se@gmail.com).
+Skicka felrapporten och gärna en skärmbild via {{FEEDBACK_EMAIL}}.
 
 ```text
 ENHET OCH WEBBLÄSARE:
@@ -195,7 +197,7 @@ Säg också gärna till om en knapp är svår att hitta, en instruktion är okla
   const inline = value => escapeHtml(value)
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\[([^\]]+)\]\((mailto:[^)\s]+)\)/g, '<a href="$2">$1</a>')
+    .replace(/\{\{FEEDBACK_EMAIL\}\}/g, '<a class="email-cta" href="#" data-mail-user="madebylexi.se" data-mail-host="gmail.com">SKICKA FELRAPPORT VIA E-POST</a>')
     .replace(/&lt;(https?:\/\/[^&]+)&gt;/g, '<a href="$1">$1</a>')
     .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2">');
   const lines = source.split(/\r?\n/);
@@ -227,7 +229,16 @@ Säg också gärna till om en knapp är svår att hitta, en instruktion är okla
     while (i < lines.length && lines[i].trim() && !/^(#{1,3} |\d+\. | - |\|`{3})/.test(lines[i]) && !/^\|/.test(lines[i]) && !/^!\[/.test(lines[i])) paragraph.push(lines[i++]);
     out.push('<p>' + paragraph.map(inline).join('<br>') + '</p>');
   }
-  document.getElementById('guide').innerHTML = out.join('\n');
+  const guide = document.getElementById('guide');
+  guide.innerHTML = out.join('\n');
+  guide.addEventListener('click', event => {
+    const link = event.target.closest('[data-mail-user]');
+    if (!link) return;
+    event.preventDefault();
+    const address = link.dataset.mailUser + '@' + link.dataset.mailHost;
+    const subject = encodeURIComponent('Felrapport Dare Me');
+    window.location.href = 'mailto:' + address + '?subject=' + subject;
+  });
 })();
 </script>
 </body>
