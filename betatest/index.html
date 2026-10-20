@@ -22,6 +22,8 @@
     figure { margin:1.2em 0 1.6em; padding:10px; border:1px solid var(--line); border-radius:14px; background:#090807; text-align:center; }
     figure a { display:block; text-decoration:none; }
     figure img { display:block; width:auto; max-width:100%; max-height:min(72vh,760px); height:auto; object-fit:contain; margin:0 auto; border-radius:8px; }
+    figure.player-form a { aspect-ratio:1.4; overflow:hidden; }
+    figure.player-form img { width:100%; max-height:none; height:100%; object-fit:cover; object-position:top; }
     figcaption { color:var(--muted); font-size:.9rem; padding:8px 5px 2px; }
     .table-wrap { overflow-x:auto; margin:1em 0; border:1px solid var(--line); border-radius:10px; }
     table { width:100%; border-collapse:collapse; min-width:520px; }
@@ -74,12 +76,10 @@ När du väljer **Dare Me**, **Truth** eller **Truth or Dare** visas rätt nivå
 
 5. Fyll i den första spelarens namn, kön och läggning. Välj sedan personens egna veto i den lista som visas för spelläget. I **Truth or Dare** finns både Truth- och Dare-veton.
 
-![Här fyller du i spelarens namn, kön och läggning. Välj personens veto i listorna innan du lägger till spelaren.](bilder/09-namn-och-veto.jpg)
+![Formuläret där du fyller i spelarens namn, kön och läggning. Välj personens veto längre ner i formuläret.](bilder/09-namn-och-veto.jpg)
 
 6. Tryck **LÄGG TILL MIG**. Spelarens veto sparas på den personen, listorna fälls ihop och formuläret flyttas tillbaka till nästa spelare. Upprepa steg 5–6 för alla.
 7. Tryck **STARTA SPELET**. Om spelläge eller nivå saknas visar spelet en vägledning ovanför knappen.
-
-![När spelarna lagts till visas de i listan och spelet kan startas.](bilder/06-spelare-klara.jpg)
 
 ### Varje spelare väljer sina egna veto
 
@@ -207,7 +207,7 @@ Säg också gärna till om en knapp är svår att hitta, en instruktion är okla
       while (i < lines.length && (ordered ? /^\d+\. /.test(lines[i]) : /^- /.test(lines[i]))) items.push('<li>' + inline(lines[i++].replace(ordered ? /^\d+\. / : /^- /, '')) + '</li>');
       out.push('<' + tag + (ordered && start > 1 ? ' start="' + start + '"' : '') + '>' + items.join('') + '</' + tag + '>'); continue;
     }
-    if (/^!\[/.test(line)) { const match = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/); if (match) { const src = escapeHtml(match[2]); out.push('<figure><a href="' + src + '" target="_blank" rel="noopener"><img loading="lazy" decoding="async" src="' + src + '" alt="' + escapeHtml(match[1]) + '"><figcaption>' + inline(match[1]) + ' Öppna bilden i full storlek.</figcaption></a></figure>'); } i++; continue; }
+    if (/^!\[/.test(line)) { const match = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/); if (match) { const src = escapeHtml(match[2]); const figureClass = src.endsWith('/09-namn-och-veto.jpg') ? ' class="player-form"' : ''; out.push('<figure' + figureClass + '><a href="' + src + '" target="_blank" rel="noopener"><img loading="lazy" decoding="async" src="' + src + '" alt="' + escapeHtml(match[1]) + '"><figcaption>' + inline(match[1]) + ' Öppna bilden i full storlek.</figcaption></a></figure>'); } i++; continue; }
     const paragraph = [line]; i++;
     while (i < lines.length && lines[i].trim() && !/^(#{1,3} |\d+\. | - |\|`{3})/.test(lines[i]) && !/^\|/.test(lines[i]) && !/^!\[/.test(lines[i])) paragraph.push(lines[i++]);
     out.push('<p>' + paragraph.map(inline).join('<br>') + '</p>');
