@@ -171,6 +171,8 @@ Om ett kort verkar bryta mot ett valt veto, sakna tillgänglig utrustning eller 
 
 Skriv gärna detta när något går fel eller är svårt att förstå:
 
+Skicka felrapporten och gärna en skärmbild till [madebylexi.se@gmail.com](mailto:madebylexi.se@gmail.com).
+
 ```text
 ENHET OCH WEBBLÄSARE:
 ANTAL SPELARE:
@@ -193,6 +195,7 @@ Säg också gärna till om en knapp är svår att hitta, en instruktion är okla
   const inline = value => escapeHtml(value)
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\[([^\]]+)\]\((mailto:[^)\s]+)\)/g, '<a href="$2">$1</a>')
     .replace(/&lt;(https?:\/\/[^&]+)&gt;/g, '<a href="$1">$1</a>')
     .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2">');
   const lines = source.split(/\r?\n/);
