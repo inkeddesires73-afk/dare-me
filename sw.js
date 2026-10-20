@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dare-me-pwa-v19';
+const CACHE_NAME = 'dare-me-pwa-v20';
 const APP_SHELL = [
   './',
   './index.html',
@@ -48,14 +48,17 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin && url.hostname !== 'www.gstatic.com') return;
 
   if (request.mode === 'navigate') {
+    const appHomePath = new URL('./', self.registration.scope).pathname;
+    const isAppHome = url.pathname === appHomePath || url.pathname === `${appHomePath}index.html`;
+    const cacheKey = isAppHome ? './index.html' : request;
     event.respondWith(
       fetch(request)
         .then(response => {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
+          caches.open(CACHE_NAME).then(cache => cache.put(cacheKey, copy));
           return response;
         })
-        .catch(() => caches.match('./index.html'))
+        .catch(() => caches.match(cacheKey))
     );
     return;
   }

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Praktisk guide för betatestare av Dare Me.">
+  <title>Dare Me – guide för betatestare</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0c0b09; --panel:#15130f; --line:#403722; --gold:#f2ca55; --text:#eee9dc; --muted:#b9b2a3; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:radial-gradient(ellipse at top,#211b10 0,var(--bg) 48rem); color:var(--text); font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    main { width:min(960px,calc(100% - 32px)); margin:36px auto 72px; }
+    article { background:color-mix(in srgb,var(--panel) 94%,transparent); border:1px solid var(--line); border-radius:18px; padding:clamp(22px,5vw,54px); box-shadow:0 20px 70px #0008; }
+    h1,h2,h3 { line-height:1.25; color:var(--gold); }
+    h1 { font:clamp(2rem,5vw,3rem)/1.15 Georgia,serif; margin:.1em 0 .7em; }
+    h2 { margin:2em 0 .7em; font-size:1.45rem; border-bottom:1px solid var(--line); padding-bottom:.4em; }
+    h3 { margin:1.6em 0 .55em; font-size:1.12rem; }
+    p { margin:.8em 0; } a { color:var(--gold); overflow-wrap:anywhere; }
+    strong { color:#fff2c6; } ol,ul { padding-left:1.5em; } li { padding-left:.2em; margin:.35em 0; }
+    figure { margin:1.2em 0 1.6em; padding:10px; border:1px solid var(--line); border-radius:14px; background:#090807; text-align:center; }
+    figure a { display:block; text-decoration:none; }
+    figure img { display:block; width:auto; max-width:100%; max-height:min(72vh,760px); height:auto; object-fit:contain; margin:0 auto; border-radius:8px; }
+    figcaption { color:var(--muted); font-size:.9rem; padding:8px 5px 2px; }
+    .table-wrap { overflow-x:auto; margin:1em 0; border:1px solid var(--line); border-radius:10px; }
+    table { width:100%; border-collapse:collapse; min-width:520px; }
+    th,td { text-align:left; vertical-align:top; padding:10px 12px; border-bottom:1px solid #332d21; }
+    th { color:var(--gold); background:#201b11; }
+    tr:last-child td { border-bottom:0; }
+    pre { overflow:auto; padding:16px; border:1px solid var(--line); border-radius:10px; background:#090807; color:#f5dfa0; }
+    code { font-family:ui-monospace,Consolas,monospace; }
+    @media(max-width:600px) { main { width:min(100% - 16px,960px); margin:8px auto 24px; } article { padding:20px 16px; border-radius:12px; } body { font-size:15px; } }
+  </style>
+</head>
+<body>
+<main><article id="guide" aria-live="polite">Läser guiden…</article></main>
+<script type="text/markdown" id="source">
+# Dare Me – guide för betatestare
+
+Tack för att du testar Dare Me. Guiden visar hur du startar ett spel, vad knapparna gör och vad du kan rapportera om något verkar fel.
+
+**Öppna spelet:** <https://dare-me.madebylexi.se/>
+
+## Snabb överblick
+
+Börja med spelläge och nivåer. Lägg sedan till spelarna en i taget och välj varje persons egna veto innan du trycker **LÄGG TILL MIG**. Utrustning är ett gemensamt filter för spelet och kan ställas in före spelarna.
+
+![Välkomstsidan på mobilen. Tryck på SPELA för att komma till spelupplägget.](bilder/01-valkommen.jpg)
+
+I bilden är spelläget ännu inte valt. När du väljer **Dare Me**, **Truth** eller **Truth or Dare** visas rätt nivåer och personliga veton för det läget.
+
+## Starta ett spel
+
+1. Tryck **SPELA** på första sidan.
+2. I **SPELINSTÄLLNINGAR & NIVÅER**, välj **SPELLÄGE** först.
+3. Välj minst en nivå som hör till spelläget. I **Truth or Dare** väljer ni vilka Truth- och Dare-nivåer som ska ingå.
+
+![Exempel på spelläge och nivåval i Truth or Dare.](bilder/02-spellage-och-nivaer.jpg)
+
+4. Öppna **TILLGÄNGLIG UTRUSTNING I RUMMET** om ni vill filtrera bort uppdrag som kräver redskap ni inte har. Markera bara utrustning som faktiskt finns.
+
+![Utrustningsfiltret. Markera bara sådant som finns tillgängligt.](bilder/03-utrustning.jpg)
+
+5. Fyll i den första spelarens namn, kön och läggning. Välj sedan personens egna veto i den lista som visas för spelläget. I **Truth or Dare** finns både Truth- och Dare-veton.
+6. Tryck **LÄGG TILL MIG**. Spelarens veto sparas på den personen, listorna fälls ihop och formuläret flyttas tillbaka till nästa spelare. Upprepa steg 5–6 för alla.
+7. Tryck **STARTA SPELET**. Om spelläge eller nivå saknas visar spelet en vägledning ovanför knappen.
+
+![När spelarna lagts till visas de i listan och spelet kan startas.](bilder/06-spelare-klara.jpg)
+
+### Varje spelare väljer sina egna veto
+
+I **Dare Me** visas spelarens Dare-veton. I **Truth** visas Truth-veton. I **Truth or Dare** visas båda listorna. Markeringarna gäller bara personen som just nu fylls i och sparas när du trycker **LÄGG TILL MIG**.
+
+![Truth-vetona för den spelare som fylls i.](bilder/04-truth-veto.jpg)
+
+![Dare-vetona för den spelare som fylls i.](bilder/05-dare-veto.jpg)
+
+## Knappar i spelupplägget
+
+| Knapp eller val | Vad den gör |
+|---|---|
+| **LÄGG TILL MIG** | Lägger till personen vars namn, kön och läggning står i formuläret. |
+| Pennan vid ett spelarnamn | Hämtar spelarens uppgifter till formuläret så att de kan ändras. Tryck sedan **SPARA ÄNDRING** för att spara. |
+| **AVBRYT REDIGERING** | Lämnar redigeringsläget utan att spara den aktuella ändringen. |
+| **×** vid ett spelarnamn | Tar bort spelaren från upplägget. |
+| **SPELLÄGE** | **Dare Me** ger uppdrag, **Truth** ger frågor och **Truth or Dare** låter spelaren välja korttyp inför kortet. |
+| Nivåvalen | Välj vilka Dare- och/eller Truth-nivåer spelet får dra kort från. Minst en nivå som hör till spelläget måste vara vald. |
+| **NIVÅHÖJNING** | Välj **Av** för att själv höja nivån med **HÖJ STÄMNINGEN**, eller välj hur många kort per spelare som ska gå innan spelet höjer automatiskt. Automatisk höjning följer hela spelvarv. |
+| **Manuella stjärnor** | Slår på möjligheten att dela ut en bonusstjärna från en spelares stjärnmeny. |
+| **TIMER** och **CHANS** | **TIMER** väljer hur länge en använd guldstjärna gäller. **CHANS** väljer sannolikheten för att en stjärna dyker upp. |
+| **TILLGÄNGLIG UTRUSTNING I RUMMET** | Markera redskap som faktiskt finns. Kort med utrustningskrav som inte är markerade ska väljas bort. |
+| **TRUTH-VETON** / **DARE VETO** | Öppna rätt lista och markera innehåll som ska undvikas. De två listorna gäller frågor respektive uppdrag. |
+| **LÄGG TILL EGEN KORTLEK** | Välj en tidigare sparad JSON-kortlek. Den läggs till bland korten för dess nivå. |
+| **REGLER** | Öppnar hjälpen och reglerna. |
+| **★ LISTA** | Öppnar listan med sparade favoriter och nyligen spelade kort. |
+| **SPELVAL** | Öppnar vyn där du väljer vilket spelalternativ du vill gå vidare med. |
+| **NOLLSTÄLL ALLT / BYT ROLL** | Öppnar en bekräftelse. **JA, RADERA ALLT** rensar spelare och inställningar så att ni kan börja om. |
+
+## Knappar under spelet
+
+Den gulmarkerade spelaren i spelarraden har turen.
+
+![I Truth or Dare väljer spelaren Truth, Slumpa eller Dare för sitt kort.](bilder/07-valj-kort.jpg)
+
+![Exempel på ett draget kort med korttimer.](bilder/08-kort-och-timer.jpg)
+
+| Knapp | Vad den gör |
+|---|---|
+| **NÄSTA KORT** | Drar nästa kort i läget **Dare Me** eller **Truth**. Nästa spelare tar sin tur när hen drar. |
+| **TRUTH** | Drar en fråga i **Truth or Dare**. |
+| **DARE** | Drar ett uppdrag i **Truth or Dare**. |
+| **SLUMPA** | Låter spelet välja mellan Truth och Dare. |
+| **BYT KORT 🔄** | Byter ut kortet utan att flytta turen till nästa spelare. |
+| **PAUS ⏸** / **FORTSÄTT ▶** | Pausar spelet respektive fortsätter efter paus. |
+| **☆ SPARA** | Lägger det visade kortet bland favoriterna. |
+| **★ LISTA** | Visar favoriter och nyligen spelade kort. |
+| Korttimer: minutval + **⏱ STARTA** | Startar en timer på 1–5 minuter för kortet. När den tar slut ljuder en signal. **AVBRYT** stoppar den; efter slutsignalen stänger **STÄNG** timervisningen. |
+| **HÖJ STÄMNINGEN 🔥** | Går till nästa vald Dare-nivå när nivåhöjningen är inställd på **Av**. |
+| **LOBBY / REDIGERA** | Går tillbaka till upplägget för att ändra spelare och inställningar. |
+
+Tryck på en spelares namn eller stjärna i spelarraden för att öppna stjärnmenyn. **ANVÄND GULDSTJÄRNA** startar spelarens bonus. Om **Manuella stjärnor** är på kan värden även välja **GE EN BONUS-STJÄRNA**.
+
+## Arkitekterna
+
+På första sidan öppnar du **ÖPPNA DARE-ARKITEKTEN** för uppdrag eller **ÖPPNA TRUTH-ARKITEKTEN** för frågor. Knapparna längst ned fungerar så här:
+
+| Knapp | Vad den gör |
+|---|---|
+| **LÄGG TILL I LISTAN ➕** | Lägger det redigerade kortet i kortleken. |
+| **PROVKÖR KORT 👁** | Fäller fram eller tillbaka en förhandsvisning med exempelpersoner. |
+| **ÖPPNA SPARAD KORTLEK 📂** | Läser in en JSON-kortlek som du sparat tidigare. |
+| **SPARA KORTLEK TILL ENHETEN 💾** | Hämtar ned kortleken som en JSON-fil. |
+| **KOPIERA GILTIG JSON 📋** | Kopierar kortleken i JSON-format. |
+| **SKICKA UPP TILL SPELSKAPAREN ☁️** | Skickar in kortleken som ett förslag till framtida kortuppdateringar. |
+
+I Dare-Arkitekten kan textkort använda platshållare: `[ACTIVE]` aktiv spelare, `[TARGET]` vald person, `[TARGETS]` den valda personens namn i ägarform, `[HEN]` honom/henne, `[HENS]` hans/hennes, `[SUBJECT]` han/hon och `[PARTNER]` en andra medverkande spelare.
+
+## Prova gärna
+
+Du behöver inte hinna med allt. Om du kan, prova att redigera en spelare och spara, spela alla tre spellägena, byta ett kort, pausa och fortsätta, spara en favorit och använda listan. Testa gärna även veto, utrustningsfilter, nivåhöjning och korttimer. En liten egen kortlek är ett frivilligt extratest.
+
+Om ett kort verkar bryta mot ett valt veto, sakna tillgänglig utrustning eller ligga på fel nivå: tryck **BYT KORT 🔄** och skicka den exakta korttexten.
+
+## Felrapport
+
+Skriv gärna detta när något går fel eller är svårt att förstå:
+
+```text
+ENHET OCH WEBBLÄSARE:
+ANTAL SPELARE:
+SPELLÄGE OCH VALDA NIVÅER:
+
+VILKEN KNAPP JAG TRYCKTE PÅ:
+VAD JAG VÄNTADE MIG:
+VAD SOM HÄNDE:
+GÅR DET ATT GÖRA OM? JA/NEJ:
+SKÄRMBILD ELLER VIDEO:
+ÖVRIG ÅTERKOPPLING:
+```
+
+Säg också gärna till om en knapp är svår att hitta, en instruktion är oklar eller något ser fel ut på mobilen.
+</script>
+<script>
+(() => {
+  const source = document.getElementById('source').textContent.trim();
+  const escapeHtml = value => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+  const inline = value => escapeHtml(value)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/&lt;(https?:\/\/[^&]+)&gt;/g, '<a href="$1">$1</a>')
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2">');
+  const lines = source.split(/\r?\n/);
+  const out = [];
+  for (let i = 0; i < lines.length;) {
+    const line = lines[i];
+    if (!line.trim()) { i++; continue; }
+    if (line.startsWith('```')) {
+      i++; const block = [];
+      while (i < lines.length && !lines[i].startsWith('```')) block.push(lines[i++]);
+      i++; out.push('<pre><code>' + escapeHtml(block.join('\n')) + '</code></pre>'); continue;
+    }
+    if (/^\|/.test(line)) {
+      const rows = [];
+      while (i < lines.length && /^\|/.test(lines[i])) rows.push(lines[i++]);
+      const cells = rows.filter(row => !/^\|[\s|:-]+\|$/.test(row)).map(row => row.split('|').slice(1, -1).map(cell => cell.trim()));
+      if (cells.length) out.push('<div class="table-wrap"><table><thead><tr>' + cells[0].map(cell => '<th>' + inline(cell) + '</th>').join('') + '</tr></thead><tbody>' + cells.slice(1).map(row => '<tr>' + row.map(cell => '<td>' + inline(cell) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>');
+      continue;
+    }
+    if (/^#{1,3} /.test(line)) { const level = line.match(/^#+/)[0].length; out.push('<h' + level + '>' + inline(line.slice(level + 1)) + '</h' + level + '>'); i++; continue; }
+    if (/^\d+\. /.test(line) || /^- /.test(line)) {
+      const ordered = /^\d+\./.test(line), tag = ordered ? 'ol' : 'ul', items = [];
+      const start = ordered ? Number(line.match(/^\d+/)[0]) : 1;
+      while (i < lines.length && (ordered ? /^\d+\. /.test(lines[i]) : /^- /.test(lines[i]))) items.push('<li>' + inline(lines[i++].replace(ordered ? /^\d+\. / : /^- /, '')) + '</li>');
+      out.push('<' + tag + (ordered && start > 1 ? ' start="' + start + '"' : '') + '>' + items.join('') + '</' + tag + '>'); continue;
+    }
+    if (/^!\[/.test(line)) { const match = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/); if (match) { const src = escapeHtml(match[2]); out.push('<figure><a href="' + src + '" target="_blank" rel="noopener"><img loading="lazy" decoding="async" src="' + src + '" alt="' + escapeHtml(match[1]) + '"><figcaption>' + inline(match[1]) + ' Öppna bilden i full storlek.</figcaption></a></figure>'); } i++; continue; }
+    const paragraph = [line]; i++;
+    while (i < lines.length && lines[i].trim() && !/^(#{1,3} |\d+\. | - |\|`{3})/.test(lines[i]) && !/^\|/.test(lines[i]) && !/^!\[/.test(lines[i])) paragraph.push(lines[i++]);
+    out.push('<p>' + paragraph.map(inline).join('<br>') + '</p>');
+  }
+  document.getElementById('guide').innerHTML = out.join('\n');
+})();
+</script>
+</body>
+</html>
