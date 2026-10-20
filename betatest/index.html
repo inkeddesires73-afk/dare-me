@@ -18,7 +18,7 @@
     h2 { margin:2em 0 .7em; font-size:1.45rem; border-bottom:1px solid var(--line); padding-bottom:.4em; }
     h3 { margin:1.6em 0 .55em; font-size:1.12rem; }
     p { margin:.8em 0; } a { color:var(--gold); overflow-wrap:anywhere; }
-    .email-cta { display:inline-flex; align-items:center; justify-content:center; margin:.35em 0; padding:10px 14px; border:1px solid var(--line); border-radius:9px; background:#1b170d; color:var(--gold); font-size:.88rem; font-weight:800; letter-spacing:.04em; text-decoration:none; }
+    .email-cta { display:inline-flex; align-items:center; justify-content:center; max-width:100%; white-space:normal; text-align:center; margin:.35em 0; padding:10px 14px; border:1px solid var(--line); border-radius:9px; background:#1b170d; color:var(--gold); font-size:.88rem; font-weight:800; letter-spacing:.04em; text-decoration:none; }
     .email-cta:focus-visible { outline:2px solid var(--gold); outline-offset:3px; }
     strong { color:#fff2c6; } ol,ul { padding-left:1.5em; } li { padding-left:.2em; margin:.35em 0; }
     figure { margin:1.2em 0 1.6em; padding:10px; border:1px solid var(--line); border-radius:14px; background:#090807; text-align:center; }
@@ -173,7 +173,7 @@ Om ett kort verkar bryta mot ett valt veto, sakna tillgänglig utrustning eller 
 
 Skriv gärna detta när något går fel eller är svårt att förstå:
 
-Skicka felrapporten och gärna en skärmbild via {{FEEDBACK_EMAIL}}.
+Skicka felrapport, synpunkter eller annan återkoppling via {{FEEDBACK_EMAIL}}.
 
 ```text
 ENHET OCH WEBBLÄSARE:
@@ -197,7 +197,7 @@ Säg också gärna till om en knapp är svår att hitta, en instruktion är okla
   const inline = value => escapeHtml(value)
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\{\{FEEDBACK_EMAIL\}\}/g, '<a class="email-cta" href="#" data-mail-user="madebylexi.se" data-mail-host="gmail.com">SKICKA FELRAPPORT VIA E-POST</a>')
+    .replace(/\{\{FEEDBACK_EMAIL\}\}/g, '<a class="email-cta" href="#" data-mail-user="madebylexi.se" data-mail-host="gmail.com">SKICKA FELRAPPORT ELLER FEEDBACK VIA E-POST</a>')
     .replace(/&lt;(https?:\/\/[^&]+)&gt;/g, '<a href="$1">$1</a>')
     .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2">');
   const lines = source.split(/\r?\n/);
