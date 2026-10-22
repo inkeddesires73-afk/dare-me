@@ -5,7 +5,8 @@ const sent = new Set();
 
 // Mottagare och mejltext bestäms i EmailJS-mallen. Inga korttexter, spelarnamn,
 // kortleksnamn, användar-ID:n eller valfria mottagaradresser skickas till mejltjänsten.
-export async function notifyDeckSubmission({ submissionId, kind, cardCount, submittedAt }) {
+// Kontaktadressen visas i mejltexten; den används aldrig som mottagare.
+export async function notifyDeckSubmission({ submissionId, kind, cardCount, submittedAt, contactEmail = '' }) {
     if (location.protocol !== 'https:' || location.hostname !== siteServicesConfig.hostname) {
         return { status: 'local' };
     }
@@ -21,7 +22,10 @@ export async function notifyDeckSubmission({ submissionId, kind, cardCount, subm
     if (sent.has(submissionId)) return { status: 'already-sent' };
     if (sending.has(submissionId)) return sending.get(submissionId);
 
-    const request = sendNotification({ serviceId, templateId, publicKey, submissionId, kind, cardCount, submittedAt });
+    const contact = typeof contactEmail === 'string' ? contactEmail.trim() : '';
+    const displayContact = contact.length <= 254 && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(contact)
+        ? contact : 'Ingen mejladress angiven';
+    const request = sendNotification({ serviceId, templateId, publicKey, submissionId, kind, cardCount, submittedAt, displayContact });
     sending.set(submissionId, request);
     try {
         return await request;
@@ -30,7 +34,7 @@ export async function notifyDeckSubmission({ submissionId, kind, cardCount, subm
     }
 }
 
-async function sendNotification({ serviceId, templateId, publicKey, submissionId, kind, cardCount, submittedAt }) {
+async function sendNotification({ serviceId, templateId, publicKey, submissionId, kind, cardCount, submittedAt, displayContact }) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
     try {
@@ -48,6 +52,7 @@ async function sendNotification({ serviceId, templateId, publicKey, submissionId
                     submission_id: submissionId,
                     deck_type: kind === 'truth' ? 'Truth' : 'Dare',
                     card_count: cardCount,
+                    contact_email: displayContact,
                     submitted_at: new Date(submittedAt).toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' })
                 }
             })

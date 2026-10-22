@@ -1498,7 +1498,10 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebas
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app-check.js';
 import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
-import { createDeckSubmissionHandler } from './deck-submission.js';
+import { createDeckSubmissionHandler } from './deck-submission.js?v=20261022-contact-email-2';
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  navigator.serviceWorker.register('./sw.js').catch(error => console.info('Offlinecachen kunde inte uppdateras.', error));
+}
 const app = initializeApp({apiKey:'AIzaSyADzIduNhKHBKIMWMGIwwPtiqKkZk8xZK4',authDomain:'dare-me-1c264.firebaseapp.com',projectId:'dare-me-1c264',storageBucket:'dare-me-1c264.firebasestorage.app',messagingSenderId:'1002052194460',appId:'1:1002052194460:web:9f55d47fbc82745a17dd59'});
 // App Check körs endast på den publicerade domänen. Lokal utveckling behöver inte en produktionsattestering.
 const appCheck = location.hostname === 'dare-me.madebylexi.se'

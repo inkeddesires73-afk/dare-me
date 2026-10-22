@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dare-me-pwa-v23';
+const CACHE_NAME = 'dare-me-pwa-v24';
 const APP_SHELL = [
   './',
   './index.html',
@@ -9,6 +9,8 @@ const APP_SHELL = [
   './visit-statistics.js',
   './deck-notification.js',
   './deck-submission.js',
+  './deck-submission.js?v=20261022-contact-email-2',
+  './deck-notification.js?v=20261022-contact-email-2',
   './submission-contact.css',
   './design-system.css',
   './manifest.webmanifest',
@@ -69,11 +71,12 @@ self.addEventListener('fetch', event => {
   }
 
   const isHtml = url.pathname.endsWith('.html') || url.pathname.endsWith('/');
-  const isServiceConfig = url.pathname.endsWith('/site-services-config.js');
+  const isServiceAsset = ['site-services-config.js', 'deck-submission.js', 'deck-notification.js', 'submission-contact.css']
+    .some(file => url.pathname.endsWith('/' + file));
   const isDeck = /\/(?:level\d+|truth\d+)\.json$/i.test(url.pathname);
   const cacheRequest = isDeck ? new Request(url.origin + url.pathname) : request;
   event.respondWith(
-    ((isHtml || isServiceConfig) ? fetch(request).catch(() => caches.match(cacheRequest)) : caches.match(cacheRequest).then(cached => cached || fetch(request))).then(response => {
+    ((isHtml || isServiceAsset) ? fetch(request).catch(() => caches.match(cacheRequest)) : caches.match(cacheRequest).then(cached => cached || fetch(request))).then(response => {
       if (!response) return response;
       const copy = response.clone();
       caches.open(CACHE_NAME).then(cache => cache.put(cacheRequest, copy));

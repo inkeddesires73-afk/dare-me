@@ -1,4 +1,4 @@
-import { notifyDeckSubmission } from './deck-notification.js';
+import { notifyDeckSubmission } from './deck-notification.js?v=20261022-contact-email-2';
 
 // Samma ordning och felhantering i båda Arkitekterna: spara först, avisera därefter.
 export function normalizeContactEmail(value = '') {
@@ -39,7 +39,8 @@ export function createDeckSubmissionHandler({ getDeck, saveDeck, kind, button, c
                 submissionId: submission.id,
                 kind,
                 cardCount: deck.dares.length,
-                submittedAt
+                submittedAt,
+                contactEmail
             }).catch(error => console.warn('Kortleken är sparad men mejlaviseringen misslyckades.', error));
             alert('Kortleken skickades upp! Tack.');
         } catch (error) {
