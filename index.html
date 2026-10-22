@@ -21,11 +21,11 @@
       "imports": {
         "firebase/app": "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js",
         "firebase/auth": "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js",
-        "firebase/firestore": "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js",
-        "firebase/analytics": "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js"
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"
       }
     }
     </script>
+    <script type="module" src="./visit-statistics.js"></script>
 
     <style>
         :root {
@@ -889,9 +889,7 @@
 <script type="module">
     let initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken;
     let getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc, collection, addDoc, writeBatch;
-    let getAnalytics, logEvent;
     let app = null;
-    let analytics = null;
     let firebaseModulesPromise = null;
 
     const firebaseConfig = {
@@ -916,14 +914,6 @@
             ({ getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } = authModule);
             ({ getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc, collection, addDoc, writeBatch } = firestoreModule);
             app = initializeApp(firebaseConfig);
-            try {
-                const analyticsModule = await import('firebase/analytics');
-                ({ getAnalytics, logEvent } = analyticsModule);
-                analytics = getAnalytics(app);
-            } catch (error) {
-                analytics = null;
-                console.info('Analytics kunde inte laddas; spelet fortsätter.', error);
-            }
             return true;
         })().catch(error => {
             firebaseModulesPromise = null;
@@ -3274,8 +3264,6 @@
             } else {
                 applyStateToUI();
             }
-            // EXTRA TRIGGER FÖR ANALYTICS REALTIME
-            if (analytics && logEvent) logEvent(analytics, 'app_open', { platform: 'web' });
         };
         boot().catch(error => {
             console.error('Dare Me kunde inte starta.', error);
