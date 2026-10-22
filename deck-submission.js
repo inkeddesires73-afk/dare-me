@@ -1,13 +1,26 @@
 import { notifyDeckSubmission } from './deck-notification.js';
 
 // Samma ordning och felhantering i båda Arkitekterna: spara först, avisera därefter.
-export function createDeckSubmissionHandler({ getDeck, saveDeck, kind, button }) {
+export function normalizeContactEmail(value = '') {
+    const email = value.trim();
+    if (!email) return '';
+    return email.length <= 254 && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email) ? email : null;
+}
+
+export function createDeckSubmissionHandler({ getDeck, saveDeck, kind, button, contactInput }) {
     let submitting = false;
     return async () => {
         if (submitting) return;
         const deck = getDeck();
         if (!deck?.dares?.length) {
             alert('Lägg till minst ett kort först.');
+            return;
+        }
+        const contactEmail = normalizeContactEmail(contactInput?.value || '');
+        if (contactInput && contactEmail !== null) contactInput.value = contactEmail;
+        if (contactEmail === null || (contactInput && !contactInput.reportValidity())) {
+            alert('Kontrollera mejladressen, eller lämna fältet tomt.');
+            contactInput?.focus();
             return;
         }
         if (!confirm('Skicka upp denna kortlek till spelskaparen?')) return;
@@ -20,7 +33,7 @@ export function createDeckSubmissionHandler({ getDeck, saveDeck, kind, button })
         }
         try {
             const submittedAt = Date.now();
-            const submission = await saveDeck(deck, submittedAt);
+            const submission = await saveDeck(deck, submittedAt, contactEmail);
             // Inskickaren behöver inte vänta på mejltjänsten för att få sin bekräftelse.
             void notifyDeckSubmission({
                 submissionId: submission.id,

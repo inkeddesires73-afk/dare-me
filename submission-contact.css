@@ -1,0 +1,42 @@
+.deck-submission-contact {
+    box-sizing: border-box;
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid #4d4226;
+    border-radius: 10px;
+    background: #11100c;
+    text-align: left;
+}
+.deck-submission-contact label {
+    display: block;
+    margin-bottom: 7px;
+    color: #e8d581;
+    font-size: .9rem;
+    font-weight: 600;
+}
+.deck-submission-contact input {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid #64572d;
+    border-radius: 7px;
+    background: #090909;
+    color: #eee;
+    font: 16px 'Segoe UI', sans-serif;
+}
+.deck-submission-contact input:focus {
+    outline: 2px solid #d4af37;
+    outline-offset: 2px;
+}
+.deck-submission-contact p {
+    margin: 8px 0 12px;
+    color: #aaa39a;
+    font-size: .8rem;
+    line-height: 1.5;
+}
+.deck-submission-contact button {
+    display: block;
+    width: 100%;
+}

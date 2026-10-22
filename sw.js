@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dare-me-pwa-v22';
+const CACHE_NAME = 'dare-me-pwa-v23';
 const APP_SHELL = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const APP_SHELL = [
   './visit-statistics.js',
   './deck-notification.js',
   './deck-submission.js',
+  './submission-contact.css',
   './design-system.css',
   './manifest.webmanifest',
   './dareme.png',
