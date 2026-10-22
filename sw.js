@@ -1,10 +1,14 @@
-const CACHE_NAME = 'dare-me-pwa-v20';
+const CACHE_NAME = 'dare-me-pwa-v22';
 const APP_SHELL = [
   './',
   './index.html',
   './rules.html',
   './architect.html',
   './trutharchitect.html',
+  './site-services-config.js',
+  './visit-statistics.js',
+  './deck-notification.js',
+  './deck-submission.js',
   './design-system.css',
   './manifest.webmanifest',
   './dareme.png',
@@ -64,10 +68,11 @@ self.addEventListener('fetch', event => {
   }
 
   const isHtml = url.pathname.endsWith('.html') || url.pathname.endsWith('/');
+  const isServiceConfig = url.pathname.endsWith('/site-services-config.js');
   const isDeck = /\/(?:level\d+|truth\d+)\.json$/i.test(url.pathname);
   const cacheRequest = isDeck ? new Request(url.origin + url.pathname) : request;
   event.respondWith(
-    (isHtml ? fetch(request).catch(() => caches.match(cacheRequest)) : caches.match(cacheRequest).then(cached => cached || fetch(request))).then(response => {
+    ((isHtml || isServiceConfig) ? fetch(request).catch(() => caches.match(cacheRequest)) : caches.match(cacheRequest).then(cached => cached || fetch(request))).then(response => {
       if (!response) return response;
       const copy = response.clone();
       caches.open(CACHE_NAME).then(cache => cache.put(cacheRequest, copy));
