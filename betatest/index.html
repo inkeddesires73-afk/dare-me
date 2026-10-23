@@ -224,7 +224,7 @@ Säg också gärna till om en knapp är svår att hitta, en instruktion är okla
       while (i < lines.length && (ordered ? /^\d+\. /.test(lines[i]) : /^- /.test(lines[i]))) items.push('<li>' + inline(lines[i++].replace(ordered ? /^\d+\. / : /^- /, '')) + '</li>');
       out.push('<' + tag + (ordered && start > 1 ? ' start="' + start + '"' : '') + '>' + items.join('') + '</' + tag + '>'); continue;
     }
-    if (/^!\[/.test(line)) { const match = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/); if (match) { const src = escapeHtml(match[2]); const figureClass = src.endsWith('/09-namn-och-veto.jpg') ? ' class="player-form"' : ''; out.push('<figure' + figureClass + '><a href="' + src + '" target="_blank" rel="noopener"><img loading="lazy" decoding="async" src="' + src + '" alt="' + escapeHtml(match[1]) + '"><figcaption>' + inline(match[1]) + ' Öppna bilden i full storlek.</figcaption></a></figure>'); } i++; continue; }
+    if (/^!\[/.test(line)) { const match = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/); if (match) { const src = escapeHtml(match[2]); const figureClass = src.endsWith('/09-namn-och-veto.jpg') ? ' class="player-form"' : ''; out.push('<figure' + figureClass + '><a href="' + src + '" target="_blank" rel="noopener"><img loading="lazy" decoding="async" src="' + src + '" alt="' + escapeHtml(match[1]) + '"></a></figure>'); } i++; continue; }
     const paragraph = [line]; i++;
     while (i < lines.length && lines[i].trim() && !/^(#{1,3} |\d+\. | - |\|`{3})/.test(lines[i]) && !/^\|/.test(lines[i]) && !/^!\[/.test(lines[i])) paragraph.push(lines[i++]);
     out.push('<p>' + paragraph.map(inline).join('<br>') + '</p>');
