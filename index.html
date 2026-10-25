@@ -863,6 +863,7 @@
                     <select id="card-timer-duration" aria-label="Timerlängd">
                         <option value="1">1 min</option><option value="2">2 min</option><option value="3">3 min</option><option value="4">4 min</option><option value="5">5 min</option>
                     </select>
+                    <label class="card-timer-sound-option" for="card-timer-sound"><input id="card-timer-sound" type="checkbox"> Ljudsignal</label>
                     <button id="card-timer-start" class="btn btn-rules card-tool-btn" type="button" onclick="startCardTimer()">⏱ STARTA</button>
                     <span id="card-timer-display" class="card-timer-display" role="status" aria-live="assertive" hidden></span>
                     <button id="card-timer-stop" class="btn btn-rules card-tool-btn" type="button" onclick="stopCardTimer()" hidden>AVBRYT</button>
@@ -1724,6 +1725,15 @@
     let cardTimerPaused = false;
     let cardTimerExpired = false;
     let cardTimerAudioContext = null;
+    let cardTimerSignalEnabled = false;
+    const cardTimerSoundPreferenceKey = 'dareme_card_timer_sound_enabled';
+    const cardTimerSoundToggle = document.getElementById('card-timer-sound');
+    if (cardTimerSoundToggle) {
+        try { cardTimerSoundToggle.checked = localStorage.getItem(cardTimerSoundPreferenceKey) === 'true'; } catch (error) { /* Ljudvalet fungerar även utan lokal lagring. */ }
+        cardTimerSoundToggle.addEventListener('change', () => {
+            try { localStorage.setItem(cardTimerSoundPreferenceKey, String(cardTimerSoundToggle.checked)); } catch (error) { /* Valet gäller åtminstone under den här sidvisningen. */ }
+        });
+    }
 
     function renderCardTimer() {
         const widget = document.getElementById('card-timer-widget');
@@ -1731,11 +1741,13 @@
         const hasCard = state.currentTask && state.currentTask !== 'TRYCK FÖR KORT' && state.currentTask !== 'INGA MATCHANDE KORT HITTADES.';
         widget.hidden = !(state.isPlaying && !state.roomCode && hasCard);
         const select = document.getElementById('card-timer-duration');
+        const soundOption = document.querySelector('.card-timer-sound-option');
         const startButton = document.getElementById('card-timer-start');
         const display = document.getElementById('card-timer-display');
         const stopButton = document.getElementById('card-timer-stop');
         const active = cardTimerRemainingMs > 0 && !cardTimerExpired;
         select.hidden = active || cardTimerExpired;
+        soundOption.hidden = active || cardTimerExpired;
         startButton.hidden = active || cardTimerExpired;
         display.hidden = !active && !cardTimerExpired;
         stopButton.hidden = !active && !cardTimerExpired;
@@ -1753,30 +1765,35 @@
         }
     }
 
-    function playCardTimerSignal() {
-        try {
-            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-            if (AudioContextClass) {
-                cardTimerAudioContext ||= new AudioContextClass();
-                const context = cardTimerAudioContext;
-                context.resume().then(() => {
-                    [880, 660, 880].forEach((frequency, index) => {
-                        const startAt = context.currentTime + index * 0.28;
-                        const oscillator = context.createOscillator();
-                        const gain = context.createGain();
-                        oscillator.type = 'sine';
-                        oscillator.frequency.value = frequency;
-                        gain.gain.setValueAtTime(0.0001, startAt);
-                        gain.gain.exponentialRampToValueAtTime(0.22, startAt + 0.025);
-                        gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.2);
-                        oscillator.connect(gain);
-                        gain.connect(context.destination);
-                        oscillator.start(startAt);
-                        oscillator.stop(startAt + 0.21);
-                    });
-                }).catch(() => {});
-            }
-        } catch (error) { console.warn('Timersignalen kunde inte spelas upp.', error); }
+    function playCardTimerSignal(playSound = true) {
+        if (playSound) {
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    cardTimerAudioContext ||= new AudioContextClass();
+                    const context = cardTimerAudioContext;
+                    context.resume().then(() => {
+                        [440, 554, 659, 880, 659, 554].forEach((frequency, index) => {
+                            const startAt = context.currentTime + index * 0.4;
+                            const duration = 0.34;
+                            [[frequency, 0.76], [frequency * 2, 0.18]].forEach(([tone, volume]) => {
+                                const oscillator = context.createOscillator();
+                                const gain = context.createGain();
+                                oscillator.type = 'sine';
+                                oscillator.frequency.value = tone;
+                                gain.gain.setValueAtTime(0.0001, startAt);
+                                gain.gain.exponentialRampToValueAtTime(volume, startAt + 0.04);
+                                gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+                                oscillator.connect(gain);
+                                gain.connect(context.destination);
+                                oscillator.start(startAt);
+                                oscillator.stop(startAt + duration + 0.01);
+                            });
+                        });
+                    }).catch(() => {});
+                }
+            } catch (error) { console.warn('Timersignalen kunde inte spelas upp.', error); }
+        }
         try { navigator.vibrate?.([180, 100, 180]); } catch (error) { /* Vibration är valfri. */ }
     }
 
@@ -1788,7 +1805,7 @@
             cardTimerExpired = true;
             clearInterval(cardTimerInterval);
             cardTimerInterval = null;
-            playCardTimerSignal();
+            playCardTimerSignal(cardTimerSignalEnabled);
         }
         renderCardTimer();
     }
@@ -1797,17 +1814,20 @@
         if (!state.isPlaying || state.roomCode || !state.currentTask || state.currentTask === 'TRYCK FÖR KORT') return;
         clearInterval(cardTimerInterval);
         cardTimerExpired = false;
+        cardTimerSignalEnabled = document.getElementById('card-timer-sound').checked;
         cardTimerPaused = Boolean(state.gamePaused);
         cardTimerRemainingMs = Number(document.getElementById('card-timer-duration').value) * 60 * 1000;
         cardTimerEndsAt = cardTimerPaused ? null : Date.now() + cardTimerRemainingMs;
         cardTimerInterval = setInterval(updateCardTimer, 250);
-        try {
-            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-            if (AudioContextClass) {
-                cardTimerAudioContext ||= new AudioContextClass();
-                cardTimerAudioContext.resume().catch(() => {});
-            }
-        } catch (error) { /* Den visuella signalen fungerar även utan ljudstöd. */ }
+        if (cardTimerSignalEnabled) {
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    cardTimerAudioContext ||= new AudioContextClass();
+                    cardTimerAudioContext.resume().catch(() => {});
+                }
+            } catch (error) { /* Den visuella signalen fungerar även utan ljudstöd. */ }
+        }
         renderCardTimer();
     };
 
@@ -1818,6 +1838,7 @@
         cardTimerRemainingMs = 0;
         cardTimerPaused = false;
         cardTimerExpired = false;
+        cardTimerSignalEnabled = false;
         renderCardTimer();
     };
 

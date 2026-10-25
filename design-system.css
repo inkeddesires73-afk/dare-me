@@ -665,6 +665,23 @@ body.app-shell .card-timer-widget select {
     font-size: .7rem;
 }
 
+body.app-shell .card-timer-sound-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--dm-muted);
+    font-size: .66rem;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+body.app-shell .card-timer-sound-option input {
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    accent-color: var(--dm-gold-strong);
+}
+
 body.app-shell .card-timer-widget .card-tool-btn {
     min-height: 34px;
     margin: 0;
