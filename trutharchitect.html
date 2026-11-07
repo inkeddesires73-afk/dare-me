@@ -72,6 +72,23 @@
         .remove-card-row { display: flex; gap: 10px; margin-top: 10px; }
         .remove-card-row select { flex: 1; min-width: 0; padding: 8px; background: #222; color: #fff; border: 1px solid #555; border-radius: 6px; }
         .deck-settings { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin: 0 0 15px; }
+        .back-home {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            margin: 0 auto 10px;
+            padding: 0 16px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: #15130f;
+            color: var(--gold-light);
+            font: inherit;
+            font-weight: 700;
+            text-decoration: none;
+            touch-action: manipulation;
+        }
+        .back-home:hover { border-color: var(--gold); background: #201b0e; }
         .deck-settings input, .deck-settings select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; box-sizing: border-box; font-size: 15px; }
         .file-input { display: none; }
         .btn-import, .btn-export, .btn-copy-json { flex: 1; padding: 14px; border: 0; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; }
@@ -294,6 +311,7 @@
 <div class="container">
     <img src="dareme.png" alt="Dare Me Logo" class="header-img" onerror="this.style.display='none'">
     
+    <a class="back-home" href="./index.html">← Till huvudsidan</a>
     <h2>TRUTH - ARCHITECT 💬</h2>
 
     <div class="deck-settings">
